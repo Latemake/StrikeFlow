@@ -115,7 +115,7 @@ $androidDir = Join-Path $projectRoot "android"
 $localProperties = Join-Path $androidDir "local.properties"
 
 if (Test-Path $androidDir) {
-    $escapedSdkRoot = $SdkRoot.Replace("\", "\\")
+    $escapedSdkRoot = $SdkRoot.Replace("\", "\\").Replace(":", "\:")
     "sdk.dir=$escapedSdkRoot" | Set-Content -Path $localProperties -Encoding ASCII
     Write-Host "Wrote $localProperties"
 } else {

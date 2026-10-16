@@ -1,4 +1,5 @@
 node_modules/
+.android-sdk/
 .expo/
 dist/
 build/

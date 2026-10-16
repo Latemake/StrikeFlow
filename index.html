@@ -502,18 +502,6 @@
             box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
         }
 
-        .guide-meta {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            color: var(--accent-primary);
-            font-size: 12px;
-            font-weight: 950;
-            letter-spacing: 0.8px;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
         .guide-section {
             display: grid;
             gap: 4px;
@@ -523,15 +511,6 @@
             margin-top: 12px;
             padding-top: 11px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .guide-section-label {
-            color: var(--accent-primary);
-            font-size: 11px;
-            font-weight: 950;
-            letter-spacing: 1.1px;
-            line-height: 1;
-            text-transform: uppercase;
         }
 
         .guide-title {
@@ -556,14 +535,6 @@
             font-size: clamp(13px, 2vmin, 16px);
             font-weight: 650;
             line-height: 1.38;
-        }
-
-        .guide-next {
-            color: #f2f2f2;
-            font-size: 13px;
-            font-weight: 900;
-            letter-spacing: 0.3px;
-            line-height: 1.25;
         }
 
         @keyframes guideFadeUp {
@@ -3085,6 +3056,7 @@
         .workout-preview-panel {
             width: min(92vw, 680px);
             max-height: min(86vh, 820px);
+            max-height: min(90dvh, 820px);
             display: flex;
             flex-direction: column;
             border: 1px solid rgba(255, 255, 255, 0.16);
@@ -3146,7 +3118,24 @@
             line-height: 1;
         }
 
+        .workout-preview-header, .workout-preview-actions {
+            flex: 0 0 auto;
+        }
+
+        .workout-preview-actions {
+            padding: 12px 18px max(12px, env(safe-area-inset-bottom));
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            background: #121212;
+        }
+
+        .workout-preview-actions .workout-start {
+            margin: 0;
+            width: 100%;
+        }
+
         .workout-preview-body {
+            min-height: 0;
+            flex: 1 1 auto;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
@@ -4840,6 +4829,9 @@
                 </button>
             </div>
             <div class="workout-preview-body" id="workoutPreviewBody"></div>
+            <div class="workout-preview-actions">
+                <button class="workout-start" id="workoutPreviewStart">Start guided workout</button>
+            </div>
         </div>
     </div>
 
@@ -5095,11 +5087,6 @@
                         <button class="diff-btn" id="end-sound-heavy" onclick="setRoundEndSound('heavy')">HEAVY</button>
                     </div>
 
-                    <div class="toggle-container" style="margin-top:14px;">
-                        <div class="section-title" style="margin-bottom:0;">ROUND VOICE</div>
-                        <button class="toggle" id="roundVoiceToggle" onclick="toggleRoundVoice()"></button>
-                    </div>
-                    <div class="task-description" id="roundVoiceDesc">Enabled</div>
 
                     <div class="toggle-container" style="margin-top:14px;">
                         <div class="section-title" style="margin-bottom:0;">BUTTON CLICKS</div>
@@ -5107,11 +5094,6 @@
                     </div>
                     <div class="task-description" id="uiClicksDesc">Enabled</div>
 
-                    <div class="toggle-container" style="margin-top:14px;">
-                        <div class="section-title" style="margin-bottom:0;">WARNING VOICE (10s)</div>
-                        <button class="toggle" id="warningToggle" onclick="toggleWarningVoice()"></button>
-                    </div>
-                    <div class="task-description" id="warningDesc">Enabled</div>
 
                     <div class="toggle-container" style="margin-top:14px;">
                         <div class="section-title" style="margin-bottom:0;">VIBRATION</div>
@@ -5227,9 +5209,7 @@
             roundSoundsEnabled: true,
             roundStartSound: 'classic',
             roundEndSound: 'classic',
-            roundVoiceEnabled: true,
             uiClickSoundsEnabled: true,
-            warningVoiceEnabled: true,
             vibrationEnabled: true,
             language: 'en'
         };
@@ -5267,7 +5247,7 @@
         let lastTickMs = null;
         let lastWholeSecond = null;
         let audioCtx = null;
-        let audioUnlocked = false;
+        const audioPlaybackStates = new WeakMap();
         const UI_CLICK_SOUND_SRC = 'click-soundeffect.mp3';
         const ROUND_START_SOUND_SRC = 'Round Bell START.mp3';
         const ROUND_END_SOUND_SRC = 'Round Bell END.mp3';
@@ -5302,82 +5282,87 @@
             return Array.from({ length: size }, () => createManagedAudio(src));
         }
 
-        function restorePrimedAudio(audio, muted, volume) {
-            try {
-                audio.pause();
-                audio.currentTime = 0;
-                audio.muted = muted;
-                audio.volume = volume;
-            } catch (e) {}
+        function getAudioPlaybackState(audio) {
+            if (!audioPlaybackStates.has(audio)) {
+                audioPlaybackStates.set(audio, { generation: 0, priming: false, primed: false });
+            }
+            return audioPlaybackStates.get(audio);
         }
 
         function primeAudioElement(audio) {
+            const state = getAudioPlaybackState(audio);
+            if (state.priming || state.primed || !audio.paused) return;
+            const generation = ++state.generation;
+            state.priming = true;
+            const finish = success => {
+                // A real sound may have started while the silent play was pending.
+                // Its older completion must never pause or mute the newer playback.
+                if (state.generation !== generation) return;
+                state.priming = false;
+                state.primed = success;
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                } catch (e) {}
+                audio.muted = false;
+                audio.volume = 1;
+            };
             try {
-                const muted = audio.muted;
-                const volume = audio.volume;
                 audio.muted = true;
                 audio.volume = 0;
                 audio.currentTime = 0;
-                const playPromise = audio.play();
-                if (playPromise && typeof playPromise.then === 'function') {
-                    playPromise
-                        .then(() => restorePrimedAudio(audio, muted, volume))
-                        .catch(() => {
-                            audio.muted = muted;
-                            audio.volume = volume;
-                        });
-                } else {
-                    restorePrimedAudio(audio, muted, volume);
-                }
-            } catch (e) {}
+                const result = audio.play();
+                Promise.resolve(result).then(() => finish(true), () => finish(false));
+            } catch (e) {
+                finish(false);
+            }
         }
 
         function unlockAppAudio() {
             ensureAudioReady();
-            if (audioUnlocked) return;
-            managedAudioPools.flat().forEach(audio => {
-                try { audio.load(); } catch (e) {}
-                primeAudioElement(audio);
-            });
-            audioUnlocked = true;
+            // Retry failed unlocks on later gestures; do not reload active sounds.
+            managedAudioPools.flat().forEach(primeAudioElement);
         }
 
-        function recreateAudioAt(pool, index) {
-            const src = pool[index]?.dataset?.src;
-            if (!src) return null;
-            const freshAudio = createManagedAudio(src);
-            pool[index] = freshAudio;
-            return freshAudio;
-        }
-
-        function playLoudAudioFromPool(pool, currentIndex) {
-            if (!pool.length) return { played: false, nextIndex: currentIndex };
-
-            try {
-                const audio = pool[currentIndex];
-                ensureAudioReady();
-                audio.pause();
-                audio.currentTime = 0;
-                audio.muted = false;
-                audio.volume = 1;
-                const playPromise = audio.play();
-                if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(() => {
-                        const freshAudio = recreateAudioAt(pool, currentIndex);
-                        if (!freshAudio) return;
-                        freshAudio.volume = 1;
-                        freshAudio.play().catch(() => {});
-                    });
-                }
-                return { played: true, nextIndex: (currentIndex + 1) % pool.length };
-            } catch (e) {
-                const freshAudio = recreateAudioAt(pool, currentIndex);
-                if (freshAudio) {
-                    freshAudio.play().catch(() => {});
-                    return { played: true, nextIndex: (currentIndex + 1) % pool.length };
-                }
-                return { played: false, nextIndex: currentIndex };
+        function playLoudAudioFromPool(pool, currentIndex, fallback = () => {}) {
+            if (!pool.length) {
+                fallback();
+                return { nextIndex: currentIndex };
             }
+            const audio = pool[currentIndex];
+            const state = getAudioPlaybackState(audio);
+            const generation = ++state.generation;
+            state.priming = false;
+            ensureAudioReady();
+            const attempt = retry => {
+                if (state.generation !== generation) return;
+                const failed = error => {
+                    if (state.generation !== generation) return;
+                    state.primed = false;
+                    // Keep the gesture-unlocked element. A replacement element can
+                    // be blocked by autoplay policy when a timer fires later.
+                    if (!retry && error?.name !== 'NotAllowedError') {
+                        try { audio.load(); } catch (e) {}
+                        attempt(true);
+                    } else {
+                        fallback();
+                    }
+                };
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.muted = false;
+                    audio.volume = 1;
+                    const result = audio.play();
+                    Promise.resolve(result).then(() => {
+                        if (state.generation === generation) state.primed = true;
+                    }, failed);
+                } catch (e) {
+                    failed(e);
+                }
+            };
+            attempt(false);
+            return { nextIndex: (currentIndex + 1) % pool.length };
         }
 
         ['pointerdown', 'touchstart', 'keydown'].forEach(eventName => {
@@ -5535,8 +5520,8 @@
                 'SUOMI': 'SUOMI',
                 'DEUTSCH': 'SAKSA',
                 'English is the default language.': 'Englanti on oletuskieli.',
-                'Finnish selected. Voice cues use Finnish.': 'Suomi on valittu. Puhekuulutukset käyttävät suomen kieltä.',
-                'German selected. Voice cues use German.': 'Saksa on valittu. Puhekuulutukset käyttävät saksan kieltä.',
+                'Finnish selected.': 'Suomi on valittu.',
+                'German selected.': 'Saksa on valittu.',
                 'SHOW TUTORIAL AGAIN': 'NÄYTÄ TUTORIAALI UUDELLEEN',
                 'PRIVACY POLICY': 'TIETOSUOJAKÄYTÄNTÖ',
                 'Required for Play Store and App Store submissions.': 'Vaaditaan Play Store- ja App Store -julkaisuihin.',
@@ -5725,8 +5710,8 @@
                 'SUOMI': 'FINNISCH',
                 'DEUTSCH': 'DEUTSCH',
                 'English is the default language.': 'Englisch ist die Standardsprache.',
-                'Finnish selected. Voice cues use Finnish.': 'Finnisch ist ausgewaehlt. Sprachhinweise nutzen Finnisch.',
-                'German selected. Voice cues use German.': 'Deutsch ist ausgewaehlt. Sprachhinweise nutzen Deutsch.',
+                'Finnish selected.': 'Finnisch ist ausgewaehlt.',
+                'German selected.': 'Deutsch ist ausgewaehlt.',
                 'SHOW TUTORIAL AGAIN': 'TUTORIAL ERNEUT ANZEIGEN',
                 'PRIVACY POLICY': 'DATENSCHUTZ',
                 'Required for Play Store and App Store submissions.': 'Erforderlich fuer Play Store- und App Store-Einreichungen.',
@@ -5878,8 +5863,9 @@
 
         // Re-acquire wake lock if page becomes visible again while running
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && timerState.isRunning) {
-                requestWakeLock();
+            if (document.visibilityState === 'visible') {
+                ensureAudioReady();
+                if (timerState.isRunning) requestWakeLock();
             }
         });
 
@@ -5929,7 +5915,6 @@
 
         const progressRadius = Number(progressCircle.getAttribute('r'));
         const progressCircumference = 2 * Math.PI * progressRadius;
-        const ROUND_START_VOICE_DELAY_MS = 800;
         progressCircle.style.strokeDasharray = `${progressCircumference}`;
         progressCircle.style.strokeDashoffset = '0';
 
@@ -5977,29 +5962,9 @@
 
         function playUiClick() {
             if (!settings.uiClickSoundsEnabled) return;
-            try {
-                const currentIndex = uiClickAudioIndex;
-                const clickAudio = uiClickAudioPool[currentIndex];
-                uiClickAudioIndex = (uiClickAudioIndex + 1) % uiClickAudioPool.length;
-                ensureAudioReady();
-                clickAudio.currentTime = 0;
-                clickAudio.muted = false;
-                clickAudio.volume = 1;
-                const playPromise = clickAudio.play();
-                if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(() => {
-                        const freshAudio = recreateAudioAt(uiClickAudioPool, currentIndex);
-                        if (freshAudio) {
-                            freshAudio.volume = 1;
-                            freshAudio.play().catch(() => playSyntheticUiClick(0.32));
-                        } else {
-                            playSyntheticUiClick(0.32);
-                        }
-                    });
-                }
-            } catch (e) {
-                playSyntheticUiClick(0.32);
-            }
+            const result = playLoudAudioFromPool(uiClickAudioPool, uiClickAudioIndex,
+                () => playSyntheticUiClick(0.32));
+            uiClickAudioIndex = result.nextIndex;
         }
 
         function playSyntheticUiClick(volume = 0.34) {
@@ -6079,69 +6044,6 @@
             ]);
         }
 
-        function playVoiceAttentionTone() {
-            playToneEffect([
-                { frequency: 880, duration: 0.16, delay: 0, gain: 0.62, type: 'square' },
-                { frequency: 1320, duration: 0.2, delay: 0.08, gain: 0.5, type: 'triangle' }
-            ]);
-        }
-
-        function getVoiceLanguage() {
-            return {
-                en: 'en-US',
-                fi: 'fi-FI',
-                de: 'de-DE'
-            }[settings.language] || 'en-US';
-        }
-
-        function localizeCueText(text) {
-            const cueMap = {
-                fi: {
-                    'Round started': 'Erä alkaa',
-                    'Training started': 'Treeni alkaa',
-                    'Break': 'Tauko',
-                    'Session complete': 'Treeni valmis',
-                    '10 seconds': '10 sekuntia'
-                },
-                de: {
-                    'Round started': 'Runde startet',
-                    'Training started': 'Training startet',
-                    'Break': 'Pause',
-                    'Session complete': 'Training abgeschlossen',
-                    '10 seconds': '10 Sekunden'
-                }
-            };
-            if (text.startsWith('Next. ') && settings.language === 'fi') {
-                return text.replace('Next. ', 'Seuraavaksi. ');
-            }
-            if (text.startsWith('Next. ') && settings.language === 'de') {
-                return text.replace('Next. ', 'Als naechstes. ');
-            }
-            return cueMap[settings.language]?.[text] || text;
-        }
-
-        function speakCue(text, options = {}) {
-            if (!settings.roundVoiceEnabled) return;
-            if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
-            try {
-                const utterance = new SpeechSynthesisUtterance(localizeCueText(text));
-                utterance.lang = getVoiceLanguage();
-                utterance.rate = options.rate || 0.86;
-                utterance.pitch = options.pitch || 1;
-                utterance.volume = Math.max(0, Math.min(1, options.volume ?? 1));
-
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(utterance);
-            } catch (e) {}
-        }
-
-        function speakRoundStartCue(text) {
-            setTimeout(() => {
-                if (!timerState.isRunning || !timerState.isRound || timerState.isFinished) return;
-                speakCue(text, { volume: 1 });
-            }, ROUND_START_VOICE_DELAY_MS);
-        }
-
         // Format time as MM:SS
         function formatTime(seconds) {
             const total = Math.max(0, Math.ceil(seconds));
@@ -6199,7 +6101,7 @@
                 phaseHint.textContent = 'Resume when ready';
             } else if (appMode === 'training') {
                 timerStatus.textContent = timerState.isRunning ? 'TRAINING' : 'READY';
-                phaseHint.textContent = guideStep ? formatGuideInlineTitle(guideStep.title) : 'Tap start';
+                phaseHint.textContent = '';
             } else if (hasSessionStarted && timerState.isRound) {
                 timerStatus.textContent = 'ROUND';
                 phaseHint.textContent = `Work now · ${timerState.currentRound}/${settings.numberOfRounds}`;
@@ -6355,9 +6257,9 @@
             updateUI();
             updateRingWarning();
 
-            // 10-second warning voice
+            // 10-second vibration cue
             if (wholeSeconds === 10 && timerState.isRound) {
-                playWarningVoice();
+                playWarningVibration();
             }
 
             if (timerState.timeLeft <= 0) {
@@ -6396,7 +6298,6 @@
             currentGuideIndex = -1;
             lastTickMs = performance.now();
             lastWholeSecond = Math.ceil(timerState.timeLeft);
-            speakCue(`Next. ${nextStep.title}`, { rate: 0.96 });
             updateUI();
         }
 
@@ -6412,14 +6313,12 @@
                     renderSessionSummary();
                     finishedOverlay.classList.add('show');
                     playWorkoutCompleteFanfare();
-                    speakCue('Session complete');
                     updateUI();
                     return;
                 }
                 timerState.isRound = false;
                 timerState.timeLeft = settings.breakTime;
                 progressCircle.classList.remove('warning', 'danger');
-                speakCue('Break');
             } else {
                 // Break ending, new round starting
                 if (settings.taskSparEnabled) {
@@ -6428,7 +6327,6 @@
                         timerState.isRound = true;
                         timerState.currentRound++;
                         timerState.timeLeft = settings.roundTime;
-                        speakRoundStartCue('Round started');
                         updateUI();
                     });
                 } else {
@@ -6436,7 +6334,6 @@
                     timerState.isRound = true;
                     timerState.currentRound++;
                     timerState.timeLeft = settings.roundTime;
-                    speakRoundStartCue('Round started');
                 }
             }
             updateUI();
@@ -6451,18 +6348,6 @@
             preRoundOverlay.classList.remove('show');
         }
 
-        function speakTaskCombo(task) {
-            if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
-            const spokenTask = toText(task).replace(/(\d+)x/gi, '$1 times');
-            const utterance = new SpeechSynthesisUtterance(`Next combo. ${spokenTask}`);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.95;
-            utterance.pitch = 1;
-            utterance.volume = 1;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-        }
-
         // Start pre-round display
         function startPreRound(onComplete = null) {
             stopPreRoundDisplay();
@@ -6475,7 +6360,6 @@
             preRoundTask.textContent = formatTaskForNotation(newTask);
             preRoundCountdown.textContent = PRE_ROUND_READ_SECONDS;
             preRoundOverlay.classList.add('show');
-            speakTaskCombo(newTask);
             
             preRoundIntervalId = setInterval(() => {
                 taskState.preRoundCountdown--;
@@ -6509,11 +6393,9 @@
                     if (settings.taskSparEnabled) {
                         startPreRound(() => {
                             playRoundStart();
-                            speakRoundStartCue(appMode === 'training' ? 'Training started' : 'Round started');
                         });
                     } else {
                         playRoundStart();
-                        speakRoundStartCue(appMode === 'training' ? 'Training started' : 'Round started');
                     }
                 }
                 lastTickMs = performance.now();
@@ -6576,7 +6458,6 @@
 
             if (wasFinishedSession) {
                 ensureAudioReady(true);
-                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             }
 
             updateUI();
@@ -8299,7 +8180,7 @@
             expandedTrainingWorkoutId = null;
             const workouts = TRAINING_WORKOUTS[minutes] || [];
             document.getElementById('trainingTitle').textContent = `${minutes} min training`;
-            document.getElementById('trainingSubtitle').textContent = 'Choose a workout. Tap a card to preview the full plan before starting.';
+            document.getElementById('trainingSubtitle').textContent = 'Plans are grouped by approximate duration. Each card shows the exact time including rest.';
             renderTrainingOptions(minutes);
             setTrainingStep('trainingOptionsStep');
         }
@@ -8436,26 +8317,27 @@
 
             workout.sections.forEach(section => {
                 if (section.rounds) {
-                    const roundMatch = section.title.match(/(\d+)\s*x\s*(\d+)\s*min(?:,\s*(\d+)\s*s\s*rest)?/i);
+                    const roundMatch = section.title.match(/(\d+)\s*x\s*(\d+)\s*(min|s)(?:,\s*(\d+)\s*s\s*rest)?/i);
                     const totalRounds = roundMatch ? Number(roundMatch[1]) : section.rounds.length;
-                    const roundDuration = roundMatch ? Number(roundMatch[2]) * 60 : 180;
-                    const restDuration = roundMatch && roundMatch[3] ? Number(roundMatch[3]) : 0;
-                    const usesGroupedInstructions = totalRounds !== section.rounds.length;
+                    const roundDuration = roundMatch ? Number(roundMatch[2]) * (roundMatch[3].toLowerCase() === 'min' ? 60 : 1) : 180;
+                    const restDuration = roundMatch && roundMatch[4] ? Number(roundMatch[4]) : 0;
 
-                    section.rounds.forEach((round, index) => {
-                        const groupedDuration = usesGroupedInstructions
-                            ? ((totalRounds * roundDuration) + ((totalRounds - 1) * restDuration)) / section.rounds.length
-                            : roundDuration;
+                    for (let index = 0; index < totalRounds; index++) {
+                        const roundNumber = index + 1;
+                        const round = section.rounds.find(instruction => {
+                            const range = instruction[0].match(/(?:rounds?|sprints?|intervals?)\s+(\d+)(?:-(\d+))?/i);
+                            return range && roundNumber >= Number(range[1]) && roundNumber <= Number(range[2] || range[1]);
+                        }) || section.rounds[Math.min(section.rounds.length - 1, Math.floor(index * section.rounds.length / totalRounds))];
                         timeline.push({
                             start,
-                            end: start + groupedDuration,
+                            end: start + roundDuration,
                             title: round[0],
                             note: round[1],
                             label: section.title
                         });
-                        start += groupedDuration;
+                        start += roundDuration;
 
-                        if (!usesGroupedInstructions && restDuration > 0 && index < section.rounds.length - 1) {
+                        if (restDuration > 0 && index < totalRounds - 1) {
                             timeline.push({
                                 start,
                                 end: start + restDuration,
@@ -8465,7 +8347,7 @@
                             });
                             start += restDuration;
                         }
-                    });
+                    }
                     return;
                 }
 
@@ -8482,6 +8364,16 @@
             });
 
             return timeline;
+        }
+
+        function getTrainingDuration(workout) {
+            const timeline = buildTrainingTimeline(workout);
+            return timeline.length ? timeline[timeline.length - 1].end : 0;
+        }
+
+        function getTrainingDurationText(workout) {
+            const seconds = getTrainingDuration(workout);
+            return `${Math.floor(seconds / 60)} min${seconds % 60 ? ` ${seconds % 60} s` : ''}`;
         }
 
         function getCurrentGuideStep() {
@@ -8511,13 +8403,11 @@
             const parts = splitGuideTitle(title);
             if (!parts.roundLabel) return `
                 <div class="guide-section">
-                    <div class="guide-section-label">Current drill</div>
                     <div class="guide-title">${parts.title}</div>
                 </div>
             `;
             return `
                 <div class="guide-section">
-                    <div class="guide-section-label">Current drill</div>
                     <div class="guide-round-label">${parts.roundLabel}</div>
                     <div class="guide-title">${parts.title}</div>
                 </div>
@@ -8529,17 +8419,12 @@
             if (!step) return '';
 
             const index = trainingTimeline.indexOf(step);
-            const next = trainingTimeline[index + 1];
-            const elapsed = Math.max(0, settings.roundTime - timerState.timeLeft);
-            const remaining = Math.max(0, step.end - elapsed);
-            const nextText = next ? formatGuideInlineTitle(next.title) : 'Finish strong';
             const hasStarted = !!sessionStats.startedAt || timerState.timeLeft < settings.roundTime;
             const isWaterBreak = hasStarted && !timerState.isRunning;
             const guideTitle = isWaterBreak ? 'Water break' : step.title;
             const guideNote = isWaterBreak
                 ? 'Drink water, breathe slowly and shake your arms out. Continue when you feel ready.'
                 : step.note;
-            const guideLabel = isWaterBreak ? 'Paused' : step.label;
 
             if (index !== currentGuideIndex) {
                 currentGuideIndex = index;
@@ -8549,18 +8434,9 @@
 
             return `
                 <div class="guide-card">
-                    <div class="guide-meta">
-                        <span>${guideLabel}</span>
-                        <span>${formatTime(remaining)}</span>
-                    </div>
                     ${renderGuideTitle(guideTitle)}
                     <div class="guide-section">
-                        <div class="guide-section-label">Focus</div>
                         <div class="guide-note">${guideNote}</div>
-                    </div>
-                    <div class="guide-section">
-                        <div class="guide-section-label">Next up</div>
-                        <div class="guide-next">${nextText}</div>
                     </div>
                 </div>
             `;
@@ -8581,7 +8457,8 @@
                 `;
             }
 
-            const overview = workout.stats.map(stat => `
+            const displayStats = [[getTrainingDurationText(workout), 'Duration'], ...workout.stats.slice(1)];
+            const overview = displayStats.map(stat => `
                 <div class="workout-stat">
                     <div class="workout-stat-value">${stat[0]}</div>
                     <div class="workout-stat-label">${stat[1]}</div>
@@ -8619,7 +8496,6 @@
                 <div class="training-detail-inner">
                     <div class="workout-overview">${overview}</div>
                     ${sections}
-                    <button class="workout-start" onclick="event.stopPropagation(); startTrainingPlan(${minutes * 60}, '${minutes} MIN ${workout.title.toUpperCase()}', ${minutes}, '${workout.id}')">Start guided workout</button>
                 </div>
             `;
         }
@@ -8646,7 +8522,7 @@
                                 <div class="training-card-title">${workout.title}</div>
                                 <div class="training-card-desc">${workout.structure}</div>
                                 <div class="training-card-meta-row">
-                                    <span class="training-tag">${workout.minutes} min</span>
+                                    <span class="training-tag">${getTrainingDurationText(workout)}</span>
                                     <span class="training-tag">${workout.type}</span>
                                     ${workout.premium ? `<span class="training-tag premium-tag">${premiumUnlocked ? 'Pro unlocked' : 'Pro'}</span>` : ''}
                                     <span class="training-tag">${workout.stats[1][0]} ${workout.stats[1][1]}</span>
@@ -8686,10 +8562,13 @@
                 return;
             }
 
-            workoutPreviewKicker.textContent = `${workout.minutes} min · ${workout.type}`;
+            workoutPreviewKicker.textContent = `${getTrainingDurationText(workout)} · ${workout.type}`;
             workoutPreviewTitle.textContent = workout.title;
             workoutPreviewSubtitle.textContent = workout.subtitle;
             workoutPreviewBody.innerHTML = renderWorkoutDetails(workout, minutes);
+            workoutPreviewBody.scrollTop = 0;
+            document.getElementById('workoutPreviewStart').onclick = () =>
+                startTrainingPlan(getTrainingDuration(workout), workout.title.toUpperCase(), minutes, workout.id);
             workoutPreview.classList.add('show');
         }
 
@@ -8722,7 +8601,7 @@
             activeTrainingWorkout = customWorkout || requestedWorkout;
             trainingTimeline = activeTrainingWorkout ? buildTrainingTimeline(activeTrainingWorkout) : [];
             currentGuideIndex = -1;
-            settings.roundTime = durationSeconds;
+            settings.roundTime = activeTrainingWorkout ? getTrainingDuration(activeTrainingWorkout) : durationSeconds;
             settings.breakTime = 60;
             settings.numberOfRounds = 1;
             settings.taskSparEnabled = false;
@@ -8789,20 +8668,14 @@
                     : 'Disabled - timer only mode');
 
             const roundSoundsToggle = document.getElementById('roundSoundsToggle');
-            const roundVoiceToggle = document.getElementById('roundVoiceToggle');
             const uiClicksToggle = document.getElementById('uiClicksToggle');
-            const warningToggle = document.getElementById('warningToggle');
             const vibrationToggle = document.getElementById('vibrationToggle');
             roundSoundsToggle.classList.toggle('active', settings.roundSoundsEnabled);
-            roundVoiceToggle.classList.toggle('active', settings.roundVoiceEnabled);
             uiClicksToggle.classList.toggle('active', settings.uiClickSoundsEnabled);
-            warningToggle.classList.toggle('active', settings.warningVoiceEnabled);
             vibrationToggle.classList.toggle('active', settings.vibrationEnabled);
 
             document.getElementById('roundSoundsDesc').textContent = settings.roundSoundsEnabled ? 'Enabled' : 'Disabled';
-            document.getElementById('roundVoiceDesc').textContent = settings.roundVoiceEnabled ? 'Enabled' : 'Disabled';
             document.getElementById('uiClicksDesc').textContent = settings.uiClickSoundsEnabled ? 'Enabled' : 'Disabled';
-            document.getElementById('warningDesc').textContent = settings.warningVoiceEnabled ? 'Enabled' : 'Disabled';
             document.getElementById('vibrationDesc').textContent = settings.vibrationEnabled ? 'Enabled' : 'Disabled';
 
             const themeNames = {
@@ -8823,8 +8696,8 @@
 
             const languageDescriptions = {
                 en: 'English is the default language.',
-                fi: 'Finnish selected. Voice cues use Finnish.',
-                de: 'German selected. Voice cues use German.'
+                fi: 'Finnish selected.',
+                de: 'German selected.'
             };
             ['en', 'fi', 'de'].forEach(lang => {
                 const btn = document.getElementById('language-' + lang);
@@ -8961,16 +8834,6 @@
             updateSettingsUI();
         }
 
-        function toggleWarningVoice() {
-            settings.warningVoiceEnabled = !settings.warningVoiceEnabled;
-            updateSettingsUI();
-        }
-
-        function toggleRoundVoice() {
-            settings.roundVoiceEnabled = !settings.roundVoiceEnabled;
-            updateSettingsUI();
-        }
-
         function toggleUiClicks() {
             settings.uiClickSoundsEnabled = !settings.uiClickSoundsEnabled;
             updateSettingsUI();
@@ -8987,21 +8850,17 @@
             const previous = {
                 uiClickSoundsEnabled: settings.uiClickSoundsEnabled,
                 roundSoundsEnabled: settings.roundSoundsEnabled,
-                roundVoiceEnabled: settings.roundVoiceEnabled,
                 vibrationEnabled: settings.vibrationEnabled
             };
 
             settings.uiClickSoundsEnabled = true;
             settings.roundSoundsEnabled = true;
-            settings.roundVoiceEnabled = true;
 
             playUiClick();
             playRoundStart();
-            setTimeout(() => speakCue('Round started', { volume: 1 }), ROUND_START_VOICE_DELAY_MS);
             setTimeout(() => {
                 settings.uiClickSoundsEnabled = previous.uiClickSoundsEnabled;
                 settings.roundSoundsEnabled = previous.roundSoundsEnabled;
-                settings.roundVoiceEnabled = previous.roundVoiceEnabled;
                 settings.vibrationEnabled = previous.vibrationEnabled;
                 updateSettingsUI();
             }, 1200);
@@ -9029,29 +8888,16 @@
             setSettingsTab('main');
         }
 
-        // 10-second warning voice prompt
-        function playWarningVoice() {
-            if (!settings.warningVoiceEnabled && !settings.vibrationEnabled) return;
-            try {
-                if (settings.warningVoiceEnabled && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined') {
-                    const utterance = new SpeechSynthesisUtterance(localizeCueText('10 seconds'));
-                    utterance.lang = getVoiceLanguage();
-                    utterance.rate = 1;
-                    utterance.pitch = 1;
-                    utterance.volume = 1;
-
-                    window.speechSynthesis.cancel();
-                    window.speechSynthesis.speak(utterance);
-                }
-                if (settings.vibrationEnabled && navigator.vibrate) navigator.vibrate(200);
-            } catch (e) {}
+        // Keep the ten-second vibration cue independent of timer sounds.
+        function playWarningVibration() {
+            if (settings.vibrationEnabled && navigator.vibrate) navigator.vibrate(200);
         }
 
         function playRoundStart() {
             if (!settings.roundSoundsEnabled && !settings.vibrationEnabled) return;
             try {
                 if (settings.roundSoundsEnabled) {
-                    const result = playLoudAudioFromPool(roundStartAudioPool, roundStartAudioIndex);
+                    const result = playLoudAudioFromPool(roundStartAudioPool, roundStartAudioIndex, playFallbackBell);
                     roundStartAudioIndex = result.nextIndex;
                 }
                 if (settings.vibrationEnabled && navigator.vibrate) navigator.vibrate([150, 80, 150]);
@@ -9063,11 +8909,18 @@
             if (!settings.roundSoundsEnabled && !settings.vibrationEnabled) return;
             try {
                 if (settings.roundSoundsEnabled) {
-                    const result = playLoudAudioFromPool(roundEndAudioPool, roundEndAudioIndex);
+                    const result = playLoudAudioFromPool(roundEndAudioPool, roundEndAudioIndex, playFallbackBell);
                     roundEndAudioIndex = result.nextIndex;
                 }
                 if (settings.vibrationEnabled && navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
             } catch (e) {}
+        }
+
+        function playFallbackBell() {
+            playToneEffect([
+                { frequency: 880, duration: 0.7, delay: 0, gain: 0.5 },
+                { frequency: 1320, duration: 0.5, delay: 0, gain: 0.25 }
+            ]);
         }
 
         // Swipe up to skip break
