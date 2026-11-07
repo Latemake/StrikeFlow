@@ -69,10 +69,17 @@ test('all catalogue workouts have continuous, positive, whole-second timelines',
 test('starting a guided workout uses timeline duration instead of its category', () => {
     const s = vm.createContext({ requested: workout([{ title: 'Warmup - 2 min', items: [] }]),
         findTrainingWorkout: () => ({ premium: false, title: 'Two minutes', sections: [{ title: 'Warmup - 2 min', items: [] }] }),
-        settings: {}, modeChoice: {classList: {add() {}}}, trainingSection: {classList: {add() {}}},
+        appMode:'spar', savedSparringPreferences:null, settings:{roundTime:180, breakTime:60, numberOfRounds:5, taskSparEnabled:false}, modeChoice: {classList: {add() {}}}, trainingSection: {classList: {add() {}}},
         workoutPreview: {classList: {remove() {}}}, resetTimer() {} });
     vm.runInContext(html.slice(html.indexOf('function parseMinutesFromTitle('), html.indexOf('function getCurrentGuideStep(')), s);
     vm.runInContext(html.slice(html.indexOf('function startTrainingPlan('), html.indexOf('// Settings', html.indexOf('function startTrainingPlan('))), s);
     s.startTrainingPlan(1800, 'Test', 30, 'test');
     assert.equal(s.settings.roundTime, 120);
+    s.startTrainingPlan(1800, 'Another', 30, 'test');
+    s.sparringSetup={classList:{remove(){}}}; s.renderSparringSetup=()=>{};
+    vm.runInContext(html.slice(html.indexOf('function chooseSparMode('),html.indexOf('function renderSparringSetup(')),s);
+    s.chooseSparMode();
+    assert.equal(s.sparringDraft.roundTime,180);
+    assert.equal(s.sparringDraft.breakTime,60);
+    assert.equal(s.sparringDraft.numberOfRounds,5);
 });

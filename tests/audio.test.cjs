@@ -328,3 +328,12 @@ test('round bells repeat three times and cancelling prevents pending cues', () =
  c.playRoundEnd(); c.cancelRoundBellRepeats(); assert.equal(pending.size,0);
  c.settings.roundBellRepeats=1; c.playRoundStart(); assert.equal(pending.size,0);
 });
+
+test('bell preview uses the requested count even when round sounds are disabled', () => {
+ const c=setup();const timers=new Map();let id=0;
+ c.setTimeout=fn=>{timers.set(++id,fn);return id;};c.clearTimeout=id=>timers.delete(id);
+ c.cancelCoachSpeech=()=>{};c.settings.roundSoundsEnabled=false;c.settings.roundBellRepeats=3;
+ c.previewRoundBell(2);assert.equal(c.pools[1][0].plays,1);assert.equal(timers.size,1);
+ for(const fn of [...timers.values()])fn();assert.equal(c.pools[1][0].plays,2);
+ c.cancelRoundBellRepeats();assert.equal(timers.size,0);
+});

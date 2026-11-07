@@ -188,3 +188,16 @@ test('long speech suppresses periodic beeps and a section-ending warning cancels
     assert.equal(events.filter(event => event[0] === 'cancel').length, cancels + 1);
     assert.equal(events.filter(event => event[0] === 'gong').length, 2);
 });
+
+test('one recorded bell finishes before the coach speaks, independently of section cues', async () => {
+ let finishBell;let bells=0;
+ const {controller,events,advance}=audio({bell(){bells++;return new Promise(resolve=>finishBell=resolve);}});
+ controller.update(state(0,{cuesEnabled:false,bellEnabled:true}));
+ controller.update(state(.05,{cuesEnabled:false,bellEnabled:true}));
+ await advance(10000);assert.equal(bells,1);assert.equal(events.filter(e=>e[0]==='speak').length,0);
+ finishBell();await advance(0);await advance(0);
+ assert.deepEqual(events.filter(e=>e[0]==='speak'),[['speak','Jab']]);
+ controller.update(state(0,{key:'round-2',voiceText:'Cross',bellEnabled:true}));
+ assert.equal(bells,2);controller.update(state(0,{running:false}));finishBell();await advance(0);await advance(0);
+ assert.equal(events.filter(e=>e[0]==='speak').length,1);
+});

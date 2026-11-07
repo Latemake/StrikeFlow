@@ -28,7 +28,7 @@ test('every manifest recording exists and contains audio', () => {
 test('browser timer callbacks retain their required window receiver', () => {
  const window = { setTimeout(fn,delay){assert.equal(this,window);return 123;}, clearTimeout(id){assert.equal(this,window);assert.equal(id,123);} };
  let output;
- const c=vm.createContext({window,performance:{now:()=>0},setTimeout:window.setTimeout,clearTimeout:window.clearTimeout,createTrainingCueController(o){output=o;},playTrainingGong(){},playTrainingTone(){},stopTrainingSounds(){},cancelCoachSpeech(){},speakCoachText(){}});
+ const c=vm.createContext({window,performance:{now:()=>0},setTimeout:window.setTimeout,clearTimeout:window.clearTimeout,createTrainingCueController(o){output=o;},playTrainingStartBell(){},playTrainingGong(){},playTrainingTone(){},stopTrainingSounds(){},cancelCoachSpeech(){},speakCoachText(){}});
  const start=html.indexOf('const trainingCueController =');
  vm.runInContext(html.slice(start,html.indexOf('function isVoicePilot(',start)),c);
  output.clearTimeout(output.setTimeout(()=>{},700));

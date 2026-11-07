@@ -4581,6 +4581,26 @@
 @media(min-width:1000px){.guided-session .timer-section{display:grid;grid-template-columns:1fr 1fr;gap:32px 60px;align-items:center;padding-top:24px}.guided-session #phaseBanner{grid-column:1;grid-row:1}.guided-session #taskDisplay.training-guide{grid-column:1;grid-row:2}.guided-running #taskDisplay.training-guide{grid-row:1 / span 2}.guided-session .timer-ring-wrap{grid-column:2;grid-row:1 / span 2;width:min(38vw,500px);height:auto}.guided-session .timer-display{font-size:clamp(64px,8vw,110px)}}
 @media(max-width:480px){.guided-session .timer-section{gap:20px;padding-left:22px;padding-right:22px;padding-bottom:110px}.guided-session .guide-note{font-size:20px}.guided-session .timer-ring-wrap{width:min(62vw,270px)}}
 </style>
+<style>
+#settingsModal{padding:16px;box-sizing:border-box;background:#000c}#settingsModal .modal-content{box-sizing:border-box;width:min(100%,600px);max-width:600px;max-height:calc(100dvh - 32px);border:1px solid #3b3b3b;border-radius:4px;padding:24px;background:#101010;box-shadow:none;scrollbar-gutter:stable;transform:none;transition:opacity .15s}
+#settingsModal .modal-title{font-size:28px;letter-spacing:-.5px;margin:0 0 24px;padding:0 0 20px;border-bottom:1px solid #333}#settingsModal .settings-section{padding:0;border:0;background:none;margin:20px 0}#settingsModal .settings-nav{gap:0}#settingsModal .settings-tab{border:0;border-bottom:1px solid #333;border-radius:0;background:none;min-height:58px;padding:18px 0;text-align:left;font-size:14px;letter-spacing:.5px}#settingsModal .settings-tab:hover{color:#2bff4a;background:#171717}#settingsModal button{min-width:0;white-space:normal;overflow-wrap:anywhere}#settingsModal .secondary-btn,#settingsModal .save-btn,#settingsModal .diff-btn{border-radius:2px;min-height:48px;box-shadow:none}#settingsModal .legal-section{margin-top:28px;padding-top:20px;border-top:1px solid #333}#settingsModal .legal-note{display:none}
+#settingsModal .settings-back-btn{border:0;border-bottom:1px solid #333;padding:12px 0;margin-bottom:22px;text-align:left;background:none}#settingsModal .sound-group{padding:0 0 24px;margin:0 0 28px;border-bottom:1px solid #333}#settingsModal .sound-group h2{font-size:12px;letter-spacing:1.6px;color:#2bff4a;margin:0 0 16px;font-weight:800}#settingsModal .sound-group>p{font-size:13px;line-height:1.5;color:#aaa;margin:8px 0 16px}#settingsModal #voiceCoachStatus:empty{display:none}.sound-option{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 0;border-top:1px solid #292929;font-size:15px;line-height:1.35}.sound-option>span{flex:1;min-width:0}.sound-option small{display:block;font-size:12px;line-height:1.5;color:#999;margin-top:5px;font-style:normal}
+.settings-choice{display:flex;gap:8px}.settings-choice button{flex:1;min-height:48px;border:1px solid #444;background:#181818;color:#eee;border-radius:2px;padding:12px 16px;font:inherit;font-size:15px;cursor:pointer}.settings-choice button[aria-pressed=true]{border-color:#2bff4a;color:#2bff4a;background:#152016}.settings-choice strong{display:block;font-size:20px;text-transform:uppercase}.settings-choice small{display:block;color:#aaa;font-size:12px;line-height:1.4;margin-top:6px}.sound-repetitions{align-items:flex-start;flex-direction:column;gap:14px}.sound-repetitions .settings-choice{width:100%}#settingsModal .sound-option input[type=checkbox]{appearance:none;-webkit-appearance:none;width:48px;height:28px;border:1px solid #555;background:#353535;border-radius:20px;position:relative;flex-shrink:0;cursor:pointer;margin:0}#settingsModal .sound-option input[type=checkbox]::after{content:'';position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#eee;transition:transform .15s}#settingsModal .sound-option input:checked{background:#2bff4a;border-color:#2bff4a}#settingsModal .sound-option input:checked::after{transform:translateX(20px);background:#111}#settingsModal :focus-visible{outline:2px solid white;outline-offset:3px}#settingsModal .toggle{flex-shrink:0}#settingsModal .settings-pane>.save-btn{position:sticky;bottom:0;margin:0;width:100%;min-height:52px;z-index:2}#settingsModal input[type=number],#settingsModal select{font:inherit;background:#191919;color:white;border:1px solid #555;border-radius:2px;padding:10px;max-width:100%}@media(max-width:480px){#settingsModal{padding:10px}#settingsModal .modal-content{padding:20px;max-height:calc(100dvh - 20px)}#settingsModal .modal-title{font-size:24px}.settings-choice button{padding:12px 10px}.sound-option{gap:14px}}
+</style>
+<style>
+/* Let the clock use the available screen rather than a fixed small circle. */
+.timer-ring-wrap{container-type:inline-size;width:min(90vw,calc(100dvh - 260px),760px);height:auto;aspect-ratio:1;flex-shrink:0}
+.timer-display{font-size:clamp(64px,24cqw,230px);letter-spacing:-.04em}
+.guided-session .timer-ring-wrap{width:min(86vw,calc(100dvh - 310px),620px);height:auto;aspect-ratio:1}
+.guided-session .timer-display{font-size:clamp(64px,24cqw,200px);letter-spacing:-.04em}
+.guided-session .guide-title{font-size:clamp(32px,5.4vw,48px);line-height:1.12}
+.guided-session .guide-note{font-size:clamp(22px,3.5vw,29px);font-weight:550;line-height:1.45}
+.guided-session .guide-instructions{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.guided-session .guide-instructions li{position:relative;padding-left:20px}
+.guided-session .guide-instructions li::before{content:'•';color:var(--accent-primary);position:absolute;left:0;top:0}
+@media(min-width:1000px){.timer-ring-wrap{width:min(48vw,calc(100dvh - 160px),820px);height:auto}.guided-session .timer-ring-wrap{width:min(46vw,calc(100dvh - 180px),760px)}.guided-session .timer-display{font-size:clamp(90px,24cqw,220px)}}
+@media(max-width:480px){.guided-session .timer-section{padding-left:18px;padding-right:18px;gap:22px}.guided-session .timer-ring-wrap{width:min(88vw,calc(100dvh - 310px),500px)}.guided-session .guide-title{font-size:32px}.guided-session .guide-note{font-size:23px}.timer-display,.guided-session .timer-display{font-size:clamp(60px,24cqw,160px)}}
+</style>
 </head>
 <body>
     <svg width="0" height="0" style="position:absolute; overflow:hidden" aria-hidden="true" focusable="false">
@@ -5099,58 +5119,22 @@
             </div>
 
             <div class="settings-pane" id="settingsPane-sound">
-                <button class="secondary-btn settings-back-btn" onclick="setSettingsTab('main')"><span class="icon-row"><svg class="icon icon-sm"><use href="#icon-arrow-left"></use></svg>BACK</span></button>
-                <div class="training-audio-options"><label>Coach <select id="coachVoiceChoice" onchange="setCoachVoice(this.value)"><option value="max">Max — Energetic · Clear</option><option value="maya">Maya — Encouraging · Punchy</option></select></label>
-                    <label><input type="checkbox" id="trainingCuesToggle" onchange="setTrainingAudioPreference('trainingCuesEnabled', this.checked)"><span>Workout section signals</span></label>
-                    <p>One gong with 15 seconds left. Two gongs when a section ends.</p>
-                    <label><input type="checkbox" id="periodicCuesToggle" onchange="setTrainingAudioPreference('periodicCuesEnabled', this.checked)"><span>Beep every 30 seconds</span></label>
-                    <label><input type="checkbox" id="voiceCoachToggle" onchange="setTrainingAudioPreference('voiceCoachEnabled', this.checked)"><span>Coach voice (English)</span></label>
-                    <p>Recorded English instructions in all built-in workouts. AI-generated coach voice.</p>
-                    <button class="secondary-btn" onclick="testVoiceCoach()">TEST VOICE</button>
+                <button class="secondary-btn settings-back-btn" onclick="setSettingsTab('main')">BACK</button>
+                <section class="sound-group"><h2>YOUR COACH</h2>
+                    <input type="hidden" id="coachVoiceChoice">
+                    <div class="settings-choice" role="group" aria-label="Coach"><button type="button" data-settings-coach="max" onclick="setCoachVoice('max'); previewCoachIntroduction('max')"><strong>Max</strong><small>Energetic · Clear</small></button><button type="button" data-settings-coach="maya" onclick="setCoachVoice('maya'); previewCoachIntroduction('maya')"><strong>Maya</strong><small>Encouraging · Punchy</small></button></div>
+                    <label class="sound-option"><span>Coach voice (English)<small>Recorded instructions for guided workouts. AI-generated voices.</small></span><input type="checkbox" id="voiceCoachToggle" onchange="setTrainingAudioPreference('voiceCoachEnabled',this.checked)"></label>
                     <p id="voiceCoachStatus" role="status" aria-live="polite"></p>
-                </div>
-                <div class="settings-section">
-                    <div class="toggle-container">
-                        <div class="section-title">ROUND START/END SOUNDS</div>
-                        <button class="toggle" id="roundSoundsToggle" onclick="toggleRoundSounds()"></button>
-                    </div>
-                    <div class="task-description" id="roundSoundsDesc">Enabled</div><label for="roundBellRepeats">Bell repetitions</label><select id="roundBellRepeats" onchange="setRoundBellRepeats(this.value)" style="padding:12px;background:#222;color:white"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
-
-                    <div class="section-title" style="margin-top:14px; margin-bottom:8px;">ROUND START SOUND</div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button class="diff-btn" id="start-sound-classic" onclick="setRoundStartSound('classic')">CLASSIC</button>
-                        <button class="diff-btn" id="start-sound-bell" onclick="setRoundStartSound('bell')">BELL</button>
-                        <button class="diff-btn" id="start-sound-digital" onclick="setRoundStartSound('digital')">DIGITAL</button>
-                        <button class="diff-btn" id="start-sound-soft" onclick="setRoundStartSound('soft')">SOFT</button>
-                        <button class="diff-btn" id="start-sound-sharp" onclick="setRoundStartSound('sharp')">SHARP</button>
-                    </div>
-
-                    <div class="section-title" style="margin-top:14px; margin-bottom:8px;">ROUND END SOUND</div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button class="diff-btn" id="end-sound-classic" onclick="setRoundEndSound('classic')">CLASSIC</button>
-                        <button class="diff-btn" id="end-sound-gong" onclick="setRoundEndSound('gong')">GONG</button>
-                        <button class="diff-btn" id="end-sound-digital" onclick="setRoundEndSound('digital')">DIGITAL</button>
-                        <button class="diff-btn" id="end-sound-soft" onclick="setRoundEndSound('soft')">SOFT</button>
-                        <button class="diff-btn" id="end-sound-heavy" onclick="setRoundEndSound('heavy')">HEAVY</button>
-                    </div>
-
-
-                    <div class="toggle-container" style="margin-top:14px;">
-                        <div class="section-title" style="margin-bottom:0;">BUTTON CLICKS</div>
-                        <button class="toggle" id="uiClicksToggle" onclick="toggleUiClicks()"></button>
-                    </div>
-                    <div class="task-description" id="uiClicksDesc">Enabled</div>
-
-
-                    <div class="toggle-container" style="margin-top:14px;">
-                        <div class="section-title" style="margin-bottom:0;">VIBRATION</div>
-                        <button class="toggle" id="vibrationToggle" onclick="toggleVibration()"></button>
-                    </div>
-                    <div class="task-description" id="vibrationDesc">Enabled</div>
-
-                    <button class="save-btn" style="margin-top:16px;" onclick="testSoundEffects()">TEST SOUNDS</button>
-                </div>
-
+                </section>
+                <section class="sound-group"><h2>WORKOUT CUES</h2>
+                    <label class="sound-option"><span>Workout section signals<small>One gong with 15 seconds left. Two gongs when a section ends.</small></span><input type="checkbox" id="trainingCuesToggle" onchange="setTrainingAudioPreference('trainingCuesEnabled',this.checked)"></label>
+                    <label class="sound-option"><span>Beep every 30 seconds</span><input type="checkbox" id="periodicCuesToggle" onchange="setTrainingAudioPreference('periodicCuesEnabled',this.checked)"></label>
+                </section>
+                <section class="sound-group"><h2>ROUND BELL</h2><p>Bell to start. Gong to finish.</p>
+                    <div class="sound-option"><span>Round bells<small id="roundSoundsDesc"></small></span><button class="toggle" id="roundSoundsToggle" onclick="toggleRoundSounds()" aria-label="Round bells"></button></div>
+                    <div class="sound-option sound-repetitions"><span>Bell repetitions<small>Tap to hear a preview.</small></span><input type="hidden" id="roundBellRepeats"><div class="settings-choice" role="group" aria-label="Bell repetitions"><button type="button" data-settings-repeats="1" onclick="setRoundBellRepeats(1, true)">1</button><button type="button" data-settings-repeats="2" onclick="setRoundBellRepeats(2, true)">2</button><button type="button" data-settings-repeats="3" onclick="setRoundBellRepeats(3, true)">3</button></div></div>
+                </section>
+                <section class="sound-group"><h2>CONTROLS</h2><div class="sound-option"><span>Button clicks<small id="uiClicksDesc"></small></span><button class="toggle" id="uiClicksToggle" onclick="toggleUiClicks()" aria-label="Button clicks"></button></div><div class="sound-option"><span>Vibration<small id="vibrationDesc"></small></span><button class="toggle" id="vibrationToggle" onclick="toggleVibration()" aria-label="Vibration"></button></div></section>
                 <button class="save-btn" onclick="closeSettings()">SAVE & CLOSE</button>
             </div>
 
@@ -5272,6 +5256,7 @@
         };
 
         let selectedPreset = 'muaythai';
+        let savedSparringPreferences = null;
         const PRE_ROUND_READ_SECONDS = 5;
         const LANGUAGE_KEY = 'fightwise_language';
         const TRAINING_PREFERENCES_KEY = 'fightwise_training_preferences';
@@ -5459,13 +5444,23 @@
             const savedCoach = localStorage.getItem('fightwise_coach_voice');
             if (['max','maya'].includes(savedCoach)) settings.coachVoice=savedCoach;
             const preferences = JSON.parse(localStorage.getItem(TRAINING_PREFERENCES_KEY) || '{}');
-            ['trainingCuesEnabled', 'periodicCuesEnabled', 'voiceCoachEnabled'].forEach(key => {
+            ['trainingCuesEnabled', 'periodicCuesEnabled', 'voiceCoachEnabled','roundSoundsEnabled','uiClickSoundsEnabled','vibrationEnabled'].forEach(key => {
                 if (typeof preferences[key] === 'boolean') settings[key] = preferences[key];
             });
         } catch (e) {}
 
         const UI_TRANSLATIONS = {
             fi: {
+                "YOUR COACH": "OMA COACH",
+                "WORKOUT CUES": "TREENIN MERKKIÄÄNET",
+                "ROUND BELL": "ERÄKELLO",
+                "CONTROLS": "PAINIKKEET JA VÄRINÄ",
+                "Round bells": "Eräkellot",
+                "Button clicks": "Painikeäänet",
+                "Vibration": "Värinä",
+                "Bell to start. Gong to finish.": "Kello aloittaa. Gong päättää.",
+                "Tap to hear a preview.": "Kuuntele napauttamalla.",
+                "Recorded instructions for guided workouts. AI-generated voices.": "Valmiit puheohjeet ohjattuihin treeneihin. Tekoälyllä tuotetut äänet.",
                 'Bell repetitions': 'Kellon toistot',
                 'PERSONALIZE FIGHTWISE': 'MUOKKAA FIGHTWISE OMAKSI',
                 'Choose the time you have.': 'Paljonko sinulla on aikaa?',
@@ -5659,6 +5654,16 @@
                 'Use Training for guided workouts. The app tells you what to do step by step while the timer runs.': 'Käytä treeniä ohjattuihin harjoituksiin. Appi kertoo vaihe vaiheelta mitä teet ajastimen käydessä.'
             },
             de: {
+                "YOUR COACH": "DEIN COACH",
+                "WORKOUT CUES": "TRAININGSSIGNALE",
+                "ROUND BELL": "RUNDENGLOCKE",
+                "CONTROLS": "TASTEN UND VIBRATION",
+                "Round bells": "Rundenglocken",
+                "Button clicks": "Tastentöne",
+                "Vibration": "Vibration",
+                "Bell to start. Gong to finish.": "Glocke zum Start. Gong zum Ende.",
+                "Tap to hear a preview.": "Antippen für eine Hörprobe.",
+                "Recorded instructions for guided workouts. AI-generated voices.": "Aufgezeichnete Anweisungen für Trainings. KI-generierte Stimmen.",
                 'Bell repetitions': 'Glockenwiederholungen',
                 'PERSONALIZE FIGHTWISE': 'FIGHTWISE ANPASSEN',
                 'Choose the time you have.': 'Wie viel Zeit hast du?',
@@ -6476,7 +6481,9 @@
         let nativeSpeechActive = false;
         let nativeSpeechGeneration = 0;
 
+        let pendingTrainingBell = null;
         function stopTrainingSounds() {
+            if (pendingTrainingBell) pendingTrainingBell();
             trainingSoundNodes.forEach(node => { try { node.stop(); } catch (e) {} });
             trainingSoundNodes = [];
         }
@@ -6560,10 +6567,41 @@
             });
         }
 
+        function playTrainingStartBell() {
+            stopTrainingSounds();
+            return new Promise(resolve => {
+                const audio = new Audio(ROUND_START_SOUND_SRC);
+                let finished = false;
+                let timer;
+                const finish = () => {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timer);
+                    audio.pause();
+                    audio.onended = audio.onerror = null;
+                    pendingTrainingBell = null;
+                    resolve();
+                };
+                const fallback = () => {
+                    if (finished) return;
+                    clearTimeout(timer);
+                    playFallbackBell();
+                    timer = setTimeout(finish, 750);
+                };
+                pendingTrainingBell = finish;
+                audio.volume = 1;
+                audio.onended = finish;
+                audio.onerror = fallback;
+                timer = setTimeout(finish, 15000);
+                try { audio.play().catch(fallback); } catch(e) { fallback(); }
+            });
+        }
+
         const trainingCueController = createTrainingCueController({
             now: () => performance.now(),
             setTimeout: (callback, delay) => window.setTimeout(callback, delay),
             clearTimeout: id => window.clearTimeout(id),
+            bell: playTrainingStartBell,
             gong: playTrainingGong,
             beep: () => playTrainingTone(880, 0.12, 0, 0.3),
             stopSounds: stopTrainingSounds,
@@ -6592,6 +6630,7 @@
                 key: `${activeTrainingWorkout.id}:${index}`,
                 elapsed, duration: step.end - step.start,
                 running: timerState.isRunning && !timerState.isFinished,
+                bellEnabled: settings.roundSoundsEnabled,
                 cuesEnabled: settings.trainingCuesEnabled,
                 periodicEnabled: settings.periodicCuesEnabled,
                 voiceText
@@ -6609,17 +6648,17 @@
             try {localStorage.setItem('fightwise_coach_voice',coach);}catch{}
             updateSettingsUI();
         }
+        function saveAudioPreferences() {
+            try {
+                const keys=['trainingCuesEnabled','periodicCuesEnabled','voiceCoachEnabled','roundSoundsEnabled','uiClickSoundsEnabled','vibrationEnabled'];
+                localStorage.setItem(TRAINING_PREFERENCES_KEY,JSON.stringify(Object.fromEntries(keys.map(key=>[key,settings[key]]))));
+            } catch(e) {}
+        }
         function setTrainingAudioPreference(key, enabled) {
             if (!['trainingCuesEnabled', 'periodicCuesEnabled', 'voiceCoachEnabled'].includes(key)) return;
             settings[key] = !!enabled;
             if (key === 'voiceCoachEnabled' && !enabled) trainingCueController.cancelVoice();
-            try {
-                localStorage.setItem(TRAINING_PREFERENCES_KEY, JSON.stringify({
-                    trainingCuesEnabled: settings.trainingCuesEnabled,
-                    periodicCuesEnabled: settings.periodicCuesEnabled,
-                    voiceCoachEnabled: settings.voiceCoachEnabled
-                }));
-            } catch (e) {}
+            saveAudioPreferences();
             updateSettingsUI();
         }
 
@@ -8469,13 +8508,14 @@
         }
 
         function chooseSparMode() {
+            const sparSettings = appMode === 'training' && savedSparringPreferences ? savedSparringPreferences : settings;
             setupStep = 0;
             setupCustomActive = false;
             sparringDraft = {
-                roundTime: settings.roundTime,
-                breakTime: settings.breakTime,
-                numberOfRounds: settings.numberOfRounds,
-                taskSparEnabled: settings.taskSparEnabled
+                roundTime: sparSettings.roundTime,
+                breakTime: sparSettings.breakTime,
+                numberOfRounds: sparSettings.numberOfRounds,
+                taskSparEnabled: sparSettings.taskSparEnabled
             };
             modeChoice.classList.add('hidden');
             trainingSection.classList.add('hidden');
@@ -9107,6 +9147,11 @@
             `;
         }
 
+        function renderGuideInstructions(note) {
+            const sentences = t(String(note || '')).split(/(?<=[.!?])\s+(?=[A-ZÀ-ÖØ-Þ0-9])/u).filter(Boolean);
+            return '<ul class="guide-note guide-instructions">' + sentences.map(line => '<li>' + escapeHtml(line) + '</li>').join('') + '</ul>';
+        }
+
         function renderTrainingGuide() {
             const step = getCurrentGuideStep();
             if (!step) return '';
@@ -9129,7 +9174,7 @@
                 <div class="guide-card">
                     ${renderGuideTitle(guideTitle)}
                     <div class="guide-section">
-                        <div class="guide-note">${guideNote}</div>
+                        ${renderGuideInstructions(guideNote)}
                     </div>
                 </div>
             `;
@@ -9293,6 +9338,7 @@
                 return;
             }
 
+            if (appMode !== 'training') savedSparringPreferences = {roundTime:settings.roundTime, breakTime:settings.breakTime, numberOfRounds:settings.numberOfRounds, taskSparEnabled:settings.taskSparEnabled};
             appMode = 'training';
             trainingPlanTitle = title;
             activeTrainingWorkout = customWorkout || requestedWorkout;
@@ -9318,6 +9364,7 @@
         }
 
         function closeSettings() {
+            cancelRoundBellRepeats();
             const timingChanged = ['timing', 'task'].includes(activeSettingsTab);
             cancelCoachSpeech();
             document.getElementById('settingsModal').classList.remove('show');
@@ -9328,6 +9375,8 @@
         }
 
         function setSettingsTab(tab) {
+            cancelRoundBellRepeats();
+            cancelCoachSpeech();
             activeSettingsTab = tab;
             updateSettingsUI();
         }
@@ -9338,6 +9387,9 @@
         }
 
         function updateSettingsUI() {
+            document.querySelectorAll('[data-settings-coach]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.settingsCoach === settings.coachVoice)));
+            document.querySelectorAll('[data-settings-repeats]').forEach(button => button.setAttribute('aria-pressed',String(Number(button.dataset.settingsRepeats) === settings.roundBellRepeats)));
+            [['roundSoundsToggle','roundSoundsEnabled'],['uiClicksToggle','uiClickSoundsEnabled'],['vibrationToggle','vibrationEnabled']].forEach(([id,key])=>document.getElementById(id).setAttribute('aria-pressed',String(settings[key])));
             document.getElementById("coachVoiceChoice").value = settings.coachVoice;
  document.getElementById("roundBellRepeats").value = settings.roundBellRepeats;
             document.getElementById('roundTimeDisplay').textContent = formatTime(settings.roundTime);
@@ -9531,49 +9583,24 @@
         function toggleRoundSounds() {
  cancelRoundBellRepeats();
             settings.roundSoundsEnabled = !settings.roundSoundsEnabled;
+            saveAudioPreferences();
             updateSettingsUI();
         }
 
-        function setRoundStartSound(sound) {
-            settings.roundStartSound = sound;
-            updateSettingsUI();
-        }
 
-        function setRoundEndSound(sound) {
-            settings.roundEndSound = sound;
-            updateSettingsUI();
-        }
+
+
 
         function toggleUiClicks() {
             settings.uiClickSoundsEnabled = !settings.uiClickSoundsEnabled;
+            saveAudioPreferences();
             updateSettingsUI();
         }
 
         function toggleVibration() {
             settings.vibrationEnabled = !settings.vibrationEnabled;
+            saveAudioPreferences();
             updateSettingsUI();
-        }
-
-        function testSoundEffects() {
-            ensureAudioReady(true);
-
-            const previous = {
-                uiClickSoundsEnabled: settings.uiClickSoundsEnabled,
-                roundSoundsEnabled: settings.roundSoundsEnabled,
-                vibrationEnabled: settings.vibrationEnabled
-            };
-
-            settings.uiClickSoundsEnabled = true;
-            settings.roundSoundsEnabled = true;
-
-            playUiClick();
-            playRoundStart();
-            setTimeout(() => {
-                settings.uiClickSoundsEnabled = previous.uiClickSoundsEnabled;
-                settings.roundSoundsEnabled = previous.roundSoundsEnabled;
-                settings.vibrationEnabled = previous.vibrationEnabled;
-                updateSettingsUI();
-            }, 1200);
         }
 
         function applyPreset(round, brk, rounds, name) {
@@ -9607,19 +9634,33 @@
  (playRoundBellSequence.pending || []).forEach(clearTimeout);
  playRoundBellSequence.pending = [];
 }
-function setRoundBellRepeats(value) {
+function setRoundBellRepeats(value, preview = false) {
  const count = Number(value); if (![1,2,3].includes(count)) return;
  cancelRoundBellRepeats(); settings.roundBellRepeats = count;
  try { localStorage.setItem('fightwise_bell_repeats', String(count)); } catch(e) {}
  updateSettingsUI();
+ if (preview) previewRoundBell(count);
 }
-function playRoundBellSequence(play) {
+function playRoundBellSequence(play, repeats = settings.roundBellRepeats || 3, preview = false) {
  cancelRoundBellRepeats(); play();
- for(let i=1;i<(settings.roundBellRepeats || 3);i++) {
- playRoundBellSequence.pending.push(setTimeout(() => { if(settings.roundSoundsEnabled) play(); }, i*900));
+ for(let i=1;i<repeats;i++) {
+ playRoundBellSequence.pending.push(setTimeout(() => { if(preview || settings.roundSoundsEnabled) play(); }, i*900));
  }
 }
-function playRoundStart() {
+function previewRoundBell(count) {
+            if (![1,2,3].includes(Number(count))) return;
+            cancelCoachSpeech();
+            ensureAudioReady(true);
+            playRoundBellSequence(() => {
+                const result = playLoudAudioFromPool(roundStartAudioPool, roundStartAudioIndex, playFallbackBell);
+                roundStartAudioIndex = result.nextIndex;
+            }, Number(count), true);
+        }
+        function previewCoachIntroduction(coach) {
+            cancelRoundBellRepeats();
+            return speakCoachText(coach === 'maya' ? "Hi, I am Maya, your FightWise coach. Stay focused, trust your technique, and let us get to work!" : "Hi, I am Max, your FightWise coach. Clear instructions, sharp technique. Let us get to work!", coach).catch(() => {});
+        }
+        function playRoundStart() {
             if (!settings.roundSoundsEnabled && !settings.vibrationEnabled) return;
             try {
                 if (settings.roundSoundsEnabled) {
@@ -10062,7 +10103,8 @@ function playRoundStart() {
             read: () => ({coachVoice:settings.coachVoice, uiClickSoundsEnabled:settings.uiClickSoundsEnabled, language:settings.language, sport:selectedTrainingSport, voiceCoachEnabled:settings.voiceCoachEnabled, roundSoundsEnabled:settings.roundSoundsEnabled, roundBellRepeats:settings.roundBellRepeats, vibrationEnabled:settings.vibrationEnabled}),
             preview: coach => speakCoachText(coach === 'maya' ? "Hi, I am Maya, your FightWise coach. Stay focused, trust your technique, and let us get to work!" : "Hi, I am Max, your FightWise coach. Clear instructions, sharp technique. Let us get to work!",coach),
             tutorial: () => { try {localStorage.removeItem(TUT_KEY);}catch{} checkTutorial(); },
-            stopAudio: cancelCoachSpeech,
+            previewBell: previewRoundBell,
+            stopAudio: () => {cancelCoachSpeech(); cancelRoundBellRepeats();},
             showHome: showModeChoice,
             apply: preferences => {
                 ['roundSoundsEnabled','vibrationEnabled','uiClickSoundsEnabled'].forEach(key => settings[key] = preferences[key]);
@@ -10081,7 +10123,7 @@ function playRoundStart() {
             const saved = JSON.parse(localStorage.getItem('fightwise_setup_preferences') || 'null');
             if(saved) {
 
-                ['roundSoundsEnabled','vibrationEnabled'].forEach(key => {if(typeof saved[key]==='boolean') settings[key]=saved[key];});
+
                 if(['all','boxing','k1','muaythai'].includes(saved.sport)) selectedTrainingSport=saved.sport;
                 timerState.timeLeft=settings.roundTime; updateSettingsUI(); updateUI();
             }

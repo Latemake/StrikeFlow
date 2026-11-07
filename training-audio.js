@@ -61,6 +61,19 @@ function createTrainingCueController(output) {
                 cancelAnnouncement();
                 key = state.key;
                 previousElapsed = elapsed;
+                if (output.bell) {
+                    output.stopSounds();
+                    const ticket = generation;
+                    const bellEnabled = state.bellEnabled !== false;
+                    soundsUntil = bellEnabled ? Infinity : 0;
+                    const completion = bellEnabled ? output.bell() : Promise.resolve();
+                    Promise.resolve(completion).catch(() => {}).then(() => {
+                        if (ticket !== generation || !running) return;
+                        soundsUntil = 0;
+                        announce(state.voiceText, 0);
+                    });
+                    return;
+                }
                 if (state.cuesEnabled) gong(first ? 1 : 2);
                 announce(state.voiceText, state.cuesEnabled ? (first ? 700 : 1350) : 0);
                 return;
