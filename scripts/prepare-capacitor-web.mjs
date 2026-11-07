@@ -1,11 +1,15 @@
-import { copyFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
+import { cpSync, copyFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
 const webDir = 'www';
 const files = [
   'index.html',
+  'onboarding.js',
+  'onboarding.css',
   'training-sports.js',
   'training-audio.js',
+  'coach-audio-manifest.js',
+  'coach-maya-manifest.js',
   'sw.js',
   'manifest.json',
   'privacy-policy.html',
@@ -41,3 +45,7 @@ for (const [source, target] of renamedFiles) {
 }
 
 console.log(`Prepared ${files.length + renamedFiles.length} web assets in ${webDir}/`);
+
+cpSync('coach-audio', join(webDir, 'coach-audio'), { recursive: true });
+
+cpSync('coach-audio-maya', join(webDir, 'coach-audio-maya'), { recursive: true });

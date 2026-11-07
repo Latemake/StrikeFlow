@@ -1,8 +1,12 @@
-const CACHE = 'fightwise-v66';
+const CACHE = 'fightwise-v76';
 const ASSETS = [
   './index.html',
+  './onboarding.js',
+  './onboarding.css',
   './training-sports.js',
   './training-audio.js',
+  './coach-audio-manifest.js',
+  './coach-maya-manifest.js',
   './privacy-policy.html',
   './manifest.json',
   './FightWise logo.png',
@@ -18,7 +22,7 @@ const ASSETS = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE).then(cache => Promise.all(['./coach-audio/manifest.json','./coach-audio-maya/manifest.json'].map(url => fetch(url).then(r => r.json()))).then(manifests => cache.addAll([...ASSETS, ...manifests.flatMap(manifest => Object.values(manifest))])))
   );
   self.skipWaiting();
 });
@@ -50,3 +54,5 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
+
+

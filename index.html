@@ -4535,6 +4535,52 @@
         .training-audio-options p { color: #aaa; line-height: 1.5; font-size: 13px; margin: 8px 0; }
         .guide-voice-status { color: #bbb; font-size: 12px; line-height: 1.4; margin-top: 8px; }
     </style>
+<style>
+
+#firstRunSetup[hidden]{display:none}
+#firstRunSetup{position:fixed;inset:0;z-index:20000;overflow:auto;background:#0a0a0a;color:#f4f4f1;display:flex;justify-content:center;padding:0 28px;font-family:inherit}
+.setup-open{overflow:hidden}.setup-card{width:100%;max-width:760px;min-height:100dvh;display:flex;flex-direction:column;background:none;border:0;border-radius:0;box-shadow:none}
+.setup-card header{display:flex;align-items:center;justify-content:space-between;padding:28px 0;border-bottom:1px solid #333;gap:20px}.setup-brand{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:950;letter-spacing:2px}.setup-brand img{width:38px;height:38px;object-fit:contain}
+.setup-card button,.setup-card select{font:inherit;min-height:48px;cursor:pointer;color:inherit;background:transparent;border:1px solid #414141;border-radius:2px;padding:14px 18px;white-space:normal;overflow-wrap:anywhere}
+.setup-card button:focus-visible,.setup-card select:focus-visible,.setup-card input:focus-visible{outline:2px solid #2bff4a;outline-offset:4px}#setupHeading:focus{outline:none}#setupSkip{border:0;color:#aaa;font-size:13px;padding:8px 0;text-decoration:underline;text-underline-offset:5px}
+#setupProgress{padding-top:28px;color:#92928e;font-size:12px;letter-spacing:1px;text-transform:uppercase}#setupProgress progress{display:block;width:100%;height:2px;margin-top:14px;accent-color:#2bff4a;border:0}
+.setup-card main{padding:42px 0 36px;flex:1}.setup-card h1{font-size:clamp(32px,6vw,56px);font-weight:950;letter-spacing:-1.5px;line-height:1.05;max-width:620px;margin:0 0 32px;text-transform:uppercase}.setup-card p{font-size:15px;line-height:1.5;color:#aaa;max-width:460px}.setup-eyebrow{display:none}.setup-field{display:flex;flex-direction:column;gap:8px;margin:0 0 22px;font-size:13px;color:#aaa}.setup-field select{width:100%;box-sizing:border-box;color:#fff;background:#121212;font-size:17px;min-height:60px}
+.setup-sports{display:flex;flex-direction:column;margin-top:24px;border-top:1px solid #444}.setup-sports button{text-align:left;border:0;border-bottom:1px solid #444;padding:22px 16px;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:space-between}.setup-sports button::after{content:'○';color:#777}.setup-sports [aria-pressed=true]{background:#151915;color:#2bff4a}.setup-sports [aria-pressed=true]::after{content:'●';color:#2bff4a}
+.setup-toggle{display:flex;gap:16px;align-items:flex-start;padding:22px 0;border-top:1px solid #333}.setup-toggle input{width:22px;height:22px;flex-shrink:0;accent-color:#2bff4a}.setup-toggle strong{font-size:16px}.setup-toggle small{display:block;color:#aaa;line-height:1.5;margin-top:6px;max-width:410px}#setupPreview{margin:0 0 24px 38px;font-size:13px;min-height:42px;border-color:#555}.setup-hint{font-size:12px!important;color:#777!important;margin-top:28px}.setup-card footer{display:flex;gap:16px;padding:22px 0 28px;border-top:1px solid #333}.setup-card footer button{flex:1;font-weight:800;text-transform:uppercase;font-size:14px;letter-spacing:1px}#setupNext{background:#2bff4a;color:#080808;border-color:#2bff4a}.setup-card dl{margin-top:24px}.setup-card dl div{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid #333;padding:16px 0}.setup-card dt{color:#aaa}.setup-card dd{margin:0;font-weight:800}
+#trainingDurationStep .duration-highlights{display:none}#trainingDurationStep .training-grid{display:flex;flex-direction:column;gap:0;border-top:1px solid #444}
+#trainingDurationStep .duration-card{display:grid;grid-template-columns:150px 1fr auto;column-gap:28px;row-gap:6px;align-items:center;text-align:left;min-height:140px;padding:26px 4px;border:0;border-bottom:1px solid #3c3c3c;border-radius:0;background:none;box-shadow:none;transform:none;overflow:visible}
+#trainingDurationStep .duration-card::before{display:none}#trainingDurationStep .duration-card .training-card-title{grid-column:1;grid-row:1 / 3;font-size:clamp(32px,4vw,48px);margin:0;color:#f4f4f1;letter-spacing:-1px}
+#trainingDurationStep .duration-card .training-card-desc{grid-column:2;grid-row:1;font-size:15px;line-height:1.45;max-width:480px;color:#bcbcbc;margin:0}
+#trainingDurationStep .duration-card .training-meta{display:none}#trainingDurationStep .duration-stats{grid-column:2;grid-row:2;margin:0;padding:0;display:block}#trainingDurationStep .duration-stat{display:none}#trainingDurationStep .duration-stat:first-child{display:inline;padding:0;border:0;background:none;color:#777;font-size:12px;font-weight:500;letter-spacing:0}
+#trainingDurationStep .duration-action{grid-column:3;grid-row:1 / 3;padding:0;margin:0;border:0;font-size:0;color:#2bff4a}#trainingDurationStep .duration-action .icon{height:25px;width:25px}
+#trainingDurationStep .duration-card.duration-locked>*{filter:none;opacity:1}#trainingDurationStep .duration-card.duration-locked::after{position:static;grid-column:3;grid-row:1 / 3;background:none;text-shadow:none;font-size:10px;letter-spacing:1px;color:#888;inset:auto;content:'COMING SOON';max-width:80px;text-align:right;line-height:1.4}
+#trainingDurationStep .duration-card:hover{background:#151515;box-shadow:none;transform:none}#trainingDurationStep .duration-card:not(.duration-locked):hover .training-card-title{color:#2bff4a}#trainingDurationStep .duration-card.duration-locked .duration-action{display:none}#trainingDurationStep .custom-workout-card .duration-stats{display:none}
+@media(max-width:600px){#firstRunSetup{padding:0 22px}.setup-card header{padding:20px 0}.setup-card main{padding-top:34px}.setup-card h1{letter-spacing:-.8px;margin-bottom:28px}#setupProgress{padding-top:22px}.setup-card footer{padding-bottom:max(22px,env(safe-area-inset-bottom))}#trainingDurationStep .duration-card{grid-template-columns:94px 1fr;column-gap:18px;padding:24px 2px;min-height:126px}#trainingDurationStep .duration-card .training-card-title{font-size:32px}#trainingDurationStep .duration-card .training-card-desc{font-size:13px}#trainingDurationStep .duration-action{display:none}#trainingDurationStep .duration-card.duration-locked::after{grid-column:2;grid-row:3;text-align:left;justify-content:start;max-width:none;margin-top:5px}#trainingDurationStep .duration-card.duration-locked .training-card-title{color:#888}}
+
+#trainingDurationStep .duration-number{display:block;font-size:52px;line-height:1;font-weight:950}#trainingDurationStep .duration-unit{display:block;font-size:11px;line-height:1.4;letter-spacing:2px;color:#888;margin-top:5px}#trainingDurationStep .duration-card{min-height:116px}#trainingDurationStep .duration-card .training-card-title{font-size:24px}#trainingDurationStep .duration-card .training-card-desc{align-self:end}#trainingDurationStep .duration-stats{align-self:start;margin-top:4px}@media(max-width:600px){#trainingDurationStep .duration-number{font-size:44px}#trainingDurationStep .duration-card{min-height:116px}}
+
+.setup-coaches{margin-top:26px;border-top:1px solid #444}.setup-coaches button{display:flex;align-items:center;gap:20px;width:100%;text-align:left;border:0;border-bottom:1px solid #444;padding:26px 14px}.setup-coaches button>span:nth-child(2){flex:1}.setup-coaches strong{font-size:32px;font-weight:950;text-transform:uppercase;display:block}.setup-coaches small{display:block;color:#aaa;font-size:13px;margin-top:7px}.setup-coaches .coach-number{font-size:12px;color:#777}.setup-coaches [aria-pressed=true]{background:#151915;color:#2bff4a}.setup-coaches [aria-pressed=true] small{color:#c2d1c5}
+</style>
+<style>
+/* In a guided session, the drill and its instructions take priority. */
+.guided-session .phase-label{visibility:hidden}
+.guided-session .top-bar{justify-content:flex-end;padding-top:14px;padding-bottom:8px}
+.guided-session .phase-label{display:none}
+.guided-running #phaseBanner{display:none}
+.guided-session .timer-section{display:flex;flex-direction:column;justify-content:flex-start;gap:24px;padding-top:12px}
+.guided-session #phaseBanner{order:0;width:100%;max-width:660px;min-height:0;padding:12px 18px;margin:0}
+.guided-session #phaseBanner .timer-status{font-size:24px}
+.guided-session #taskDisplay.training-guide{order:1;width:100%;max-width:660px;margin:0;text-align:left}
+.guided-session .guide-card{background:none;border:0;border-radius:0;box-shadow:none;padding:8px 0 0}
+.guided-session .guide-round-label{color:var(--accent-primary);font-size:14px;letter-spacing:1.5px;margin-bottom:10px}
+.guided-session .guide-title{font-size:clamp(28px,5vw,44px);line-height:1.08;letter-spacing:-.5px;max-width:660px}
+.guided-session .guide-section+.guide-section{margin-top:16px;padding-top:16px;border-top:1px solid #3b3b3b}
+.guided-session .guide-note{font-size:clamp(20px,3vw,25px);font-weight:500;line-height:1.5;color:#f0f0f0;max-width:640px}
+.guided-session .timer-ring-wrap{order:2;width:min(62vw,320px);height:auto;aspect-ratio:1;margin:0 auto;flex-shrink:0}
+.guided-session .timer-display{font-size:clamp(48px,12vw,84px)}
+@media(min-width:1000px){.guided-session .timer-section{display:grid;grid-template-columns:1fr 1fr;gap:32px 60px;align-items:center;padding-top:24px}.guided-session #phaseBanner{grid-column:1;grid-row:1}.guided-session #taskDisplay.training-guide{grid-column:1;grid-row:2}.guided-running #taskDisplay.training-guide{grid-row:1 / span 2}.guided-session .timer-ring-wrap{grid-column:2;grid-row:1 / span 2;width:min(38vw,500px);height:auto}.guided-session .timer-display{font-size:clamp(64px,8vw,110px)}}
+@media(max-width:480px){.guided-session .timer-section{gap:20px;padding-left:22px;padding-right:22px;padding-bottom:110px}.guided-session .guide-note{font-size:20px}.guided-session .timer-ring-wrap{width:min(62vw,270px)}}
+</style>
 </head>
 <body>
     <svg width="0" height="0" style="position:absolute; overflow:hidden" aria-hidden="true" focusable="false">
@@ -4687,7 +4733,7 @@
                 <div>
                     <div class="training-kicker">TRAINING</div>
                     <div class="training-title" id="trainingTitle">Choose duration</div>
-                    <div class="training-subtitle" id="trainingSubtitle">Pick how long you want to train, then choose a guided workout with drills, combos and instructions.</div>
+                    <div class="training-subtitle" id="trainingSubtitle">Choose the time you have.</div>
                 </div>
                 <button class="training-back" onclick="trainingBack()">BACK</button>
             </div>
@@ -4699,8 +4745,8 @@
                 </div>
                 <div class="training-grid">
                     <button class="training-card duration-card duration-flow duration-locked" data-premium-duration onclick="selectTrainingDuration(20)">
-                        <div class="training-card-title">20 min</div>
-                        <div class="training-card-desc">Quick flow, sharp technique and short sweat sessions when time is tight.</div>
+                        <div class="training-card-title"><span class="duration-number">20</span><span class="duration-unit">min</span></div>
+                        <div class="training-card-desc">Technique and movement. A short session.</div>
                         <div class="training-meta">Flow work</div>
                         <div class="duration-stats">
                             <span class="duration-stat highlight">8 workouts</span>
@@ -4709,8 +4755,8 @@
                         </div>
                     </button>
                     <button class="training-card duration-card duration-quick" onclick="selectTrainingDuration(30)">
-                        <div class="training-card-title">30 min</div>
-                        <div class="training-card-desc">Compact training blocks for skill work, bag rounds or hard intervals.</div>
+                        <div class="training-card-title"><span class="duration-number">30</span><span class="duration-unit">min</span></div>
+                        <div class="training-card-desc">Technique, bag rounds and intervals.</div>
                         <div class="training-meta">Quick work</div>
                         <div class="duration-stats">
                             <span class="duration-stat highlight">16 workouts</span>
@@ -4720,8 +4766,8 @@
                         <div class="duration-action">Select duration <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></div>
                     </button>
                     <button class="training-card duration-card duration-recommended duration-locked" data-premium-duration onclick="selectTrainingDuration(45)">
-                        <div class="training-card-title">45 min</div>
-                        <div class="training-card-desc">The sweet spot: proper warmup, focused rounds and a clean finish.</div>
+                        <div class="training-card-title"><span class="duration-number">45</span><span class="duration-unit">min</span></div>
+                        <div class="training-card-desc">Warmup, focused rounds and cooldown.</div>
                         <div class="training-meta">Recommended</div>
                         <div class="duration-stats">
                             <span class="duration-stat highlight">16 workouts</span>
@@ -4730,8 +4776,8 @@
                         </div>
                     </button>
                     <button class="training-card duration-card duration-deep duration-locked" data-premium-duration onclick="selectTrainingDuration(60)">
-                        <div class="training-card-title">1 hour</div>
-                        <div class="training-card-desc">Deeper sessions for volume, defense, power or full technical work.</div>
+                        <div class="training-card-title"><span class="duration-number">60</span><span class="duration-unit">min</span></div>
+                        <div class="training-card-desc">More rounds for defense, power and technique.</div>
                         <div class="training-meta">Deep work</div>
                         <div class="duration-stats">
                             <span class="duration-stat highlight">16 workouts</span>
@@ -4740,8 +4786,8 @@
                         </div>
                     </button>
                     <button class="training-card duration-card duration-full" onclick="selectTrainingDuration(90)">
-                        <div class="training-card-title">90 min</div>
-                        <div class="training-card-desc">Fight camp style work with long rounds, conditioning and recovery blocks.</div>
+                        <div class="training-card-title"><span class="duration-number">90</span><span class="duration-unit">min</span></div>
+                        <div class="training-card-desc">Long rounds, conditioning and recovery.</div>
                         <div class="training-meta">Full session</div>
                         <div class="duration-stats">
                             <span class="duration-stat highlight">15 workouts</span>
@@ -4951,7 +4997,7 @@
 
             <div class="modal-title">SETTINGS</div>
 
-            <div class="settings-pane" id="settingsPane-main">
+            <div class="settings-pane" id="settingsPane-main"><button class="secondary-btn" onclick="closeSettings(); setupFlow.open()">PERSONALIZE FIGHTWISE</button>
                 <div class="settings-section">
                     <div class="settings-nav">
                         <button class="settings-tab" id="nav-language" onclick="toggleSettingsGroup('language')">LANGUAGE</button>
@@ -5054,12 +5100,12 @@
 
             <div class="settings-pane" id="settingsPane-sound">
                 <button class="secondary-btn settings-back-btn" onclick="setSettingsTab('main')"><span class="icon-row"><svg class="icon icon-sm"><use href="#icon-arrow-left"></use></svg>BACK</span></button>
-                <div class="training-audio-options">
+                <div class="training-audio-options"><label>Coach <select id="coachVoiceChoice" onchange="setCoachVoice(this.value)"><option value="max">Max — Energetic · Clear</option><option value="maya">Maya — Encouraging · Punchy</option></select></label>
                     <label><input type="checkbox" id="trainingCuesToggle" onchange="setTrainingAudioPreference('trainingCuesEnabled', this.checked)"><span>Workout section signals</span></label>
                     <p>One gong with 15 seconds left. Two gongs when a section ends.</p>
                     <label><input type="checkbox" id="periodicCuesToggle" onchange="setTrainingAudioPreference('periodicCuesEnabled', this.checked)"><span>Beep every 30 seconds</span></label>
-                    <label><input type="checkbox" id="voiceCoachToggle" onchange="setTrainingAudioPreference('voiceCoachEnabled', this.checked)"><span>Voice coach (trial)</span></label>
-                    <p>Available in 30-minute Boxing and K1 plans and Sharp basics. Uses an installed offline voice in your selected language.</p>
+                    <label><input type="checkbox" id="voiceCoachToggle" onchange="setTrainingAudioPreference('voiceCoachEnabled', this.checked)"><span>Coach voice (English)</span></label>
+                    <p>Recorded English instructions in all built-in workouts. AI-generated coach voice.</p>
                     <button class="secondary-btn" onclick="testVoiceCoach()">TEST VOICE</button>
                     <p id="voiceCoachStatus" role="status" aria-live="polite"></p>
                 </div>
@@ -5112,7 +5158,10 @@
     </div>
 
     <script src="training-sports.js"></script>
+    <script src="onboarding.js"></script>
     <script src="training-audio.js"></script>
+    <script src="coach-audio-manifest.js"></script>
+    <script src="coach-maya-manifest.js"></script>
     <script>
         // Training tasks by difficulty
         const TASKS = {
@@ -5211,13 +5260,14 @@
             notation: 'text',
             roundSoundsEnabled: true,
             roundBellRepeats: 3,
-            roundStartSound: 'classic',
-            roundEndSound: 'classic',
-            uiClickSoundsEnabled: true,
+            roundStartSound: 'bell',
+            roundEndSound: 'gong',
+            uiClickSoundsEnabled: false,
             vibrationEnabled: true,
             trainingCuesEnabled: true,
             periodicCuesEnabled: false,
             voiceCoachEnabled: false,
+            coachVoice: 'max',
             language: 'en'
         };
 
@@ -5406,6 +5456,8 @@
             }
             const savedRepeats = Number(localStorage.getItem('fightwise_bell_repeats'));
             if ([1,2,3].includes(savedRepeats)) settings.roundBellRepeats = savedRepeats;
+            const savedCoach = localStorage.getItem('fightwise_coach_voice');
+            if (['max','maya'].includes(savedCoach)) settings.coachVoice=savedCoach;
             const preferences = JSON.parse(localStorage.getItem(TRAINING_PREFERENCES_KEY) || '{}');
             ['trainingCuesEnabled', 'periodicCuesEnabled', 'voiceCoachEnabled'].forEach(key => {
                 if (typeof preferences[key] === 'boolean') settings[key] = preferences[key];
@@ -5415,6 +5467,8 @@
         const UI_TRANSLATIONS = {
             fi: {
                 'Bell repetitions': 'Kellon toistot',
+                'PERSONALIZE FIGHTWISE': 'MUOKKAA FIGHTWISE OMAKSI',
+                'Choose the time you have.': 'Paljonko sinulla on aikaa?',
                 'ROUND': 'ERÄ',
                 'BREAK': 'TAUKO',
                 'READY': 'VALMIS',
@@ -5481,7 +5535,7 @@
                 'Back': 'Takaisin',
                 'Next': 'Seuraava',
                 'Choose duration': 'Valitse kesto',
-                'Pick how long you want to train, then choose a guided workout with drills, combos and instructions.': 'Valitse treenin kesto ja sen jälkeen ohjattu treeni harjoitteilla, komboilla ja ohjeilla.',
+                'Choose the time you have.': 'Valitse treenin kesto ja sen jälkeen ohjattu treeni harjoitteilla, komboilla ja ohjeilla.',
                 'BACK': 'TAKAISIN',
                 'total plans': 'treeniä yhteensä',
                 'Pro workouts': 'Pro-treeniä',
@@ -5606,6 +5660,8 @@
             },
             de: {
                 'Bell repetitions': 'Glockenwiederholungen',
+                'PERSONALIZE FIGHTWISE': 'FIGHTWISE ANPASSEN',
+                'Choose the time you have.': 'Wie viel Zeit hast du?',
                 'ROUND': 'RUNDE',
                 'BREAK': 'PAUSE',
                 'READY': 'BEREIT',
@@ -5672,7 +5728,7 @@
                 'Back': 'Zurueck',
                 'Next': 'Weiter',
                 'Choose duration': 'Dauer waehlen',
-                'Pick how long you want to train, then choose a guided workout with drills, combos and instructions.': 'Waehle deine Trainingsdauer und danach ein gefuehrtes Workout mit Drills, Kombinationen und Anweisungen.',
+                'Choose the time you have.': 'Waehle deine Trainingsdauer und danach ein gefuehrtes Workout mit Drills, Kombinationen und Anweisungen.',
                 'BACK': 'ZURUECK',
                 'total plans': 'Plaene gesamt',
                 'Pro workouts': 'Pro-Workouts',
@@ -5987,7 +6043,7 @@
             ['Voice coach (trial)', 'Puheopastus (kokeilu)', 'Sprachanleitung (Testversion)'],
             ['Available in 30-minute Boxing and K1 plans and Sharp basics. Uses an installed offline voice in your selected language.', 'Saatavilla 30 minuutin nyrkkeily- ja K1-ohjelmissa sekä Terävät perusteet -treenissä. Käyttää laitteelle asennettua puheääntä valitsemallasi kielellä ilman verkkoyhteyttä.', 'Verfügbar in 30-minütigen Box- und K1-Plänen sowie Saubere Grundlagen. Verwendet eine installierte Offline-Stimme in deiner gewählten Sprache.'],
             ['TEST VOICE', 'KOKEILE PUHEÄÄNTÄ', 'STIMME TESTEN'],
-            ['Voice unavailable. Install an offline voice for your selected language in device settings.', 'Puheääni ei ole käytettävissä. Asenna laitteen asetuksista offline-puheääni valitsemallesi kielelle.', 'Stimme nicht verfügbar. Installiere in den Geräteeinstellungen eine Offline-Stimme für deine gewählte Sprache.'],
+            ['Coach recording unavailable.', 'Puheääni ei ole käytettävissä. Asenna laitteen asetuksista offline-puheääni valitsemallesi kielelle.', 'Stimme nicht verfügbar. Installiere in den Geräteeinstellungen eine Offline-Stimme für deine gewählte Sprache.'],
             ['Testing voice in your selected language.', 'Kokeillaan puheääntä valitsemallasi kielellä.', 'Stimme in deiner gewählten Sprache wird getestet.'],
             ['Voice test complete.', 'Puheäänen kokeilu valmis.', 'Sprachtest abgeschlossen.'],
             ['Voice coach trial is active for this workout.', 'Puheopastuskokeilu on käytössä tässä treenissä.', 'Die Sprachanleitung ist für dieses Workout aktiv.'],
@@ -6479,56 +6535,42 @@
                 voice.localService && voice.lang.toLowerCase().split(/[-_]/)[0] === settings.language);
         }
 
-        function speakCoachText(text) {
-            const native = nativeVoiceCoach();
-            if (native) {
-                nativeSpeechActive = true;
-                const generation = ++nativeSpeechGeneration;
-                try {
-                    return Promise.resolve(native.speak({ text, language: settings.language })).finally(() => {
-                        if (generation === nativeSpeechGeneration) nativeSpeechActive = false;
-                    });
-                } catch (error) {
-                    nativeSpeechActive = false;
-                    return Promise.reject(error);
-                }
-            }
-            const voice = offlineBrowserVoice();
-            if (!voice || !window.SpeechSynthesisUtterance) return Promise.reject(new Error('No offline voice'));
+        let coachRecording = null;
+        function speakCoachText(text, coach = settings.coachVoice) {
+            const manifest = coach === 'maya' && typeof COACH_MAYA_MANIFEST !== 'undefined' ? COACH_MAYA_MANIFEST : COACH_AUDIO_MANIFEST;
+            const src = manifest[text];
+            if (!src) return Promise.reject(new Error('No coach recording for this instruction'));
+            cancelCoachSpeech();
             return new Promise((resolve, reject) => {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = { fi: 'fi-FI', de: 'de-DE', en: 'en-GB' }[settings.language];
-                utterance.voice = voice;
-                utterance.rate = 0.95;
+                const audio = new Audio(src);
+                coachRecording = audio;
                 let finished = false;
-                let timeout;
                 const finish = error => {
                     if (finished) return;
                     finished = true;
-                    clearTimeout(timeout);
+                    audio.onended = audio.onerror = null;
+                    if (coachRecording === audio) coachRecording = null;
                     pendingBrowserSpeech = null;
                     error ? reject(error) : resolve();
                 };
-                timeout = setTimeout(() => {
-                    finish(new Error('Voice playback timed out'));
-                    window.speechSynthesis.cancel();
-                }, 20000);
-                pendingBrowserSpeech = () => finish();
-                utterance.onend = () => finish();
-                utterance.onerror = () => finish(new Error('Voice playback failed'));
-                window.speechSynthesis.speak(utterance);
+                pendingBrowserSpeech = () => { audio.pause(); audio.currentTime = 0; finish(); };
+                audio.onended = () => finish();
+                audio.onerror = () => finish(new Error('Coach recording unavailable'));
+                audio.play().catch(finish);
             });
         }
 
         const trainingCueController = createTrainingCueController({
-            now: () => performance.now(), setTimeout, clearTimeout,
+            now: () => performance.now(),
+            setTimeout: (callback, delay) => window.setTimeout(callback, delay),
+            clearTimeout: id => window.clearTimeout(id),
             gong: playTrainingGong,
             beep: () => playTrainingTone(880, 0.12, 0, 0.3),
             stopSounds: stopTrainingSounds,
             cancelSpeech: cancelCoachSpeech,
             speak: speakCoachText,
             speechUnavailable: () => {
-                voiceCoachStatusMessage = 'Voice unavailable. Install an offline voice for your selected language in device settings.';
+                voiceCoachStatusMessage = 'Coach recording unavailable.';
                 updateVoiceCoachStatus();
             }
         });
@@ -6544,8 +6586,8 @@
             const index = trainingTimeline.indexOf(step);
             const elapsed = settings.roundTime - timerState.timeLeft - step.start;
             const title = step.title.replace(/^Rounds?\s+\d+(?:-\d+)?\s*-\s*/i, '');
-            const voiceText = settings.voiceCoachEnabled && isVoicePilot()
-                ? `${t(title)}. ${t(step.note)}` : '';
+            const voiceText = settings.voiceCoachEnabled
+                ? `${title}. ${step.note}` : '';
             trainingCueController.update({
                 key: `${activeTrainingWorkout.id}:${index}`,
                 elapsed, duration: step.end - step.start,
@@ -6561,6 +6603,12 @@
             if (status) status.textContent = voiceCoachStatusMessage;
         }
 
+        function setCoachVoice(coach) {
+            if (!['max','maya'].includes(coach)) return;
+            cancelCoachSpeech();settings.coachVoice=coach;
+            try {localStorage.setItem('fightwise_coach_voice',coach);}catch{}
+            updateSettingsUI();
+        }
         function setTrainingAudioPreference(key, enabled) {
             if (!['trainingCuesEnabled', 'periodicCuesEnabled', 'voiceCoachEnabled'].includes(key)) return;
             settings[key] = !!enabled;
@@ -6579,15 +6627,17 @@
             cancelCoachSpeech();
             const generation = voiceTestGeneration;
             const sample = 'Jab, cross, hook. Slip and step out.';
-            voiceCoachStatusMessage = 'Testing voice in your selected language.';
+            voiceCoachStatusMessage = 'Playing recorded English coach voice.';
             updateVoiceCoachStatus();
             try {
-                await speakCoachText(t(sample));
-                if (generation !== voiceTestGeneration) return;
+                const playback = speakCoachText(sample);
+                const recordingGeneration = voiceTestGeneration;
+                await playback;
+                if (recordingGeneration !== voiceTestGeneration) return;
                 voiceCoachStatusMessage = 'Voice test complete.';
             } catch (e) {
                 if (generation !== voiceTestGeneration) return;
-                voiceCoachStatusMessage = 'Voice unavailable. Install an offline voice for your selected language in device settings.';
+                voiceCoachStatusMessage = 'Coach recording unavailable.';
             }
             updateVoiceCoachStatus();
         }
@@ -6667,6 +6717,8 @@
             const hasSessionStarted = !!sessionStats.startedAt || timerState.currentRound > 1 || timerState.timeLeft < settings.roundTime;
             const isPaused = hasSessionStarted && !timerState.isRunning && !timerState.isFinished;
             app.classList.toggle('paused', isPaused);
+            app.classList.toggle('guided-session', appMode === 'training');
+            app.classList.toggle('guided-running', appMode === 'training' && timerState.isRunning && !timerState.isFinished);
 
             if (timerState.isFinished) {
                 timerStatus.textContent = 'FINISHED';
@@ -8669,7 +8721,7 @@
             updateDurationLocks();
             updateSportLibraryCounts();
             document.getElementById('trainingTitle').textContent = 'Choose duration';
-            document.getElementById('trainingSubtitle').textContent = 'Pick how long you want to train, then choose a guided workout with drills, combos and instructions.';
+            document.getElementById('trainingSubtitle').textContent = 'Choose the time you have.';
             setTrainingStep('trainingDurationStep');
         }
 
@@ -9066,9 +9118,6 @@
             const guideNote = isWaterBreak
                 ? 'Drink water, breathe slowly and shake your arms out. Continue when you feel ready.'
                 : step.note;
-            const voiceStatus = settings.voiceCoachEnabled
-                ? (voiceCoachStatusMessage || (isVoicePilot() ? 'Voice coach trial is active for this workout.' : 'Voice coach trial is not available for this workout.'))
-                : '';
 
             if (index !== currentGuideIndex) {
                 currentGuideIndex = index;
@@ -9081,7 +9130,6 @@
                     ${renderGuideTitle(guideTitle)}
                     <div class="guide-section">
                         <div class="guide-note">${guideNote}</div>
-                        ${voiceStatus ? `<div class="guide-voice-status">${voiceStatus}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -9290,6 +9338,7 @@
         }
 
         function updateSettingsUI() {
+            document.getElementById("coachVoiceChoice").value = settings.coachVoice;
  document.getElementById("roundBellRepeats").value = settings.roundBellRepeats;
             document.getElementById('roundTimeDisplay').textContent = formatTime(settings.roundTime);
             document.getElementById('breakTimeDisplay').textContent = formatTime(settings.breakTime);
@@ -9775,7 +9824,7 @@ function playRoundStart() {
             } catch (e) {}
             showModeChoice();
             document.getElementById('tutWelcome').style.display = 'flex';
-            setTimeout(playTutorialWelcomeChime, 80);
+            speakCoachText('Welcome to FightWise! Want a quick tour before you start? See the main features step by step.').catch(() => {});
         }
 
         function resetTutorial() {
@@ -9784,11 +9833,12 @@ function playRoundStart() {
             setTimeout(() => {
                 showModeChoice();
                 document.getElementById('tutWelcome').style.display = 'flex';
-                playTutorialWelcomeChime();
+                speakCoachText('Welcome to FightWise! Want a quick tour before you start? See the main features step by step.').catch(() => {});
             }, 180);
         }
 
         function skipTutorial() {
+            cancelCoachSpeech();
             try { localStorage.setItem(TUT_KEY, 'true'); } catch (e) {}
             document.getElementById('tutWelcome').style.display = 'none';
             closeTutorialStep();
@@ -9809,6 +9859,7 @@ function playRoundStart() {
         function showTutStep(isFirst) {
             if (tutStep >= TUT_STEPS.length) { closeTutorialStep(); return; }
             const step = TUT_STEPS[tutStep];
+            speakCoachText(step.title+'. '+step.text).catch(() => {});
             const el = document.querySelector(step.selector);
             if (!el) {
                 tutStep++;
@@ -9981,6 +10032,7 @@ function playRoundStart() {
         }
 
         function closeTutorialStep() {
+            cancelCoachSpeech();
             try { localStorage.setItem(TUT_KEY, 'true'); } catch (e) {}
             tutActive = false;
             if (tutAnimFrame) { cancelAnimationFrame(tutAnimFrame); tutAnimFrame = null; }
@@ -10006,7 +10058,35 @@ function playRoundStart() {
         translateDocument();
 
         // Show tutorial on first launch only. It can be replayed from settings.
-        setTimeout(checkTutorial, 120);
+        const setupFlow = createFightWiseSetup({
+            read: () => ({coachVoice:settings.coachVoice, uiClickSoundsEnabled:settings.uiClickSoundsEnabled, language:settings.language, sport:selectedTrainingSport, voiceCoachEnabled:settings.voiceCoachEnabled, roundSoundsEnabled:settings.roundSoundsEnabled, roundBellRepeats:settings.roundBellRepeats, vibrationEnabled:settings.vibrationEnabled}),
+            preview: coach => speakCoachText(coach === 'maya' ? "Hi, I am Maya, your FightWise coach. Stay focused, trust your technique, and let us get to work!" : "Hi, I am Max, your FightWise coach. Clear instructions, sharp technique. Let us get to work!",coach),
+            tutorial: () => { try {localStorage.removeItem(TUT_KEY);}catch{} checkTutorial(); },
+            stopAudio: cancelCoachSpeech,
+            showHome: showModeChoice,
+            apply: preferences => {
+                ['roundSoundsEnabled','vibrationEnabled','uiClickSoundsEnabled'].forEach(key => settings[key] = preferences[key]);
+                selectedTrainingSport = preferences.sport;
+                settings.coachVoice = preferences.coachVoice;
+                try {localStorage.setItem('fightwise_coach_voice',settings.coachVoice);}catch{}
+                settings.roundStartSound='bell';settings.roundEndSound='gong';
+                setLanguage(preferences.language);
+                setRoundBellRepeats(preferences.roundBellRepeats);
+                setTrainingAudioPreference('voiceCoachEnabled',preferences.voiceCoachEnabled);
+                try { localStorage.setItem('fightwise_setup_preferences',JSON.stringify(preferences)); localStorage.setItem(TUT_KEY,'true'); } catch(e) {}
+                updateSettingsUI(); updateUI();
+            }
+        });
+        try {
+            const saved = JSON.parse(localStorage.getItem('fightwise_setup_preferences') || 'null');
+            if(saved) {
+
+                ['roundSoundsEnabled','vibrationEnabled'].forEach(key => {if(typeof saved[key]==='boolean') settings[key]=saved[key];});
+                if(['all','boxing','k1','muaythai'].includes(saved.sport)) selectedTrainingSport=saved.sport;
+                timerState.timeLeft=settings.roundTime; updateSettingsUI(); updateUI();
+            }
+        } catch(e) {}
+        setTimeout(() => { if(!setupFlow.completed()) setupFlow.open(); },120);
 
         // Register service worker for PWA/offline support
         if ('serviceWorker' in navigator) {

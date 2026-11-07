@@ -1,0 +1,54 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const html = fs.readFileSync('index.html','utf8');
+test('recorded coach plays identical files and cancels on pause without device speech', async () => {
+ let current;
+ class Audio {
+  constructor(src) {this.src=src; current=this;}
+  play(){return Promise.resolve();}
+  pause(){this.paused=true;}
+ }
+ const c=vm.createContext({settings:{coachVoice:"max"},Audio, COACH_AUDIO_MANIFEST:{'Test instruction':'coach-audio/test.mp3'}});
+ const start=html.indexOf('let coachRecording = null;');
+ const end=html.indexOf('const trainingCueController',start);
+ vm.runInContext('let pendingBrowserSpeech = null; function cancelCoachSpeech(){if(pendingBrowserSpeech)pendingBrowserSpeech();}\n'+html.slice(start,end),c);
+ const pending=c.speakCoachText('Test instruction');
+ assert.equal(current.src,'coach-audio/test.mp3');
+ c.cancelCoachSpeech(); await pending; assert.equal(current.paused,true);
+ await assert.rejects(c.speakCoachText('Unknown custom instruction'));
+});
+test('every manifest recording exists and contains audio', () => {
+ const manifest=JSON.parse(fs.readFileSync('coach-audio/manifest.json','utf8'));
+ assert.ok(Object.keys(manifest).length>400);
+ for(const file of Object.values(manifest)) assert.ok(fs.statSync(file).size>1000,file);
+});
+
+test('browser timer callbacks retain their required window receiver', () => {
+ const window = { setTimeout(fn,delay){assert.equal(this,window);return 123;}, clearTimeout(id){assert.equal(this,window);assert.equal(id,123);} };
+ let output;
+ const c=vm.createContext({window,performance:{now:()=>0},setTimeout:window.setTimeout,clearTimeout:window.clearTimeout,createTrainingCueController(o){output=o;},playTrainingGong(){},playTrainingTone(){},stopTrainingSounds(){},cancelCoachSpeech(){},speakCoachText(){}});
+ const start=html.indexOf('const trainingCueController =');
+ vm.runInContext(html.slice(start,html.indexOf('function isVoicePilot(',start)),c);
+ output.clearTimeout(output.setTimeout(()=>{},700));
+});
+
+test('Maya has the same workout and tutorial coverage as Max', () => {
+ const male=JSON.parse(fs.readFileSync('coach-audio/manifest.json','utf8'));
+ const female=JSON.parse(fs.readFileSync('coach-audio-maya/manifest.json','utf8'));
+ for(const text of Object.keys(male).filter(t=>!t.startsWith('Hi, I am Max'))) {
+  assert.ok(female[text],text);
+  assert.ok(fs.statSync(female[text]).size>1000,female[text]);
+ }
+});
+
+test('selected coach controls which recording plays', async () => {
+ let source;
+ class Audio { constructor(src){source=src;} play(){return Promise.resolve();} pause(){} }
+ const c=vm.createContext({settings:{coachVoice:'maya'},Audio,COACH_AUDIO_MANIFEST:{Test:'max.mp3'},COACH_MAYA_MANIFEST:{Test:'maya.mp3'}});
+ const start=html.indexOf('let coachRecording = null;'),end=html.indexOf('const trainingCueController',start);
+ vm.runInContext('let pendingBrowserSpeech=null;function cancelCoachSpeech(){if(pendingBrowserSpeech)pendingBrowserSpeech();}\n'+html.slice(start,end),c);
+ const playing=c.speakCoachText('Test');assert.equal(source,'maya.mp3');c.cancelCoachSpeech();await playing;
+ const preview=c.speakCoachText('Test','max');assert.equal(source,'max.mp3');c.cancelCoachSpeech();await preview;
+});
