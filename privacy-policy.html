@@ -45,12 +45,15 @@
             padding: 14px 14px 8px;
         }
         a { color: #b9ffc5; }
+        .back-bar { position: sticky; top: 0; z-index: 1; background: #0f0f0f; padding: calc(12px + env(safe-area-inset-top)) 18px 12px; border-bottom: 1px solid #313131; }
+        .back-link { display: inline-block; padding: 12px 18px; background: #b9ffc5; color: #111; border-radius: 8px; font-weight: 700; text-decoration: none; }
     </style>
 </head>
 <body>
+    <nav class="back-bar" aria-label="Back to app"><a class="back-link" href="index.html">← Back to FightWise</a></nav>
     <main class="wrap">
         <h1>FightWise Privacy Policy</h1>
-        <div class="updated">Last updated: 2026-10-07</div>
+        <div class="updated">Last updated: 2026-10-31</div>
 
         <div class="box">
             <p>FightWise is a training timer app. We designed it to work without creating an account and without collecting personal identity information.</p>
@@ -68,6 +71,7 @@
 
         <h2>4. Audio, Vibration, and Wake Lock</h2>
         <p>The app can play sounds, vibrate, and keep the screen awake during sessions. These features are used only to support workout timing and can be controlled from app settings.</p>
+        <p>The optional voice coach trial reads supported workout instructions using an installed offline voice in your selected language. It does not record audio or use your microphone. FightWise does not send workout instructions to a cloud speech service. If an offline voice is unavailable, the app shows a message and the timer continues.</p>
 
         <h2>Training and Premium Features</h2>
         <p>FightWise is a fitness timer and workout guidance tool. It is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. Consult a qualified healthcare professional for medical advice.</p>

@@ -1119,6 +1119,8 @@
         }
 
         .training-filter-toggle {
+            flex-wrap: wrap;
+            max-width: 100%;
             align-items: center;
             border: 1px solid rgba(255, 255, 255, 0.18);
             border-radius: 8px;
@@ -1147,6 +1149,8 @@
         }
 
         .training-filter-options {
+            max-height: 65vh;
+            overflow-y: auto;
             background: #151515;
             border: 1px solid rgba(43, 255, 74, 0.38);
             border-radius: 8px;
@@ -1197,6 +1201,7 @@
             border-color: var(--accent-primary);
             color: #050505;
         }
+        .training-filter-heading { color: #aaa; font-size: 11px; font-weight: 800; padding: 6px 4px 0; text-transform: uppercase; }
 
         .custom-workout-card {
             --duration-color: #baff00;
@@ -3456,51 +3461,7 @@
         .diff-btn.active.diff-hard   { background: #7a4a1a; border-color: #ffaa33; color: #ffaa33; }
         .diff-btn.active.diff-pro    { background: #7a1a1a; border-color: #ff4444; color: #ff4444; }
 
-        .swipe-hint {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding-bottom: 8px;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            pointer-events: none;
-        }
 
-        .swipe-hint.visible {
-            opacity: 0.7;
-        }
-
-        .swipe-hint.triggered {
-            opacity: 1;
-            animation: swipeFlyUp 0.45s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
-        }
-
-        .swipe-hint-arrow {
-            color: var(--accent-primary);
-            animation: swipeArrowBounce 1.2s ease-in-out infinite;
-        }
-
-        .swipe-hint.triggered .swipe-hint-arrow {
-            animation: none;
-        }
-
-        .swipe-hint-label {
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        @keyframes swipeArrowBounce {
-            0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(-8px); }
-        }
-
-        @keyframes swipeFlyUp {
-            0%   { opacity: 1;   transform: translateY(0)   scale(1); }
-            60%  { opacity: 1;   transform: translateY(-60px) scale(1.2); }
-            100% { opacity: 0;   transform: translateY(-120px) scale(0.8); }
-        }
 
         .swipe-trail {
             position: fixed;
@@ -4336,11 +4297,7 @@
                 margin: 0 !important;
             }
 
-            .swipe-hint {
-                padding-bottom: 0;
-                padding-right: 8px;
-                align-self: flex-end;
-            }
+
         }
 
         /* ===== TUTORIAL ===== */
@@ -4545,6 +4502,38 @@
             0%, 100% { box-shadow: 0 0 12px rgba(43,255,74,0.3); }
             50%       { box-shadow: 0 0 28px rgba(43,255,74,0.7); }
         }
+
+        /* Translations must fit without clipping on narrow screens. */
+        .controls .btn {
+            min-width: 0;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            line-height: 1.25;
+            min-height: 48px;
+            padding-left: clamp(8px, 2.5vw, 28px);
+            padding-right: clamp(8px, 2.5vw, 28px);
+        }
+        .controls .btn.hidden { display: none; }
+        .timer-status, .phase-hint, .guide-title, .guide-note {
+            min-width: 0;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+        @media (max-width: 480px) {
+            .controls { gap: 8px; padding-left: 12px; padding-right: 12px; }
+            .controls .btn { font-size: 14px; letter-spacing: 0.5px; }
+        }
+        html { --coming-soon-label: "COMING SOON"; }
+        html[lang="fi"] { --coming-soon-label: "TULOSSA PIAN"; }
+        html[lang="de"] { --coming-soon-label: "KOMMT BALD"; }
+        .training-card.locked::after, .duration-card.duration-locked::after,
+        .setup-option.locked-premium::after { content: var(--coming-soon-label); }
+        .workout-structure-summary { margin: 12px 0; line-height: 1.6; color: #bbb; font-size: 14px; }
+        .training-audio-options { margin: 14px 0; padding: 14px; border: 1px solid #333; border-radius: 12px; }
+        .training-audio-options label { display: flex; align-items: center; gap: 12px; padding: 10px 0; cursor: pointer; }
+        .training-audio-options input { width: 22px; height: 22px; flex-shrink: 0; accent-color: #baff00; }
+        .training-audio-options p { color: #aaa; line-height: 1.5; font-size: 13px; margin: 8px 0; }
+        .guide-voice-status { color: #bbb; font-size: 12px; line-height: 1.4; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -4616,13 +4605,8 @@
                 <div class="task-display" id="taskDisplay"></div>
             </div>
 
-            <div class="swipe-hint" id="swipeHint">
-                <div class="swipe-hint-arrow">
-                    <svg class="icon icon-lg"><use href="#icon-arrow-up"></use></svg>
-                </div>
-                <div class="swipe-hint-label">SKIP BREAK</div>
-            </div>
             <div class="controls">
+                <button class="btn btn-skip hidden" id="skipBreakBtn" onclick="skipBreak()">SKIP BREAK</button>
                 <button class="btn btn-start" id="startBtn" onclick="toggleTimer()">START</button>
                 <button class="btn btn-skip hidden" id="skipStepBtn" onclick="skipTrainingStep()">SKIP STEP</button>
                 <button class="btn btn-reset hidden" id="resetBtn" onclick="resetTimer()">RESET</button>
@@ -4709,8 +4693,8 @@
             </div>
             <div class="training-step" id="trainingDurationStep">
                 <div class="duration-highlights" aria-label="Training library summary">
-                    <span class="duration-highlight"><strong>71</strong> total plans</span>
-                    <span class="duration-highlight"><strong>58</strong> Pro workouts</span>
+                    <span class="duration-highlight"><strong id="sportWorkoutCount">71</strong> total plans</span>
+                    <span class="duration-highlight"><strong id="sportPremiumCount">58</strong> Pro workouts</span>
                     <span class="duration-highlight">20-90 min sessions</span>
                 </div>
                 <div class="training-grid">
@@ -4786,8 +4770,15 @@
                         <svg class="icon icon-sm"><use href="#icon-filter"></use></svg>
                         <span>Sort by</span>
                         <span class="training-filter-current" id="trainingSortLabel">Default</span>
+                        <span class="training-filter-current" id="trainingSportFilterLabel">All sports</span>
                     </button>
                     <div class="training-filter-options" id="trainingSortOptions">
+                        <div class="training-filter-heading">Sport</div>
+                        <button class="training-filter-btn active" data-training-sport="all" aria-pressed="true" onclick="setTrainingSportFilter('all')">All sports</button>
+                        <button class="training-filter-btn" data-training-sport="boxing" aria-pressed="false" onclick="setTrainingSportFilter('boxing')">Boxing</button>
+                        <button class="training-filter-btn" data-training-sport="k1" aria-pressed="false" onclick="setTrainingSportFilter('k1')">K1</button>
+                        <button class="training-filter-btn" data-training-sport="muaythai" aria-pressed="false" onclick="setTrainingSportFilter('muaythai')">Muay Thai</button>
+                        <div class="training-filter-heading">Sort by</div>
                         <button class="training-filter-btn active" data-training-sort="default" onclick="setTrainingSort('default')">Default</button>
                         <button class="training-filter-btn" data-training-sort="hardest" onclick="setTrainingSort('hardest')">Hardest</button>
                         <button class="training-filter-btn" data-training-sort="easiest" onclick="setTrainingSort('easiest')">Easiest</button>
@@ -4971,11 +4962,12 @@
                             <div class="settings-inline-note" id="languageDesc">English is the default language.</div>
                         </div>
                         <button class="settings-tab settings-action" onclick="resetTutorial()">SHOW TUTORIAL AGAIN</button>
+                        <button class="settings-tab settings-action" onclick="setSettingsTab('sound')">SOUNDS & VOICE</button>
                     </div>
                 </div>
 
                 <div class="legal-section">
-                    <a class="legal-link" href="privacy-policy.html" target="_blank" rel="noopener noreferrer">PRIVACY POLICY</a>
+                    <a class="legal-link" href="privacy-policy.html">PRIVACY POLICY</a>
                     <div class="legal-note">Required for Play Store and App Store submissions.</div>
                 </div>
 
@@ -5062,12 +5054,21 @@
 
             <div class="settings-pane" id="settingsPane-sound">
                 <button class="secondary-btn settings-back-btn" onclick="setSettingsTab('main')"><span class="icon-row"><svg class="icon icon-sm"><use href="#icon-arrow-left"></use></svg>BACK</span></button>
+                <div class="training-audio-options">
+                    <label><input type="checkbox" id="trainingCuesToggle" onchange="setTrainingAudioPreference('trainingCuesEnabled', this.checked)"><span>Workout section signals</span></label>
+                    <p>One gong with 15 seconds left. Two gongs when a section ends.</p>
+                    <label><input type="checkbox" id="periodicCuesToggle" onchange="setTrainingAudioPreference('periodicCuesEnabled', this.checked)"><span>Beep every 30 seconds</span></label>
+                    <label><input type="checkbox" id="voiceCoachToggle" onchange="setTrainingAudioPreference('voiceCoachEnabled', this.checked)"><span>Voice coach (trial)</span></label>
+                    <p>Available in 30-minute Boxing and K1 plans and Sharp basics. Uses an installed offline voice in your selected language.</p>
+                    <button class="secondary-btn" onclick="testVoiceCoach()">TEST VOICE</button>
+                    <p id="voiceCoachStatus" role="status" aria-live="polite"></p>
+                </div>
                 <div class="settings-section">
                     <div class="toggle-container">
                         <div class="section-title">ROUND START/END SOUNDS</div>
                         <button class="toggle" id="roundSoundsToggle" onclick="toggleRoundSounds()"></button>
                     </div>
-                    <div class="task-description" id="roundSoundsDesc">Enabled</div>
+                    <div class="task-description" id="roundSoundsDesc">Enabled</div><label for="roundBellRepeats">Bell repetitions</label><select id="roundBellRepeats" onchange="setRoundBellRepeats(this.value)" style="padding:12px;background:#222;color:white"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
 
                     <div class="section-title" style="margin-top:14px; margin-bottom:8px;">ROUND START SOUND</div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -5110,6 +5111,8 @@
         </div>
     </div>
 
+    <script src="training-sports.js"></script>
+    <script src="training-audio.js"></script>
     <script>
         // Training tasks by difficulty
         const TASKS = {
@@ -5207,16 +5210,21 @@
             difficulty: 'medium',
             notation: 'text',
             roundSoundsEnabled: true,
+            roundBellRepeats: 3,
             roundStartSound: 'classic',
             roundEndSound: 'classic',
             uiClickSoundsEnabled: true,
             vibrationEnabled: true,
+            trainingCuesEnabled: true,
+            periodicCuesEnabled: false,
+            voiceCoachEnabled: false,
             language: 'en'
         };
 
         let selectedPreset = 'muaythai';
         const PRE_ROUND_READ_SECONDS = 5;
         const LANGUAGE_KEY = 'fightwise_language';
+        const TRAINING_PREFERENCES_KEY = 'fightwise_training_preferences';
         let activeSettingsTab = 'main';
         let openSettingsGroup = null;
         let appMode = null;
@@ -5324,6 +5332,27 @@
             managedAudioPools.flat().forEach(primeAudioElement);
         }
 
+        function resetManagedAudioPlayback() {
+ cancelRoundBellRepeats();
+            // A completed play/unlock belongs to the previous session. Invalidate
+            // its callbacks before stopping it so none can mute or restart a new bell.
+            managedAudioPools.flat().forEach(audio => {
+                const state = getAudioPlaybackState(audio);
+                state.generation++;
+                state.priming = false;
+                state.primed = false;
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                } catch (e) {}
+                audio.muted = false;
+                audio.volume = 1;
+            });
+            uiClickAudioIndex = 0;
+            roundStartAudioIndex = 0;
+            roundEndAudioIndex = 0;
+        }
+
         function playLoudAudioFromPool(pool, currentIndex, fallback = () => {}) {
             if (!pool.length) {
                 fallback();
@@ -5375,14 +5404,21 @@
             if (savedLanguage && ['en', 'fi', 'de'].includes(savedLanguage)) {
                 settings.language = savedLanguage;
             }
+            const savedRepeats = Number(localStorage.getItem('fightwise_bell_repeats'));
+            if ([1,2,3].includes(savedRepeats)) settings.roundBellRepeats = savedRepeats;
+            const preferences = JSON.parse(localStorage.getItem(TRAINING_PREFERENCES_KEY) || '{}');
+            ['trainingCuesEnabled', 'periodicCuesEnabled', 'voiceCoachEnabled'].forEach(key => {
+                if (typeof preferences[key] === 'boolean') settings[key] = preferences[key];
+            });
         } catch (e) {}
 
         const UI_TRANSLATIONS = {
             fi: {
+                'Bell repetitions': 'Kellon toistot',
                 'ROUND': 'ERÄ',
                 'BREAK': 'TAUKO',
                 'READY': 'VALMIS',
-                'Tap start': 'Paina start',
+                'Tap start': 'Paina Aloita',
                 'MODE': 'TILA',
                 'SKIP BREAK': 'OHITA TAUKO',
                 'START': 'ALOITA',
@@ -5569,6 +5605,7 @@
                 'Use Training for guided workouts. The app tells you what to do step by step while the timer runs.': 'Käytä treeniä ohjattuihin harjoituksiin. Appi kertoo vaihe vaiheelta mitä teet ajastimen käydessä.'
             },
             de: {
+                'Bell repetitions': 'Glockenwiederholungen',
                 'ROUND': 'RUNDE',
                 'BREAK': 'PAUSE',
                 'READY': 'BEREIT',
@@ -5759,23 +5796,378 @@
             }
         };
 
+        // Match the English source once, longest phrases first. Translating the
+        // result again would corrupt combinations and words such as "crossing".
+        const TRAINING_TERM_TRANSLATIONS = [
+            ['jab to the body', 'etukäden suora vartaloon', 'Führhand zum Körper'],
+            ['jabs to the body', 'etukäden suorat vartaloon', 'Führhandschläge zum Körper'],
+            ['body jab', 'etukäden suora vartaloon', 'Führhand zum Körper'],
+            ['body cross', 'takakäden suora vartaloon', 'Schlaghand zum Körper'],
+            ['double jab', 'kaksi etukäden suoraa', 'doppelte Führhand'],
+            ['lead hook', 'etukäden koukku', 'vorderer Haken'],
+            ['lead hooks', 'etukäden koukut', 'vordere Haken'],
+            ['rear hook', 'takakäden koukku', 'hinterer Haken'],
+            ['rear hooks', 'takakäden koukut', 'hintere Haken'],
+            ['lead uppercut', 'etukäden kohokoukku', 'vorderer Aufwärtshaken'],
+            ['lead uppercuts', 'etukäden kohokoukut', 'vordere Aufwärtshaken'],
+            ['rear uppercut', 'takakäden kohokoukku', 'hinterer Aufwärtshaken'],
+            ['rear uppercuts', 'takakäden kohokoukut', 'hintere Aufwärtshaken'],
+            ['body hook', 'vartalokoukku', 'Körperhaken'],
+            ['body hooks', 'vartalokoukut', 'Körperhaken'],
+            ['low kick', 'alapotku', 'Tiefkick'],
+            ['low kicks', 'alapotkut', 'Tiefkicks'],
+            ['body kick', 'vartalopotku', 'Körperkick'],
+            ['body kicks', 'vartalopotkut', 'Körperkicks'],
+            ['middle kick', 'keskikorkea potku', 'Kick auf mittlerer Höhe'],
+            ['middle kicks', 'keskikorkeat potkut', 'Kicks auf mittlerer Höhe'],
+            ['high kick', 'yläpotku', 'Kopftritt'],
+            ['high kicks', 'yläpotkut', 'Kopftritte'],
+            ['switch kick', 'vaihtoaskelpotku', 'Wechselschrittkick'],
+            ['switch kicks', 'vaihtoaskelpotkut', 'Wechselschrittkicks'],
+            ['counter punches', 'vastalyönnit', 'Konterschläge'],
+            ['straight punches', 'suorat lyönnit', 'gerade Schläge'],
+            ['body shots', 'vartalolyönnit', 'Körperschläge'],
+            ['head movement', 'pään liike', 'Kopfbewegung'],
+            ['slip outside', 'väistä ulkopuolelle', 'nach außen ausweichen'],
+            ['slip inside', 'väistä sisäpuolelle', 'nach innen ausweichen'],
+            ['roll under', 'väistä alakautta', 'abtauchen'],
+            ['pull back', 'väistä taakse', 'nach hinten ausweichen'],
+            ['step back', 'astu taakse', 'zurücktreten'],
+            ['step out', 'astu pois etäisyydeltä', 'aus der Distanz treten'],
+            ['step in', 'astu sisään', 'in die Distanz treten'],
+            ['long guard', 'pitkä suojaus', 'lange Deckung'],
+            ['clinch knees', 'polvi-iskut pystypainissa', 'Kniestöße im Clinch'],
+            ['fight pace', 'ottelutahti', 'Kampftempo'],
+            ['technique rounds', 'tekniikkaerät', 'Technikrunden'],
+            ['bag rounds', 'säkkierät', 'Sandsackrunden'],
+            ['flow rounds', 'rennon harjoittelun erät', 'lockere Trainingsrunden'],
+            ['skill rounds', 'taitoerät', 'Technikrunden'],
+            ['shadowbox rounds', 'varjonyrkkeilyerät', 'Schattenboxrunden'],
+            ['jab', 'etukäden suora', 'Führhand'],
+            ['jabs', 'etukäden suorat', 'Führhandschläge'],
+            ['cross', 'takakäden suora', 'Schlaghand'],
+            ['crosses', 'takakäden suorat', 'Schlaghandschläge'],
+            ['hook', 'koukku', 'Haken'],
+            ['hooks', 'koukut', 'Haken'],
+            ['uppercut', 'kohokoukku', 'Aufwärtshaken'],
+            ['uppercuts', 'kohokoukut', 'Aufwärtshaken'],
+            ['straight', 'suora lyönti', 'Gerade'],
+            ['straights', 'suorat lyönnit', 'Geraden'],
+            ['slip', 'sivuväistö', 'seitliches Ausweichen'],
+            ['slips', 'sivuväistöt', 'seitliche Ausweichbewegungen'],
+            ['roll', 'alakautta väistö', 'Abtauchen'],
+            ['teep', 'työntöpotku', 'Frontkick'],
+            ['teeps', 'työntöpotkut', 'Frontkicks'],
+            ['knee', 'polvi-isku', 'Kniestoß'],
+            ['knees', 'polvi-iskut', 'Kniestöße'],
+            ['elbow', 'kyynärpääisku', 'Ellbogenstoß'],
+            ['elbows', 'kyynärpääiskut', 'Ellbogenstöße'],
+            ['kick', 'potku', 'Kick'],
+            ['kicks', 'potkut', 'Kicks'],
+            ['punch', 'lyönti', 'Schlag'],
+            ['punches', 'lyönnit', 'Schläge'],
+            ['clinch', 'pystypaini', 'Clinch'],
+            ['check', 'sääritorjunta', 'Schienbeinblock'],
+            ['checks', 'sääritorjunnat', 'Schienbeinblocks'],
+            ['block', 'torjunta', 'Block'],
+            ['blocks', 'osiot', 'Abschnitte'],
+            ['counter', 'vastaisku', 'Konter'],
+            ['counters', 'vastaiskut', 'Konter'],
+            ['footwork', 'jalkatyö', 'Beinarbeit'],
+            ['pivot', 'käännös tukijalalla', 'Drehschritt'],
+            ['pivots', 'käännökset tukijalalla', 'Drehschritte'],
+            ['stance', 'otteluasento', 'Kampfstellung'],
+            ['guard', 'suojaus', 'Deckung'],
+            ['defense', 'puolustus', 'Verteidigung'],
+            ['feint', 'hämäys', 'Finte'],
+            ['feints', 'hämäykset', 'Finten'],
+            ['combination', 'yhdistelmä', 'Kombination'],
+            ['combinations', 'yhdistelmät', 'Kombinationen'],
+            ['combo', 'yhdistelmä', 'Kombination'],
+            ['combos', 'yhdistelmät', 'Kombinationen'],
+            ['shadowboxing', 'varjonyrkkeily', 'Schattenboxen'],
+            ['shadowbox', 'varjonyrkkeily', 'Schattenboxen'],
+            ['warmup', 'lämmittely', 'Aufwärmen'],
+            ['cooldown', 'loppuverryttely', 'Abwärmen'],
+            ['rest', 'tauko', 'Pause'],
+            ['stretch', 'venyttely', 'Dehnen'],
+            ['stretching', 'venyttely', 'Dehnen'],
+            ['mobility', 'liikkuvuus', 'Mobilität'],
+            ['conditioning', 'kuntoharjoittelu', 'Konditionstraining'],
+            ['freestyle', 'vapaa harjoittelu', 'freies Training'],
+            ['finisher', 'loppurutistus', 'Abschlussübung'],
+            ['finish', 'lopetus', 'Abschluss'],
+            ['body', 'vartalo', 'Körper'],
+            ['head', 'pää', 'Kopf'],
+            ['rounds', 'erää', 'Runden'],
+            ['intervals', 'intervallit', 'Intervalle'],
+            ['sprints', 'spurtit', 'Sprints'],
+            ['speed rounds', 'nopeuserät', 'Schnelligkeitsrunden'],
+            ['boxing rounds', 'nyrkkeilyerät', 'Boxrunden'],
+            ['k1 rounds', 'K1-erät', 'K1-Runden'],
+            ['bag sprints', 'säkkispurtit', 'Sandsacksprints'],
+            ['body work', 'vartaloharjoittelu', 'Körperarbeit'],
+            ['main work', 'päätreeni', 'Hauptteil'],
+            ['technique', 'tekniikka', 'Technik'],
+            ['technical block', 'tekniikkaosio', 'Technikabschnitt'],
+            ['bag work', 'säkkityöskentely', 'Sandsackarbeit'],
+            ['combo work', 'yhdistelmäharjoittelu', 'Kombinationstraining'],
+            ['mobility finish', 'loppuliikkuvuus', 'Mobilitätsabschluss'],
+            ['and', 'ja', 'und']
+        ];
+        const trainingTermLookup = new Map(TRAINING_TERM_TRANSLATIONS.map(entry => [entry[0], entry]));
+        const trainingTermPattern = new RegExp('\\b(?:' + TRAINING_TERM_TRANSLATIONS
+            .map(entry => entry[0]).sort((a, b) => b.length - a.length).join('|') + ')\\b', 'gi');
+
+        const EXTRA_TRANSLATIONS = [
+            ['Sport', 'Laji', 'Sportart'],
+            ['All sports', 'Kaikki lajit', 'Alle Sportarten'],
+            ['Fast hands', 'Nopeat kädet', 'Schnelle Hände'],
+            ['Blitz bag', 'Säkkispurtit', 'Sandsacksprints'],
+            ['Fight camp', 'Otteluleiri', 'Kampfvorbereitung'],
+            ['Long flow', 'Pitkä rento treeni', 'Langes lockeres Training'],
+            ['Clean basics, footwork and simple combinations.', 'Puhtaita perustekniikoita, jalkatyötä ja yksinkertaisia yhdistelmiä.', 'Saubere Grundlagen, Beinarbeit und einfache Kombinationen.'],
+            ['Short, sharp work for hand speed and rhythm.', 'Lyhyt ja terävä harjoitus käsien nopeudelle ja rytmille.', 'Kurzes, präzises Training für schnelle Hände und Rhythmus.'],
+            ['Short, brutal bag rounds for pace, power and conditioning.', 'Lyhyitä ja kovia säkkieriä tahdin, voiman ja kunnon kehittämiseen.', 'Kurze, harte Sandsackrunden für Tempo, Kraft und Kondition.'],
+            ['Long technical session with bag work, conditioning and cooldown.', 'Pitkä tekniikkaharjoitus, jossa on säkkityöskentelyä, kuntoharjoittelua ja loppuverryttely.', 'Lange Technikeinheit mit Sandsackarbeit, Konditionstraining und Abwärmen.'],
+            ['A low-impact long session for technique, rhythm, breathing and mobility.', 'Pitkä ja kevyt harjoitus tekniikalle, rytmille, hengitykselle ja liikkuvuudelle.', 'Lange, schonende Einheit für Technik, Rhythmus, Atmung und Mobilität.'],
+            ['Easy bounce, shoulder rolls and light shadowboxing.', 'Kevyttä pomppimista, hartioiden pyörittelyä ja kevyttä varjonyrkkeilyä.', 'Lockeres Federn, Schulterkreisen und leichtes Schattenboxen.'],
+            ['Fast jab', 'Nopea etukäden suora', 'Schnelle Führhand'],
+            ['1-2 rhythm', 'Yhdistelmän 1–2 rytmi', 'Rhythmus der Kombination 1–2'],
+            ['Kick entries', 'Potkujen valmistelu', 'Kickvorbereitung'],
+            ['Burst work', 'Nopeusjaksot', 'Schnelligkeitsintervalle'],
+            ['2 min easy bounce or rope.', '2 min kevyttä pomppimista tai hyppynarua.', '2 Min. lockeres Federn oder Seilspringen.'],
+            ['3 min shadowboxing with fast hands and relaxed breathing.', '3 min varjonyrkkeilyä nopeilla käsillä ja rennolla hengityksellä.', '3 Min. Schattenboxen mit schnellen Händen und ruhiger Atmung.'],
+            ['High-volume jab-cross. Keep the chin tucked and reset quickly.', 'Tee paljon etukäden suora–takakäden suora -yhdistelmiä. Pidä leuka alhaalla ja palaa nopeasti otteluasentoon.', 'Viele Führhand–Schlaghand-Kombinationen. Halte das Kinn unten und kehre schnell in die Kampfstellung zurück.'],
+            ['Hook-cross-hook, low kick finish. Keep the pace high.', 'Koukku–takakäden suora–koukku ja lopuksi alapotku. Pidä tahti korkeana.', 'Haken–Schlaghand–Haken, zum Abschluss ein Tiefkick. Halte das Tempo hoch.'],
+            ['Rip body hooks, return upstairs, exit with a low kick.', 'Lyö voimakkaita vartalokoukkuja, jatka päähän ja irtaudu alapotkulla.', 'Kräftige Körperhaken, dann zum Kopf schlagen und mit einem Tiefkick lösen.'],
+            ['Clinch, 10 knees, exit with 1-2, repeat.', 'Ota pystypainiote, tee 10 polvi-iskua, irtaudu yhdistelmällä 1–2 ja toista.', 'In den Clinch gehen, 10 Kniestöße, mit 1–2 lösen und wiederholen.'],
+            ['Empty the tank', 'Anna kaikkesi', 'Gib alles'],
+            ['All weapons. Short bursts, no long pauses.', 'Käytä kaikkia tekniikoita. Lyhyitä tehojaksoja ilman pitkiä taukoja.', 'Alle Techniken einsetzen. Kurze intensive Phasen ohne lange Pausen.'],
+            ['Walk, breathe, then stretch calves, hips and shoulders.', 'Kävele, hengitä ja venyttele lopuksi pohkeet, lonkat ja hartiat.', 'Gehen, atmen und anschließend Waden, Hüften und Schultern dehnen.'],
+            ['Jog or rope, mobility, activation and 3 rounds of shadowboxing.', 'Hölkkää tai hyppynarua, liikkuvuutta, lihasten aktivointia ja 3 erää varjonyrkkeilyä.', 'Joggen oder Seilspringen, Mobilität, Aktivierung und 3 Runden Schattenboxen.'],
+            ['Work stance, footwork, defense, jab entries and kick mechanics.', 'Harjoittele otteluasentoa, jalkatyötä, puolustusta, sisääntuloja etukäden suoralla ja potkutekniikkaa.', 'Trainiere Kampfstellung, Beinarbeit, Verteidigung, Einstiege mit der Führhand und Kicktechnik.'],
+            ['Clean technique', 'Puhdas tekniikka', 'Saubere Technik'],
+            ['Combination building', 'Yhdistelmien rakentaminen', 'Kombinationen aufbauen'],
+            ['Clinch and knees', 'Pystypaini ja polvi-iskut', 'Clinch und Kniestöße'],
+            ['Fight simulation', 'Otteluharjoitus', 'Kampfsimulation'],
+            ['Pace rounds', 'Tahtierät', 'Temporunden'],
+            ['Move and keep every strike balanced.', 'Liiku ja säilytä tasapaino jokaisessa iskussa.', 'Bewege dich und bleibe bei jedem Schlag im Gleichgewicht.'],
+            ['Layer punches, kicks and exits.', 'Yhdistele lyöntejä, potkuja ja irtautumisia.', 'Verbinde Schläge, Kicks und Ausstiege.'],
+            ['Enter safely, knee, exit and strike back in.', 'Tule turvallisesti sisään, tee polvi-isku, irtaudu ja palaa iskuilla sisään.', 'Sicher einsteigen, Kniestoß, lösen und mit Schlägen erneut einsteigen.'],
+            ['Visualize an opponent and make tactical choices.', 'Kuvittele vastustaja ja tee taktisia valintoja.', 'Stelle dir einen Gegner vor und triff taktische Entscheidungen.'],
+            ['Alternate hard bursts with controlled recovery.', 'Vuorottele kovia tehojaksoja ja hallittua palautumista.', 'Wechsle intensive Phasen mit kontrollierter Erholung ab.'],
+            ['Bodyweight circuit with pushups, squats, lunges, core and sprawls.', 'Kehonpainokierros: punnerrukset, kyykyt, askelkyykyt, keskivartaloliikkeet ja alasvientien torjunnat.', 'Körpergewichtszirkel: Liegestütze, Kniebeugen, Ausfallschritte, Rumpfübungen und Abwehr von Beinangriffen.'],
+            ['Walk, breathe, stretch hips, back, calves and shoulders.', 'Kävele, hengitä ja venyttele lonkat, selkä, pohkeet ja hartiat.', 'Gehen, atmen und Hüften, Rücken, Waden und Schultern dehnen.'],
+            ['Mobility, easy footwork and relaxed shadowboxing.', 'Liikkuvuutta, kevyttä jalkatyötä ja rentoa varjonyrkkeilyä.', 'Mobilität, leichte Beinarbeit und lockeres Schattenboxen.'],
+            ['Movement base', 'Liikkumisen perusteet', 'Bewegungsgrundlagen'],
+            ['Boxing mechanics', 'Lyöntitekniikka', 'Boxtechnik'],
+            ['Kicks and checks', 'Potkut ja sääritorjunnat', 'Kicks und Schienbeinblocks'],
+            ['Tactical flow', 'Rento taktiikkaharjoitus', 'Lockeres Taktiktraining'],
+            ['Footwork, pivots, stance switches and exits.', 'Jalkatyötä, käännöksiä tukijalalla, otteluasennon vaihtoja ja irtautumisia.', 'Beinarbeit, Drehschritte, Stellungswechsel und Ausstiege.'],
+            ['Clean punches, head movement and counters at easy pace.', 'Puhtaita lyöntejä, pään liikettä ja vastaiskuja kevyellä tahdilla.', 'Saubere Schläge, Kopfbewegung und Konter in lockerem Tempo.'],
+            ['Technical kicks, checks, teeps and balance resets.', 'Teknisiä potkuja, sääritorjuntoja ja työntöpotkuja. Palaa aina tasapainoiseen otteluasentoon.', 'Technische Kicks, Schienbeinblocks und Frontkicks. Kehre stets in eine stabile Kampfstellung zurück.'],
+            ['Imagine an opponent and make calm tactical decisions.', 'Kuvittele vastustaja ja tee rauhallisia taktisia päätöksiä.', 'Stelle dir einen Gegner vor und triff ruhige taktische Entscheidungen.'],
+            ['Long stretching for hips, calves, adductors, shoulders and back.', 'Pitkiä venytyksiä lonkille, pohkeille, lähentäjille, hartioille ja selälle.', 'Lange Dehnungen für Hüften, Waden, Adduktoren, Schultern und Rücken.'],
+            ['Choose your sport', 'Valitse laji', 'Sportart wählen'],
+            ['Choose the techniques for your session.', 'Valitse harjoitukseesi sopiva laji.', 'Wähle die Sportart für dein Training.'],
+            ['Boxing', 'Nyrkkeily', 'Boxen'],
+            ['Punches, defense and footwork. No kicks.', 'Lyöntejä, puolustusta ja jalkatyötä. Ei potkuja.', 'Schläge, Verteidigung und Beinarbeit. Keine Kicks.'],
+            ['Punches, kicks and single knees with an immediate exit.', 'Lyöntejä, potkuja ja yksittäisiä polvi-iskuja, joista irtaudutaan heti.', 'Schläge, Kicks und einzelne Kniestöße mit sofortigem Lösen.'],
+            ['Punches, kicks, knees, elbows and clinch.', 'Lyöntejä, potkuja, polvi- ja kyynärpääiskuja sekä pystypainia.', 'Schläge, Kicks, Knie- und Ellbogenstöße sowie Clinch.'],
+            ['Boxing foundations', 'Nyrkkeilyn perusteet', 'Boxgrundlagen'],
+            ['Boxing rhythm', 'Nyrkkeilyn rytmi', 'Boxrhythmus'],
+            ['K1 foundations', 'K1:n perusteet', 'K1-Grundlagen'],
+            ['K1 rhythm', 'K1:n rytmi', 'K1-Rhythmus'],
+            ['Sharp basics', 'Terävät perusteet', 'Saubere Grundlagen'],
+            ['SOUNDS & VOICE', 'ÄÄNET JA PUHEOPASTUS', 'TÖNE UND SPRACHANLEITUNG'],
+            ['Workout section signals', 'Harjoitusosioiden äänimerkit', 'Signale für Trainingsabschnitte'],
+            ['One gong with 15 seconds left. Two gongs when a section ends.', 'Yksi gongi, kun aikaa on 15 sekuntia. Kaksi gongia osion päättyessä.', 'Ein Gong bei 15 verbleibenden Sekunden. Zwei Gongs am Abschnittsende.'],
+            ['Beep every 30 seconds', 'Piippaus 30 sekunnin välein', 'Signalton alle 30 Sekunden'],
+            ['Voice coach (trial)', 'Puheopastus (kokeilu)', 'Sprachanleitung (Testversion)'],
+            ['Available in 30-minute Boxing and K1 plans and Sharp basics. Uses an installed offline voice in your selected language.', 'Saatavilla 30 minuutin nyrkkeily- ja K1-ohjelmissa sekä Terävät perusteet -treenissä. Käyttää laitteelle asennettua puheääntä valitsemallasi kielellä ilman verkkoyhteyttä.', 'Verfügbar in 30-minütigen Box- und K1-Plänen sowie Saubere Grundlagen. Verwendet eine installierte Offline-Stimme in deiner gewählten Sprache.'],
+            ['TEST VOICE', 'KOKEILE PUHEÄÄNTÄ', 'STIMME TESTEN'],
+            ['Voice unavailable. Install an offline voice for your selected language in device settings.', 'Puheääni ei ole käytettävissä. Asenna laitteen asetuksista offline-puheääni valitsemallesi kielelle.', 'Stimme nicht verfügbar. Installiere in den Geräteeinstellungen eine Offline-Stimme für deine gewählte Sprache.'],
+            ['Testing voice in your selected language.', 'Kokeillaan puheääntä valitsemallasi kielellä.', 'Stimme in deiner gewählten Sprache wird getestet.'],
+            ['Voice test complete.', 'Puheäänen kokeilu valmis.', 'Sprachtest abgeschlossen.'],
+            ['Voice coach trial is active for this workout.', 'Puheopastuskokeilu on käytössä tässä treenissä.', 'Die Sprachanleitung ist für dieses Workout aktiv.'],
+            ['Voice coach trial is not available for this workout.', 'Puheopastuskokeilu ei ole saatavilla tässä treenissä.', 'Die Sprachanleitung ist für dieses Workout noch nicht verfügbar.'],
+            ['Water break', 'Juomatauko', 'Trinkpause'],
+            ['Drink water, breathe slowly and shake your arms out. Continue when you feel ready.', 'Juo vettä, hengitä rauhallisesti ja ravistele kädet rennoiksi. Jatka, kun olet valmis.', 'Trinke Wasser, atme ruhig und schüttle die Arme aus. Fahre fort, wenn du bereit bist.'],
+            ['Total time', 'Kokonaiskesto', 'Gesamtdauer'],
+            ['Sections', 'Osiot', 'Abschnitte'],
+            ['Rest time', 'Taukojen yhteiskesto', 'Gesamte Pausenzeit'],
+            ['1 hour', '1 tunti', '1 Stunde'],
+            ['Plans are grouped by approximate duration. Each card shows the exact time including rest.', 'Treenit on ryhmitelty suuntaa-antavan keston mukaan. Kortissa näkyy tarkka kokonaiskesto taukoineen.', 'Pläne sind nach ungefährer Dauer gruppiert. Jede Karte zeigt die genaue Zeit einschließlich Pausen.'],
+            ['Training library summary', 'Treenikirjaston yhteenveto', 'Übersicht der Trainingsbibliothek'],
+            ['Sort and filter workouts', 'Järjestä ja suodata treenejä', 'Workouts sortieren und filtern'],
+            ['Jab and movement', 'Etukäden suora ja liikkuminen', 'Führhand und Bewegung'],
+            ['Straight punches', 'Suorat lyönnit', 'Gerade Schläge'],
+            ['Hooks', 'Koukut', 'Haken'],
+            ['Defense and counters', 'Puolustus ja vastaiskut', 'Verteidigung und Konter'],
+            ['Range and rhythm', 'Etäisyys ja rytmi', 'Distanz und Rhythmus'],
+            ['Body and head', 'Vartalo ja pää', 'Körper und Kopf'],
+            ['Short combinations', 'Lyhyet yhdistelmät', 'Kurze Kombinationen'],
+            ['Speed and defense', 'Nopeus ja puolustus', 'Schnelligkeit und Verteidigung'],
+            ['Hands into kicks', 'Lyönneistä potkuihin', 'Von Schlägen zu Kicks'],
+            ['Body kicks', 'Vartalopotkut', 'Körperkicks'],
+            ['Kick defense', 'Potkujen torjunta', 'Kickabwehr'],
+            ['Single knee and exit', 'Yksi polvi-isku ja irtautuminen', 'Ein Kniestoß und Lösen'],
+            ['Range control', 'Etäisyyden hallinta', 'Distanzkontrolle'],
+            ['Kick combinations', 'Potkuyhdistelmät', 'Kickkombinationen'],
+            ['Counters', 'Vastaiskut', 'Konter'],
+            ['Fight rhythm', 'Ottelurytmi', 'Kampfrhythmus'],
+            ['1-2 basics', 'Yhdistelmän 1–2 perusteet', 'Grundlagen der Kombination 1–2'],
+            ['Hooks and low kicks', 'Koukut ja alapotkut', 'Haken und Tiefkicks'],
+            ['Defense first', 'Puolustus ensin', 'Verteidigung zuerst'],
+            ['Jab, double jab, step out.', 'Etukäden suora, kaksi etukäden suoraa ja poistuminen etäisyydeltä.', 'Führhand, doppelte Führhand und aus der Distanz treten.'],
+            ['Slip, cross. Block, hook. Step out.', 'Tee sivuväistö ja takakäden suora. Torju ja lyö koukku. Poistu etäisyydeltä.', 'Seitlich ausweichen, Schlaghand. Blocken, Haken. Distanz verlassen.'],
+            ['Double jab, step back, jab-cross.', 'Kaksi etukäden suoraa, askel taakse ja etukäden suora–takakäden suora.', 'Doppelte Führhand, Schritt zurück, Führhand–Schlaghand.'],
+            ['Jab to the body, cross to the head, step out.', 'Etukäden suora vartaloon, takakäden suora päähän ja poistuminen etäisyydeltä.', 'Führhand zum Körper, Schlaghand zum Kopf und Distanz verlassen.'],
+            ['Jab-cross-hook, reset guard, move.', 'Etukäden suora–takakäden suora–koukku, palauta suojaus ja liiku.', 'Führhand–Schlaghand–Haken, Deckung wiederherstellen und bewegen.'],
+            ['Jab-cross-low kick. Reset your stance.', 'Etukäden suora–takakäden suora–alapotku. Palaa otteluasentoon.', 'Führhand–Schlaghand–Tiefkick. Zur Kampfstellung zurückkehren.'],
+            ['Jab, body kick, step out.', 'Etukäden suora, vartalopotku ja poistuminen etäisyydeltä.', 'Führhand, Körperkick und Distanz verlassen.'],
+            ['Check, cross-low kick, step out.', 'Sääritorjunta, takakäden suora–alapotku ja poistuminen etäisyydeltä.', 'Schienbeinblock, Schlaghand–Tiefkick und Distanz verlassen.'],
+            ['Jab-cross, one knee, step out immediately. No holding.', 'Etukäden suora–takakäden suora, yksi polvi-isku ja välitön irtautuminen. Älä pidä vastustajasta kiinni.', 'Führhand–Schlaghand, ein Kniestoß und sofort lösen. Nicht festhalten.'],
+            ['Jab, teep, step out.', 'Etukäden suora, työntöpotku ja poistuminen etäisyydeltä.', 'Führhand, Frontkick und Distanz verlassen.'],
+            ['Block, cross-low kick. Slip, cross-body kick.', 'Torju ja tee takakäden suora–alapotku. Tee sivuväistö ja takakäden suora–vartalopotku.', 'Blocken, Schlaghand–Tiefkick. Seitlich ausweichen, Schlaghand–Körperkick.'],
+            ['Jab, cross, hook. Slip and step out.', 'Etukäden suora, takakäden suora, koukku. Tee sivuväistö ja poistu etäisyydeltä.', 'Führhand, Schlaghand, Haken. Seitlich ausweichen und Distanz verlassen.'],
+            ['2 min light jog or jump rope.', '2 min kevyttä hölkkää tai hyppynarua.', '2 Min. leichtes Joggen oder Seilspringen.'],
+            ['3 min shadowboxing with loose shoulders and active footwork.', '3 min varjonyrkkeilyä hartiat rentoina ja jalat liikkeessä.', '3 Min. Schattenboxen mit lockeren Schultern und aktiver Beinarbeit.'],
+            ['3 relaxed shadowboxing minutes.', '3 min rentoa varjonyrkkeilyä.', '3 Min. lockeres Schattenboxen.'],
+            ['2 min stretching hips, calves and shoulders.', '2 min lonkkien, pohkeiden ja hartioiden venyttelyä.', '2 Min. Hüften, Waden und Schultern dehnen.'],
+            ['PAUSED', 'TAUOTETTU', 'PAUSIERT'],
+            ['FINISHED', 'VALMIS', 'BEENDET'],
+            ['TRAINING', 'TREENI', 'TRAINING'],
+            ['Resume when ready', 'Jatka, kun olet valmis', 'Fortsetzen, wenn du bereit bist'],
+            ['Session complete', 'Harjoitus valmis', 'Training abgeschlossen'],
+            ['Great work!', 'Hyvää työtä!', 'Gut gemacht!'],
+            ['Remove', 'Poista', 'Entfernen'],
+            ['EASY', 'HELPPO', 'LEICHT'],
+            ['MEDIUM', 'KESKITASO', 'MITTEL'],
+            ['HARD', 'VAIKEA', 'SCHWER'],
+            ['PRO', 'PRO', 'PRO'],
+            ['TEXT', 'TEKSTI', 'TEXT'],
+            ['NUMBERS', 'NUMEROT', 'ZAHLEN'],
+            ['DIFFICULTY', 'VAIKEUSTASO', 'SCHWIERIGKEIT'],
+            ['NOTATION', 'ESITYSTAPA', 'DARSTELLUNG'],
+            ['ROUND START/END SOUNDS', 'ERÄN ALKU- JA LOPPUÄÄNET', 'SIGNALE ZUM RUNDENSTART UND -ENDE'],
+            ['ROUND START SOUND', 'ERÄN ALOITUSÄÄNI', 'SIGNAL ZUM RUNDENSTART'],
+            ['ROUND END SOUND', 'ERÄN LOPETUSÄÄNI', 'SIGNAL ZUM RUNDENENDE'],
+            ['UI CLICK SOUNDS', 'PAINIKEÄÄNET', 'TASTENTÖNE'],
+            ['BUTTON CLICKS', 'PAINIKEÄÄNET', 'TASTENTÖNE'],
+            ['TASK SPAR MODE', 'SPARRITEHTÄVÄT', 'SPARRINGAUFGABEN'],
+            ['QUICK PRESETS', 'VALMIIT ASETUKSET', 'SCHNELLE VOREINSTELLUNGEN'],
+            ['ROUND TIME', 'ERÄN KESTO', 'RUNDENZEIT'],
+            ['BREAK TIME', 'TAUON KESTO', 'PAUSENZEIT'],
+            ['NUMBER OF ROUNDS', 'ERIEN MÄÄRÄ', 'RUNDENZAHL'],
+            ['VIBRATION', 'VÄRINÄ', 'VIBRATION'],
+            ['TEST SOUNDS', 'KOKEILE ÄÄNIÄ', 'TÖNE TESTEN'],
+            ['CLASSIC', 'KLASSINEN', 'KLASSISCH'],
+            ['BELL', 'KELLO', 'GLOCKE'],
+            ['GONG', 'GONGI', 'GONG'],
+            ['DIGITAL', 'DIGITAALINEN', 'DIGITAL'],
+            ['SOFT', 'PEHMEÄ', 'SANFT'],
+            ['SHARP', 'TERÄVÄ', 'SCHARF'],
+            ['HEAVY', 'VOIMAKAS', 'KRÄFTIG'],
+            ['Rest', 'Tauko', 'Pause'],
+            ['Breathe, reset your stance and get ready for the next round.', 'Hengitä, palaa otteluasentoon ja valmistaudu seuraavaan erään.', 'Atme, nimm deine Kampfstellung ein und bereite dich auf die nächste Runde vor.'],
+            ['Move calmly. Jab, double jab and exit on an angle.', 'Liiku rauhallisesti. Lyö etukäden suora, kaksi etukäden suoraa ja poistu sivukulmaan.', 'Bewege dich ruhig. Schlage die Führhand, eine doppelte Führhand und verlasse die Distanz seitlich.'],
+            ['Slip, roll, block, check and answer with one clean strike.', 'Tee sivuväistö, väistä alakautta, torju käsillä tai säärellä ja vastaa yhdellä puhtaalla iskulla.', 'Weiche seitlich aus, tauche ab, blocke mit Armen oder Schienbein und antworte mit einem sauberen Treffer.'],
+            ['Mix punches, kicks and teeps at 60 percent speed.', 'Yhdistele lyöntejä, potkuja ja työntöpotkuja 60 prosentin nopeudella.', 'Kombiniere Schläge, Kicks und Frontkicks mit 60 Prozent Geschwindigkeit.'],
+            ['Jab-cross, reset guard, move.', 'Etukäden suora–takakäden suora, palauta suojaus ja liiku.', 'Führhand–Schlaghand, Deckung wiederherstellen und bewegen.'],
+            ['Every combo ends with a low kick.', 'Päätä jokainen yhdistelmä alapotkuun.', 'Beende jede Kombination mit einem Tiefkick.'],
+            ['Body hooks, body cross and upstairs finish.', 'Lyö vartalokoukkuja ja takakäden suora vartaloon. Päätä yhdistelmä lyöntiin päähän.', 'Körperhaken und Schlaghand zum Körper. Beende die Kombination mit einem Schlag zum Kopf.'],
+            ['5 knees, exit with 1-2, repeat.', 'Tee 5 polvi-iskua, irtaudu yhdistelmällä 1–2 ja toista.', '5 Kniestöße, mit 1–2 lösen und wiederholen.'],
+            ['Work hard but keep every strike balanced.', 'Tee töitä kovaa, mutta säilytä tasapaino jokaisessa iskussa.', 'Arbeite hart, aber bleibe bei jedem Schlag im Gleichgewicht.'],
+            ['Jab while circling. Step out after every 2-3 strikes.', 'Lyö etukäden suoraa liikkuessasi ympyrää. Poistu etäisyydeltä aina 2–3 iskun jälkeen.', 'Schlage die Führhand beim Kreisen. Verlasse nach jeweils 2–3 Schlägen die Distanz.'],
+            ['Keep the guard high. Reset your feet after every combo.', 'Pidä suojaus ylhäällä. Palaa tasapainoiseen otteluasentoon jokaisen yhdistelmän jälkeen.', 'Halte die Deckung hoch. Kehre nach jeder Kombination in eine stabile Kampfstellung zurück.'],
+            ['Slip, block or step out before every counter combination.', 'Tee sivuväistö, torju tai poistu etäisyydeltä ennen jokaista vastaiskuyhdistelmää.', 'Weiche seitlich aus, blocke oder verlasse die Distanz vor jeder Konterkombination.'],
+            ['Double jab, jab-body jab, jab-step out.', 'Kaksi etukäden suoraa; etukäden suora päähän ja vartaloon; etukäden suora ja poistuminen etäisyydeltä.', 'Doppelte Führhand; Führhand zum Kopf und Körper; Führhand und Distanz verlassen.'],
+            ['10 s fast hands, 20 s relaxed movement. Repeat.', '10 s nopeita lyöntejä, 20 s rentoa liikkumista. Toista.', '10 s schnelle Schläge, 20 s lockere Bewegung. Wiederholen.'],
+            ['Use only clean combinations. No sloppy volume.', 'Tee vain puhtaita yhdistelmiä. Säilytä tekniikka toistomäärän sijaan.', 'Nur saubere Kombinationen. Achte auf Technik statt auf die Anzahl.'],
+            ['Walk, breathe and stretch.', 'Kävele, hengitä ja venyttele.', 'Gehen, atmen und dehnen.'],
+            ['Slow shadowboxing and easy stretching.', 'Rauhallista varjonyrkkeilyä ja kevyttä venyttelyä.', 'Langsames Schattenboxen und leichtes Dehnen.'],
+            ['Joint mobility, easy bounce and loose shadowboxing.', 'Nivelten liikkuvuutta, kevyttä pomppimista ja rentoa varjonyrkkeilyä.', 'Gelenkmobilisation, lockeres Federn und entspanntes Schattenboxen.'],
+            ['Slow breathing and stretch hips, calves and shoulders.', 'Hengitä rauhallisesti ja venyttele lonkat, pohkeet ja hartiat.', 'Atme ruhig und dehne Hüften, Waden und Schultern.']
+        ];
+        EXTRA_TRANSLATIONS.forEach(([source, fi, de]) => {
+            UI_TRANSLATIONS.fi[source] = fi;
+            UI_TRANSLATIONS.de[source] = de;
+        });
+        const translationLookup = Object.fromEntries(Object.entries(UI_TRANSLATIONS).map(([language, dictionary]) =>
+            [language, new Map(Object.entries(dictionary).map(([source, translated]) => [source.toLowerCase(), translated]))]));
+
+        function translateTrainingTerms(text) {
+            const column = { fi: 1, de: 2 }[settings.language];
+            if (!column) return text;
+            return text.replace(trainingTermPattern, match => {
+                const translated = trainingTermLookup.get(match.toLowerCase())[column];
+                if (match === match.toUpperCase()) return translated.toUpperCase();
+                return match[0] === match[0].toUpperCase()
+                    ? translated[0].toUpperCase() + translated.slice(1) : translated;
+            });
+        }
+
         function t(text) {
             if (!text || settings.language === 'en') return text;
             const dictionary = UI_TRANSLATIONS[settings.language] || {};
             const trimmed = String(text).trim();
-            let translated = dictionary[trimmed];
-            if (!translated) translated = translateCommonText(trimmed, dictionary);
+            const lookup = translationLookup[settings.language];
+            let translated = dictionary[trimmed] || lookup?.get(trimmed.toLowerCase());
+            if (!translated) {
+                translated = trimmed.split(/(?<=[.!?])\s+/).map(sentence =>
+                    dictionary[sentence] || lookup?.get(sentence.toLowerCase()) || translateCommonText(sentence, dictionary)).join(' ');
+            }
             const leading = String(text).match(/^\s*/)?.[0] || '';
             const trailing = String(text).match(/\s*$/)?.[0] || '';
             return leading + translated + trailing;
         }
 
         function translateCommonText(text, dictionary) {
+            const summary = text.match(/^(\d+) sections · (\d+) rounds · (\d+) breaks \((\d+:\d+)\) · Total (\d+:\d+)$/);
+            if (summary) {
+                const [, sections, rounds, breaks, restTime, total] = summary;
+                return settings.language === 'fi'
+                    ? `${sections} osiota · ${rounds} erää · ${breaks} taukoa (${restTime}) · Yhteensä ${total}`
+                    : `${sections} Abschnitte · ${rounds} Runden · ${breaks} Pausen (${restTime}) · Gesamt ${total}`;
+            }
+            const roundCount = text.match(/^Rounds: (\d+)$/);
+            if (roundCount) return `${dictionary.Rounds || 'Rounds'}: ${roundCount[1]}`;
+            const title = text.match(/^(Round|Rounds|Sprints|Intervals) (\d+(?:-\d+)?) - (.+)$/i);
+            if (title) {
+                const labels = settings.language === 'fi'
+                    ? { round: 'Erä', rounds: 'Erät', sprints: 'Spurtit', intervals: 'Intervallit' }
+                    : { round: 'Runde', rounds: 'Runden', sprints: 'Sprints', intervals: 'Intervalle' };
+                return `${labels[title[1].toLowerCase()]} ${title[2]} - ${t(title[3])}`;
+            }
+            const trainingHeading = text.match(/^(\d+) min training$/i);
+            if (trainingHeading) return settings.language === 'fi' ? `${trainingHeading[1]} min treeni` : `${trainingHeading[1]} Min Training`;
+            const task = text.match(/^Land (\d+)x (.+)$/i);
+            if (task) {
+                const techniques = translateTrainingTerms(task[2]);
+                return settings.language === 'fi'
+                    ? `Toista ${task[1]} kertaa: ${techniques}`
+                    : `${task[1]} Mal ausführen: ${techniques}`;
+            }
+            const defenseTask = text.match(/^(Dodge|Block|Slip) (\d+)x (punches|kicks)( and counter)?$/i);
+            if (defenseTask) {
+                const [, action, count, target, counter] = defenseTask;
+                if (settings.language === 'fi') {
+                    const verb = action.toLowerCase() === 'block' ? 'Torju' : 'Väistä';
+                    return `${verb} ${count} ${target === 'kicks' ? 'potkua' : 'lyöntiä'}${action.toLowerCase() === 'slip' ? ' sivulle' : ''}${counter ? ' ja vastaa vastaiskulla' : ''}`;
+                }
+                return `${count} ${target === 'kicks' ? 'Kicks' : 'Schlägen'} ${action.toLowerCase() === 'block' ? 'mit einem Block begegnen' : 'ausweichen'}${counter ? ' und kontern' : ''}`;
+            }
+            const catchTask = text.match(/^Catch (\d+)x kicks$/i);
+            if (catchTask) return settings.language === 'fi' ? `Ota kiinni ${catchTask[1]} potkua` : `${catchTask[1]} Kicks abfangen`;
+            const sweepTask = text.match(/^Sweep opponent (\d+)x times$/i);
+            if (sweepTask) return settings.language === 'fi' ? `Pyyhkäise vastustaja ${sweepTask[1]} kertaa` : `Den Gegner ${sweepTask[1]} Mal fegen`;
             let out = text
                 .replace(/\bROUND (\d+)\/(\d+)/g, (_, a, b) => `${dictionary.ROUND || 'ROUND'} ${a}/${b}`)
                 .replace(/\bSTEP (\d+)\/(\d+)/g, (_, a, b) => `${dictionary.STEP || 'STEP'} ${a}/${b}`)
                 .replace(/\b(\d+) workouts\b/gi, (_, n) => `${n} ${dictionary.workouts || 'workouts'}`)
-                .replace(/\b(\d+) rounds\b/gi, (_, n) => `${n} ${dictionary.Rounds || 'Rounds'}`)
+                .replace(/\b(\d+) rounds\b/gi, (_, n) => settings.language === 'fi' ? `${n} erää` : `${n} Runden`)
                 .replace(/\b(\d+) min\b/gi, (_, n) => settings.language === 'fi' ? `${n} min` : `${n} Min`)
                 .replace(/\bWarmup\b/gi, settings.language === 'fi' ? 'Lämmittely' : 'Warmup')
                 .replace(/\bCooldown\b/gi, settings.language === 'fi' ? 'Loppuverryttely' : 'Cooldown')
@@ -5790,7 +6182,18 @@
                 .replace(/\bBag workout\b/gi, settings.language === 'fi' ? 'Säkkitreeni' : 'Sandsacktraining')
                 .replace(/\bShadowbox training\b/gi, settings.language === 'fi' ? 'Varjonyrkkeilytreeni' : 'Schattenboxtraining')
                 .replace(/\bPremium\b/g, 'Premium');
-            return dictionary[out] || out;
+            return dictionary[out] || translateTrainingTerms(out);
+        }
+
+        function translateTextNode(node) {
+            // Keep the source when changing languages, but accept fresh content
+            // written into an existing node as the timer or tutorial advances.
+            if (node._i18nOriginalText === undefined || node.nodeValue !== node._i18nTranslatedText) {
+                node._i18nOriginalText = node.nodeValue;
+            }
+            const nextText = t(node._i18nOriginalText);
+            node._i18nTranslatedText = nextText;
+            if (node.nodeValue !== nextText) node.nodeValue = nextText;
         }
 
         function translateDocument(root = document.body) {
@@ -5806,11 +6209,7 @@
             });
             const nodes = [];
             while (walker.nextNode()) nodes.push(walker.currentNode);
-            nodes.forEach(node => {
-                if (!node._i18nOriginalText) node._i18nOriginalText = node.nodeValue;
-                const nextText = t(node._i18nOriginalText);
-                if (node.nodeValue !== nextText) node.nodeValue = nextText;
-            });
+            nodes.forEach(translateTextNode);
 
             root.querySelectorAll?.('[placeholder], [aria-label], [alt], [title], input[value]').forEach(el => {
                 ['placeholder', 'aria-label', 'alt', 'title'].forEach(attr => {
@@ -5831,17 +6230,13 @@
                 if (mutation.type === 'characterData') {
                     const node = mutation.target;
                     if (node.nodeValue.trim()) {
-                        if (!node._i18nOriginalText || settings.language === 'en') node._i18nOriginalText = node.nodeValue;
-                        const nextText = t(node._i18nOriginalText);
-                        if (node.nodeValue !== nextText) node.nodeValue = nextText;
+                        translateTextNode(node);
                     }
                 }
                 mutation.addedNodes.forEach(node => {
                     if (node.nodeType === Node.ELEMENT_NODE) translateDocument(node);
                     if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) {
-                        if (!node._i18nOriginalText) node._i18nOriginalText = node.nodeValue;
-                        const nextText = t(node._i18nOriginalText);
-                        if (node.nodeValue !== nextText) node.nodeValue = nextText;
+                        translateTextNode(node);
                     }
                 });
             });
@@ -5864,6 +6259,7 @@
         // Re-acquire wake lock if page becomes visible again while running
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
+                if (!timerState.isRunning) resetManagedAudioPlayback();
                 ensureAudioReady();
                 if (timerState.isRunning) requestWakeLock();
             }
@@ -6017,6 +6413,185 @@
             } catch (e) {}
         }
 
+        let trainingSoundNodes = [];
+        let voiceCoachStatusMessage = '';
+        let pendingBrowserSpeech = null;
+        let voiceTestGeneration = 0;
+        let nativeSpeechActive = false;
+        let nativeSpeechGeneration = 0;
+
+        function stopTrainingSounds() {
+            trainingSoundNodes.forEach(node => { try { node.stop(); } catch (e) {} });
+            trainingSoundNodes = [];
+        }
+
+        function playTrainingTone(frequency, duration, delay, volume) {
+            try {
+                const ac = ensureAudioReady();
+                if (!ac) return;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                const start = ac.currentTime + delay;
+                osc.connect(gain);
+                gain.connect(ac.destination);
+                osc.frequency.setValueAtTime(frequency, start);
+                gain.gain.setValueAtTime(0.001, start);
+                gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+                trainingSoundNodes.push(osc);
+                osc.onended = () => {
+                    trainingSoundNodes = trainingSoundNodes.filter(node => node !== osc);
+                    osc.disconnect();
+                    gain.disconnect();
+                };
+                osc.start(start);
+                osc.stop(start + duration + 0.03);
+            } catch (e) {}
+        }
+
+        function playTrainingGong(count) {
+            for (let index = 0; index < count; index++) {
+                [180, 367, 541].forEach((frequency, partial) =>
+                    playTrainingTone(frequency, 0.52, index * 0.65, partial === 0 ? 0.45 : 0.16));
+            }
+        }
+
+        function nativeVoiceCoach() {
+            return window.Capacitor?.Plugins?.VoiceCoach || null;
+        }
+
+        function cancelCoachSpeech() {
+            voiceTestGeneration++;
+            if (pendingBrowserSpeech) {
+                pendingBrowserSpeech();
+                pendingBrowserSpeech = null;
+                try { window.speechSynthesis?.cancel(); } catch (e) {}
+            }
+            if (nativeSpeechActive) {
+                nativeSpeechActive = false;
+                nativeSpeechGeneration++;
+                try { nativeVoiceCoach()?.stop().catch(() => {}); } catch (e) {}
+            }
+        }
+
+        function offlineBrowserVoice() {
+            return window.speechSynthesis?.getVoices().find(voice =>
+                voice.localService && voice.lang.toLowerCase().split(/[-_]/)[0] === settings.language);
+        }
+
+        function speakCoachText(text) {
+            const native = nativeVoiceCoach();
+            if (native) {
+                nativeSpeechActive = true;
+                const generation = ++nativeSpeechGeneration;
+                try {
+                    return Promise.resolve(native.speak({ text, language: settings.language })).finally(() => {
+                        if (generation === nativeSpeechGeneration) nativeSpeechActive = false;
+                    });
+                } catch (error) {
+                    nativeSpeechActive = false;
+                    return Promise.reject(error);
+                }
+            }
+            const voice = offlineBrowserVoice();
+            if (!voice || !window.SpeechSynthesisUtterance) return Promise.reject(new Error('No offline voice'));
+            return new Promise((resolve, reject) => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = { fi: 'fi-FI', de: 'de-DE', en: 'en-GB' }[settings.language];
+                utterance.voice = voice;
+                utterance.rate = 0.95;
+                let finished = false;
+                let timeout;
+                const finish = error => {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timeout);
+                    pendingBrowserSpeech = null;
+                    error ? reject(error) : resolve();
+                };
+                timeout = setTimeout(() => {
+                    finish(new Error('Voice playback timed out'));
+                    window.speechSynthesis.cancel();
+                }, 20000);
+                pendingBrowserSpeech = () => finish();
+                utterance.onend = () => finish();
+                utterance.onerror = () => finish(new Error('Voice playback failed'));
+                window.speechSynthesis.speak(utterance);
+            });
+        }
+
+        const trainingCueController = createTrainingCueController({
+            now: () => performance.now(), setTimeout, clearTimeout,
+            gong: playTrainingGong,
+            beep: () => playTrainingTone(880, 0.12, 0, 0.3),
+            stopSounds: stopTrainingSounds,
+            cancelSpeech: cancelCoachSpeech,
+            speak: speakCoachText,
+            speechUnavailable: () => {
+                voiceCoachStatusMessage = 'Voice unavailable. Install an offline voice for your selected language in device settings.';
+                updateVoiceCoachStatus();
+            }
+        });
+
+        function isVoicePilot(workout = activeTrainingWorkout) {
+            return !!workout && (workout.voicePilot || workout.id === 'quick-technique');
+        }
+
+        function syncTrainingAudio() {
+            if (appMode !== 'training' || !activeTrainingWorkout) return;
+            const step = getCurrentGuideStep();
+            if (!step) return;
+            const index = trainingTimeline.indexOf(step);
+            const elapsed = settings.roundTime - timerState.timeLeft - step.start;
+            const title = step.title.replace(/^Rounds?\s+\d+(?:-\d+)?\s*-\s*/i, '');
+            const voiceText = settings.voiceCoachEnabled && isVoicePilot()
+                ? `${t(title)}. ${t(step.note)}` : '';
+            trainingCueController.update({
+                key: `${activeTrainingWorkout.id}:${index}`,
+                elapsed, duration: step.end - step.start,
+                running: timerState.isRunning && !timerState.isFinished,
+                cuesEnabled: settings.trainingCuesEnabled,
+                periodicEnabled: settings.periodicCuesEnabled,
+                voiceText
+            });
+        }
+
+        function updateVoiceCoachStatus() {
+            const status = document.getElementById('voiceCoachStatus');
+            if (status) status.textContent = voiceCoachStatusMessage;
+        }
+
+        function setTrainingAudioPreference(key, enabled) {
+            if (!['trainingCuesEnabled', 'periodicCuesEnabled', 'voiceCoachEnabled'].includes(key)) return;
+            settings[key] = !!enabled;
+            if (key === 'voiceCoachEnabled' && !enabled) trainingCueController.cancelVoice();
+            try {
+                localStorage.setItem(TRAINING_PREFERENCES_KEY, JSON.stringify({
+                    trainingCuesEnabled: settings.trainingCuesEnabled,
+                    periodicCuesEnabled: settings.periodicCuesEnabled,
+                    voiceCoachEnabled: settings.voiceCoachEnabled
+                }));
+            } catch (e) {}
+            updateSettingsUI();
+        }
+
+        async function testVoiceCoach() {
+            cancelCoachSpeech();
+            const generation = voiceTestGeneration;
+            const sample = 'Jab, cross, hook. Slip and step out.';
+            voiceCoachStatusMessage = 'Testing voice in your selected language.';
+            updateVoiceCoachStatus();
+            try {
+                await speakCoachText(t(sample));
+                if (generation !== voiceTestGeneration) return;
+                voiceCoachStatusMessage = 'Voice test complete.';
+            } catch (e) {
+                if (generation !== voiceTestGeneration) return;
+                voiceCoachStatusMessage = 'Voice unavailable. Install an offline voice for your selected language in device settings.';
+            }
+            updateVoiceCoachStatus();
+        }
+
         function playPremiumChime() {
             playToneEffect([
                 { frequency: 740, duration: 0.22, delay: 0, gain: 0.42, type: 'triangle' },
@@ -6115,9 +6690,8 @@
                 phaseHint.textContent = 'Tap start';
             }
 
-            const swipeHint = document.getElementById('swipeHint');
-            swipeHint.classList.toggle('visible',
-                timerState.isRunning && !timerState.isRound && !timerState.isFinished);
+            document.getElementById('skipBreakBtn').classList.toggle('hidden',
+                !(timerState.isRunning && !timerState.isRound && !timerState.isFinished));
 
             const maxTime = appMode === 'training' && guideStep
                 ? Math.max(1, guideStep.end - guideStep.start)
@@ -6254,6 +6828,7 @@
                 timerDisplay.classList.add('pulse');
             }
 
+            if (timerState.timeLeft > 0) syncTrainingAudio();
             updateUI();
             updateRingWarning();
 
@@ -6298,6 +6873,7 @@
             currentGuideIndex = -1;
             lastTickMs = performance.now();
             lastWholeSecond = Math.ceil(timerState.timeLeft);
+            syncTrainingAudio();
             updateUI();
         }
 
@@ -6305,14 +6881,16 @@
             if (timerState.isRound) {
                 // Round ending
                 sessionStats.completedRounds++;
-                playRoundEnd();
+                if (appMode === 'training') trainingCueController.finish(settings.trainingCuesEnabled);
+                else playRoundEnd();
                 if (timerState.currentRound >= settings.numberOfRounds) {
                     timerState.isFinished = true;
                     timerState.isRunning = false;
+                    clearInterval(intervalId);
                     releaseWakeLock();
                     renderSessionSummary();
                     finishedOverlay.classList.add('show');
-                    playWorkoutCompleteFanfare();
+                    if (appMode !== 'training') playWorkoutCompleteFanfare();
                     updateUI();
                     return;
                 }
@@ -6386,7 +6964,7 @@
 
             if (timerState.isRunning) {
                 if (!sessionStats.startedAt) sessionStats.startedAt = Date.now();
-                ensureAudioReady();
+                unlockAppAudio();
                 requestWakeLock();
                 const isInitialRoundStart = timerState.isRound && timerState.currentRound === 1 && timerState.timeLeft === settings.roundTime;
                 if (isInitialRoundStart) {
@@ -6394,18 +6972,19 @@
                         startPreRound(() => {
                             playRoundStart();
                         });
-                    } else {
+                    } else if (appMode !== 'training') {
                         playRoundStart();
                     }
                 }
                 lastTickMs = performance.now();
                 lastWholeSecond = Math.ceil(timerState.timeLeft);
                 intervalId = setInterval(tick, 50);
+                syncTrainingAudio();
             } else {
-                clearInterval(intervalId);
-                stopPreRoundDisplay();
+                clearInterval(intervalId); cancelRoundBellRepeats(); stopPreRoundDisplay();
                 lastTickMs = null;
                 releaseWakeLock();
+                syncTrainingAudio();
             }
         }
 
@@ -6414,18 +6993,20 @@
             if (timerState.isFinished || timerState.isRunning) return;
             timerState.isRunning = true;
             if (!sessionStats.startedAt) sessionStats.startedAt = Date.now();
-            ensureAudioReady();
+            unlockAppAudio();
             requestWakeLock();
             lastTickMs = performance.now();
             lastWholeSecond = Math.ceil(timerState.timeLeft);
             intervalId = setInterval(tick, 50);
+            syncTrainingAudio();
             updateUI();
         }
 
         // Reset timer
         function resetTimer() {
-            const wasFinishedSession = timerState.isFinished || sessionStats.completedRounds >= settings.numberOfRounds;
             clearInterval(intervalId);
+            trainingCueController.reset();
+            resetManagedAudioPlayback();
             stopPreRoundDisplay();
             timerState = {
                 timeLeft: settings.roundTime,
@@ -6456,10 +7037,6 @@
             };
             finishedOverlay.classList.remove('show');
 
-            if (wasFinishedSession) {
-                ensureAudioReady(true);
-            }
-
             updateUI();
             
             // Generate first task if Task Spar is enabled
@@ -6472,6 +7049,7 @@
         }
 
         let selectedTrainingDuration = null;
+        let selectedTrainingSport = 'all';
         let expandedTrainingWorkoutId = null;
         let selectedTrainingSort = 'default';
         let favoriteWorkoutIds = loadFavoriteWorkoutIds();
@@ -7829,6 +8407,8 @@
 
         function openModeChoice() {
             clearInterval(intervalId);
+            trainingCueController.reset();
+            resetManagedAudioPlayback();
             stopPreRoundDisplay();
             releaseWakeLock();
             timerState.isRunning = false;
@@ -8045,6 +8625,37 @@
             showTrainingDurationStep();
         }
 
+        function setTrainingSportFilter(sport) {
+            if (!['all', 'boxing', 'k1', 'muaythai'].includes(sport)) return;
+            selectedTrainingSport = sport;
+            updateTrainingSortButtons();
+            closeTrainingSortMenu();
+            if (selectedTrainingDuration) renderTrainingOptions(selectedTrainingDuration);
+        }
+
+        function getSportWorkouts(minutes, sport = selectedTrainingSport) {
+            const legacy = TRAINING_WORKOUTS[minutes] || [];
+            if (sport === 'all') {
+                return [...legacy, ...(SPORT_TRAINING_WORKOUTS.boxing[minutes] || []), ...(SPORT_TRAINING_WORKOUTS.k1[minutes] || [])];
+            }
+            if (sport === 'boxing') return SPORT_TRAINING_WORKOUTS.boxing[minutes] || [];
+            if (sport === 'k1') {
+                const compatible = new Set(['short-flow', 'quick-technique', 'speed-combos']);
+                return [...(SPORT_TRAINING_WORKOUTS.k1[minutes] || []), ...legacy.filter(workout => compatible.has(workout.id))];
+            }
+            return legacy.filter(workout => !/mma/i.test(workout.id + ' ' + workout.title));
+        }
+
+        function updateSportLibraryCounts() {
+            const all = [20, 30, 45, 60, 90].flatMap(minutes => getSportWorkouts(minutes, 'all'));
+            document.getElementById('sportWorkoutCount').textContent = all.length;
+            document.getElementById('sportPremiumCount').textContent = all.filter(workout => workout.premium).length;
+            document.querySelectorAll('#trainingDurationStep button[onclick^="selectTrainingDuration"]').forEach(card => {
+                const minutes = Number(card.getAttribute('onclick').match(/\d+/)[0]);
+                card.querySelector('.duration-stat.highlight').textContent = `${getSportWorkouts(minutes, 'all').length} workouts`;
+            });
+        }
+
         function setTrainingStep(step) {
             ['trainingDurationStep', 'trainingOptionsStep', 'customWorkoutStep'].forEach(id => {
                 document.getElementById(id).classList.toggle('hidden', id !== step);
@@ -8056,6 +8667,7 @@
             expandedTrainingWorkoutId = null;
             closeTrainingSortMenu();
             updateDurationLocks();
+            updateSportLibraryCounts();
             document.getElementById('trainingTitle').textContent = 'Choose duration';
             document.getElementById('trainingSubtitle').textContent = 'Pick how long you want to train, then choose a guided workout with drills, combos and instructions.';
             setTrainingStep('trainingDurationStep');
@@ -8212,6 +8824,13 @@
         }
 
         function updateTrainingSortButtons() {
+            const sportLabels = { all: 'All sports', boxing: 'Boxing', k1: 'K1', muaythai: 'Muay Thai' };
+            document.getElementById('trainingSportFilterLabel').textContent = sportLabels[selectedTrainingSport] || 'All sports';
+            document.querySelectorAll('[data-training-sport]').forEach(button => {
+                const active = button.dataset.trainingSport === selectedTrainingSport;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
             const sortLabels = {
                 default: 'Default',
                 hardest: 'Hardest',
@@ -8298,7 +8917,9 @@
         }
 
         function findTrainingWorkout(minutes, workoutId) {
-            return (TRAINING_WORKOUTS[minutes] || []).find(workout => workout.id === workoutId);
+            return [...(TRAINING_WORKOUTS[minutes] || []),
+                ...(SPORT_TRAINING_WORKOUTS.boxing[minutes] || []),
+                ...(SPORT_TRAINING_WORKOUTS.k1[minutes] || [])].find(workout => workout.id === workoutId);
         }
 
         function parseMinutesFromTitle(title, fallback = 3) {
@@ -8329,6 +8950,7 @@
                             return range && roundNumber >= Number(range[1]) && roundNumber <= Number(range[2] || range[1]);
                         }) || section.rounds[Math.min(section.rounds.length - 1, Math.floor(index * section.rounds.length / totalRounds))];
                         timeline.push({
+                            kind: 'round',
                             start,
                             end: start + roundDuration,
                             title: round[0],
@@ -8339,6 +8961,7 @@
 
                         if (restDuration > 0 && index < totalRounds - 1) {
                             timeline.push({
+                                kind: 'rest',
                                 start,
                                 end: start + restDuration,
                                 title: 'Rest',
@@ -8354,6 +8977,7 @@
                 const sectionDuration = section.durationSeconds || parseMinutesFromTitle(section.title, 3);
                 const note = section.items ? section.items.join(' ') : '';
                 timeline.push({
+                    kind: 'section',
                     start,
                     end: start + sectionDuration,
                     title: section.title,
@@ -8374,6 +8998,23 @@
         function getTrainingDurationText(workout) {
             const seconds = getTrainingDuration(workout);
             return `${Math.floor(seconds / 60)} min${seconds % 60 ? ` ${seconds % 60} s` : ''}`;
+        }
+
+        function getWorkoutStructureStats(workout) {
+            const timeline = buildTrainingTimeline(workout);
+            const rests = timeline.filter(step => step.kind === 'rest');
+            return {
+                sections: workout.sections.length,
+                rounds: timeline.filter(step => step.kind === 'round').length,
+                breaks: rests.length,
+                restSeconds: rests.reduce((sum, step) => sum + step.end - step.start, 0),
+                totalSeconds: getTrainingDuration(workout)
+            };
+        }
+
+        function renderWorkoutStructureSummary(workout) {
+            const stats = getWorkoutStructureStats(workout);
+            return `${stats.sections} sections · ${stats.rounds} rounds · ${stats.breaks} breaks (${formatTime(stats.restSeconds)}) · Total ${formatTime(stats.totalSeconds)}`;
         }
 
         function getCurrentGuideStep() {
@@ -8425,6 +9066,9 @@
             const guideNote = isWaterBreak
                 ? 'Drink water, breathe slowly and shake your arms out. Continue when you feel ready.'
                 : step.note;
+            const voiceStatus = settings.voiceCoachEnabled
+                ? (voiceCoachStatusMessage || (isVoicePilot() ? 'Voice coach trial is active for this workout.' : 'Voice coach trial is not available for this workout.'))
+                : '';
 
             if (index !== currentGuideIndex) {
                 currentGuideIndex = index;
@@ -8437,6 +9081,7 @@
                     ${renderGuideTitle(guideTitle)}
                     <div class="guide-section">
                         <div class="guide-note">${guideNote}</div>
+                        ${voiceStatus ? `<div class="guide-voice-status">${voiceStatus}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -8457,7 +9102,9 @@
                 `;
             }
 
-            const displayStats = [[getTrainingDurationText(workout), 'Duration'], ...workout.stats.slice(1)];
+            const structure = getWorkoutStructureStats(workout);
+            const displayStats = [[getTrainingDurationText(workout), 'Total time'], [structure.sections, 'Sections'],
+                [structure.rounds, 'Rounds'], [formatTime(structure.restSeconds), 'Rest time']];
             const overview = displayStats.map(stat => `
                 <div class="workout-stat">
                     <div class="workout-stat-value">${stat[0]}</div>
@@ -8484,7 +9131,7 @@
 
                 return `
                     <div class="workout-section">
-                        <div class="workout-section-title">${section.title}</div>
+                        <div class="workout-section-title">${section.title}${section.durationSeconds ? ` · ${formatTime(section.durationSeconds)}` : ''}</div>
                         <ul class="workout-list">
                             ${section.items.map(item => `<li>${item}</li>`).join('')}
                         </ul>
@@ -8495,6 +9142,7 @@
             return `
                 <div class="training-detail-inner">
                     <div class="workout-overview">${overview}</div>
+                    <div class="workout-structure-summary">${renderWorkoutStructureSummary(workout)}</div>
                     ${sections}
                 </div>
             `;
@@ -8502,7 +9150,7 @@
 
         function renderTrainingOptions(minutes) {
             updateTrainingSortButtons();
-            const workouts = getSortedTrainingWorkouts(TRAINING_WORKOUTS[minutes] || []);
+            const workouts = getSortedTrainingWorkouts(getSportWorkouts(minutes));
             const premiumUnlocked = isPremiumUnlocked();
             const workoutCards = workouts.map(workout => {
                 const locked = workout.premium && !premiumUnlocked;
@@ -8525,8 +9173,9 @@
                                     <span class="training-tag">${getTrainingDurationText(workout)}</span>
                                     <span class="training-tag">${workout.type}</span>
                                     ${workout.premium ? `<span class="training-tag premium-tag">${premiumUnlocked ? 'Pro unlocked' : 'Pro'}</span>` : ''}
-                                    <span class="training-tag">${workout.stats[1][0]} ${workout.stats[1][1]}</span>
+                                    <span class="training-tag">Rounds: ${getWorkoutStructureStats(workout).rounds}</span>
                                 </div>
+                                <div class="workout-structure-summary">${renderWorkoutStructureSummary(workout)}</div>
                                 <div class="intensity-meter intensity-level-${workout.intensity}">
                                     <div class="intensity-label">
                                         <span>Intensity</span>
@@ -8614,17 +9263,20 @@
 
         // Settings
         function openSettings() {
+            if (timerState.isRunning) toggleTimer();
             activeSettingsTab = 'main';
             document.getElementById('settingsModal').classList.add('show');
             updateSettingsUI();
         }
 
         function closeSettings() {
+            const timingChanged = ['timing', 'task'].includes(activeSettingsTab);
+            cancelCoachSpeech();
             document.getElementById('settingsModal').classList.remove('show');
             activeSettingsTab = 'main';
             openSettingsGroup = null;
             updateSettingsUI();
-            resetTimer();
+            if (timingChanged) resetTimer();
         }
 
         function setSettingsTab(tab) {
@@ -8638,9 +9290,15 @@
         }
 
         function updateSettingsUI() {
+ document.getElementById("roundBellRepeats").value = settings.roundBellRepeats;
             document.getElementById('roundTimeDisplay').textContent = formatTime(settings.roundTime);
             document.getElementById('breakTimeDisplay').textContent = formatTime(settings.breakTime);
             document.getElementById('roundsDisplay').textContent = settings.numberOfRounds;
+            document.getElementById('trainingCuesToggle').checked = settings.trainingCuesEnabled;
+            document.getElementById('periodicCuesToggle').checked = settings.periodicCuesEnabled;
+            document.getElementById('periodicCuesToggle').disabled = !settings.trainingCuesEnabled;
+            document.getElementById('voiceCoachToggle').checked = settings.voiceCoachEnabled;
+            updateVoiceCoachStatus();
 
             ['main', 'timing', 'task', 'sound'].forEach(tab => {
                 const pane = document.getElementById('settingsPane-' + tab);
@@ -8812,6 +9470,8 @@
 
         function setLanguage(language) {
             if (!['en', 'fi', 'de'].includes(language)) return;
+            trainingCueController.cancelVoice();
+            voiceCoachStatusMessage = '';
             settings.language = language;
             try { localStorage.setItem(LANGUAGE_KEY, language); } catch (e) {}
             updateSettingsUI();
@@ -8820,6 +9480,7 @@
         }
 
         function toggleRoundSounds() {
+ cancelRoundBellRepeats();
             settings.roundSoundsEnabled = !settings.roundSoundsEnabled;
             updateSettingsUI();
         }
@@ -8893,12 +9554,28 @@
             if (settings.vibrationEnabled && navigator.vibrate) navigator.vibrate(200);
         }
 
-        function playRoundStart() {
+        function cancelRoundBellRepeats() {
+ (playRoundBellSequence.pending || []).forEach(clearTimeout);
+ playRoundBellSequence.pending = [];
+}
+function setRoundBellRepeats(value) {
+ const count = Number(value); if (![1,2,3].includes(count)) return;
+ cancelRoundBellRepeats(); settings.roundBellRepeats = count;
+ try { localStorage.setItem('fightwise_bell_repeats', String(count)); } catch(e) {}
+ updateSettingsUI();
+}
+function playRoundBellSequence(play) {
+ cancelRoundBellRepeats(); play();
+ for(let i=1;i<(settings.roundBellRepeats || 3);i++) {
+ playRoundBellSequence.pending.push(setTimeout(() => { if(settings.roundSoundsEnabled) play(); }, i*900));
+ }
+}
+function playRoundStart() {
             if (!settings.roundSoundsEnabled && !settings.vibrationEnabled) return;
             try {
                 if (settings.roundSoundsEnabled) {
-                    const result = playLoudAudioFromPool(roundStartAudioPool, roundStartAudioIndex, playFallbackBell);
-                    roundStartAudioIndex = result.nextIndex;
+                    playRoundBellSequence(() => { const result = playLoudAudioFromPool(roundStartAudioPool, roundStartAudioIndex, playFallbackBell);
+                    roundStartAudioIndex = result.nextIndex; });
                 }
                 if (settings.vibrationEnabled && navigator.vibrate) navigator.vibrate([150, 80, 150]);
             } catch (e) {}
@@ -8909,8 +9586,8 @@
             if (!settings.roundSoundsEnabled && !settings.vibrationEnabled) return;
             try {
                 if (settings.roundSoundsEnabled) {
-                    const result = playLoudAudioFromPool(roundEndAudioPool, roundEndAudioIndex, playFallbackBell);
-                    roundEndAudioIndex = result.nextIndex;
+                    playRoundBellSequence(() => { const result = playLoudAudioFromPool(roundEndAudioPool, roundEndAudioIndex, playFallbackBell);
+                    roundEndAudioIndex = result.nextIndex; });
                 }
                 if (settings.vibrationEnabled && navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
             } catch (e) {}
@@ -8970,12 +9647,7 @@
             // Show hint flying up once threshold crossed
             if (dy > 60 && !swipeTriggered) {
                 swipeTriggered = true;
-                const hint = document.getElementById('swipeHint');
-                hint.classList.remove('visible');
-                hint.classList.add('triggered');
-                hint.addEventListener('animationend', () => {
-                    hint.classList.remove('triggered');
-                }, { once: true });
+
             }
         }, { passive: false });
 

@@ -39,9 +39,9 @@ class FakeAudio {
     }
 }
 function setup() {
-    const context = vm.createContext({ Audio: FakeAudio, Promise, WeakMap,
+    const context = vm.createContext({ Audio: FakeAudio, Promise, WeakMap, setTimeout, clearTimeout,
         document: { addEventListener() {} }, navigator: { vibrate() {} },
-        settings: { uiClickSoundsEnabled: true, roundSoundsEnabled: true, vibrationEnabled: false },
+        settings: { roundBellRepeats: 1, uiClickSoundsEnabled: true, roundSoundsEnabled: true, vibrationEnabled: false },
         ensureAudioReady() {}, clicks: 0, bells: 0,
         playSyntheticUiClick() { context.clicks++; },
         playToneEffect() { context.bells++; }
@@ -56,7 +56,7 @@ function setup() {
         let uiClickAudioIndex = 0, roundStartAudioIndex = 0, roundEndAudioIndex = 0;
         ${section('function createManagedAudio(', "['pointerdown', 'touchstart', 'keydown']")}
         ${section('function playUiClick(', 'function playSyntheticUiClick(')}
-        ${section('function playRoundStart(', '// Swipe up to skip break')}
+        ${section('function cancelRoundBellRepeats(', '// Swipe up to skip break')}
         this.pools = managedAudioPools;
     `, context);
     return context;
@@ -207,6 +207,102 @@ test('disabled sounds trigger neither media playback nor fallback', async () => 
     assert.equal(c.clicks + c.bells, 0);
 });
 
+function addSessionFlow(c) {
+    Object.assign(c, {
+        timerState: { timeLeft: 180, currentRound: 1, isRound: true, isRunning: false, isFinished: false },
+        sessionStats: { completedRounds: 0 }, taskState: {}, appMode: 'spar',
+        intervalId: null, lastTickMs: null, lastWholeSecond: null,
+        performance: { now: () => 1000 }, setInterval: () => 1, clearInterval() {},
+        trainingCueController: { reset() {} }, stopPreRoundDisplay() {}, releaseWakeLock() {},
+        requestWakeLock() {}, showModeChoice() {}, updateUI() {}, syncTrainingAudio() {}, tick() {},
+        PRE_ROUND_READ_SECONDS: 5, finishedOverlay: { classList: { remove() {} } }
+    });
+    Object.assign(c.settings, { roundTime: 180, breakTime: 60, numberOfRounds: 3, taskSparEnabled: false });
+    vm.runInContext(section('function openModeChoice(', 'function chooseSparMode('), c);
+    vm.runInContext(section('function toggleTimer(', '// Continue timer'), c);
+    vm.runInContext(section('function resetTimer(', 'let selectedTrainingDuration'), c);
+}
+
+test('leaving a spar session stops old audio and a new session primes and plays its bell', async () => {
+    const c = setup();
+    addSessionFlow(c);
+    c.toggleTimer();
+    await settle();
+    const bell = c.pools[1][0];
+    assert.equal(bell.paused, false);
+    c.openModeChoice();
+    assert.equal(bell.paused, true);
+    c.resetTimer();
+    const primingPlays = c.pools[2][0].plays;
+    c.toggleTimer();
+    await settle();
+    assert.ok(c.pools[2][0].plays > primingPlays, 'new start refreshes media readiness');
+    assert.equal(bell.paused, false);
+    assert.equal(bell.muted, false);
+    assert.equal(bell.volume, 1);
+});
+
+test('an old session playback rejection cannot retry over the next session bell', async () => {
+    const c = setup(), pending = deferred();
+    addSessionFlow(c);
+    c.pools[1][0].results.push(pending.promise);
+    c.toggleTimer();
+    c.openModeChoice();
+    c.resetTimer();
+    c.toggleTimer();
+    const plays = c.pools[1][0].plays;
+    pending.reject(new Error('old session interrupted'));
+    await settle();
+    assert.equal(c.pools[1][0].plays, plays);
+    assert.equal(c.pools[1][0].muted, false);
+    assert.equal(c.bells, 0);
+});
+
+test('leaving invalidates an unfinished silent unlock before it can change the next session', async () => {
+    const c = setup(), pending = deferred(), audio = c.pools[1][0];
+    addSessionFlow(c);
+    audio.results.push(pending.promise);
+    c.primeAudioElement(audio);
+    c.openModeChoice();
+    const pauses = audio.pauses;
+    pending.resolve();
+    await settle();
+    assert.equal(audio.pauses, pauses);
+    c.resetTimer();
+    c.toggleTimer();
+    await settle();
+    assert.equal(audio.paused, false);
+    assert.equal(audio.muted, false);
+    assert.equal(audio.volume, 1);
+});
+
+test('resetting a finished spar preserves the gesture-unlocked audio context', () => {
+    const c = setup(), fresh = [];
+    addSessionFlow(c);
+    c.ensureAudioReady = forceFresh => fresh.push(forceFresh);
+    c.timerState.isFinished = true;
+    c.resetTimer();
+    assert.ok(!fresh.includes(true), 'session reset must not close the unlocked context');
+});
+
+test('spar cleanup never stops an idle speech engine', () => {
+    let stops = 0;
+    const c = vm.createContext({
+        window: { speechSynthesis: { cancel() { stops++; } } },
+        voiceTestGeneration: 0, pendingBrowserSpeech: null, nativeSpeechGeneration: 0,
+        nativeSpeechActive: false,
+        nativeVoiceCoach: () => ({ stop() { stops++; return Promise.resolve(); } })
+    });
+    vm.runInContext(section('function cancelCoachSpeech(', 'function offlineBrowserVoice('), c);
+    c.cancelCoachSpeech();
+    c.cancelCoachSpeech();
+    assert.equal(stops, 0);
+    c.nativeSpeechActive = true;
+    c.cancelCoachSpeech();
+    c.cancelCoachSpeech();
+    assert.equal(stops, 1, 'actual native speech is stopped once');
+});
+
 
 test('ten-second cue keeps vibration without requiring speech support', () => {
     const calls = [];
@@ -220,4 +316,15 @@ test('ten-second cue keeps vibration without requiring speech support', () => {
     c.settings.vibrationEnabled = true;
     c.navigator = {};
     assert.doesNotThrow(() => c.playWarningVibration());
+});
+
+test('round bells repeat three times and cancelling prevents pending cues', () => {
+ const c=setup(); let pending=new Map(), id=0;
+ c.setTimeout=(fn)=>{pending.set(++id,fn);return id;}; c.clearTimeout=id=>pending.delete(id);
+ c.settings.roundBellRepeats=3; c.playRoundStart();
+ assert.equal(c.pools[1][0].plays,1); assert.equal(pending.size,2);
+ for(const fn of [...pending.values()]) fn();
+ assert.equal(c.pools[1][0].plays,3);
+ c.playRoundEnd(); c.cancelRoundBellRepeats(); assert.equal(pending.size,0);
+ c.settings.roundBellRepeats=1; c.playRoundStart(); assert.equal(pending.size,0);
 });

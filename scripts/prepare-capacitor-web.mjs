@@ -4,6 +4,8 @@ import { basename, join } from 'node:path';
 const webDir = 'www';
 const files = [
   'index.html',
+  'training-sports.js',
+  'training-audio.js',
   'sw.js',
   'manifest.json',
   'privacy-policy.html',
