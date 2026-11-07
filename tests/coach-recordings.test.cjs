@@ -52,3 +52,12 @@ test('selected coach controls which recording plays', async () => {
  const playing=c.speakCoachText('Test');assert.equal(source,'maya.mp3');c.cancelCoachSpeech();await playing;
  const preview=c.speakCoachText('Test','max');assert.equal(source,'max.mp3');c.cancelCoachSpeech();await preview;
 });
+
+test('changing coach preferences preserves the other saved audio choices', () => {
+ let stored;
+ const settings={trainingCuesEnabled:true,periodicCuesEnabled:false,voiceCoachEnabled:true,roundSoundsEnabled:false,uiClickSoundsEnabled:true,vibrationEnabled:false};
+ const c=vm.createContext({settings,TRAINING_PREFERENCES_KEY:'audio',localStorage:{setItem(key,value){stored=JSON.parse(value);}},trainingCueController:{cancelVoice(){}},updateSettingsUI(){}});
+ const start=html.indexOf('function saveAudioPreferences('),end=html.indexOf('async function testVoiceCoach(',start);
+ vm.runInContext(html.slice(start,end),c);c.setTrainingAudioPreference('voiceCoachEnabled',false);
+ assert.equal(stored.uiClickSoundsEnabled,true);assert.equal(stored.roundSoundsEnabled,false);assert.equal(stored.vibrationEnabled,false);assert.equal(stored.voiceCoachEnabled,false);
+});
