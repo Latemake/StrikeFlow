@@ -9136,13 +9136,13 @@
             const parts = splitGuideTitle(title);
             if (!parts.roundLabel) return `
                 <div class="guide-section">
-                    <div class="guide-title">${parts.title}</div>
+                    <div class="guide-title">${escapeHtml(parts.title)}</div>
                 </div>
             `;
             return `
                 <div class="guide-section">
-                    <div class="guide-round-label">${parts.roundLabel}</div>
-                    <div class="guide-title">${parts.title}</div>
+                    <div class="guide-round-label">${escapeHtml(parts.roundLabel)}</div>
+                    <div class="guide-title">${escapeHtml(parts.title)}</div>
                 </div>
             `;
         }

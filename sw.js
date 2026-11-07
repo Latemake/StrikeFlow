@@ -1,4 +1,4 @@
-const CACHE = 'fightwise-v80';
+const CACHE = 'fightwise-v81';
 const ASSETS = [
   './index.html',
   './onboarding.js',
