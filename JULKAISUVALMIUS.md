@@ -1,3 +1,12 @@
+# Julkaisupäivitys 1.1.2 – 8.11.2026
+
+- Uudistettu päävalikko, yksinkertaistetut neonvihreät FW- ja FightWise-logot sekä samanväriset Sparring-, Training- ja Coach Rounds -kuvat. Korttien kellertävä sävytys poistettu.
+- Kamerasaarekkeen ja järjestelmäpalkkien suoja-alueet huomioidaan Androidin sekä selaimen ilmoittamilla arvoilla. Korjaukset koskevat valikkoa, ajastinta, Coach Roundsia, käyttöönottoa ja asetuksia. Aiempi jatkuvan coach-äänitoiston korjaus sisältyy.
+- 85 automaattista testiä läpi. Selaimessa testattu sparrin 3/3 erän valmistuminen, tauotus ja jatkaminen, Trainingin käynnistys ja ohitus, Coach Roundsin peräkkäiset ohjeet, ääniasetukset ja paluu tietosuojasivulta. Fyysistä Android-laitetta ei testattu.
+- Android 1.1.2 (15): bundleRelease, lintRelease ja testReleaseUnitTest onnistuivat. Allekirjoitus tarkistettu. AAB SHA-256: A70FF3039870C1BE24C7102D3FFB7AF317E1DA2A3455997CC75835434AD64ADD.
+- Molemmat verkkosivut julkaistu: https://fightwise.pages.dev/ ja https://latemake.github.io/StrikeFlow/. Kummankin HTML, service worker v96, CSS ja viisi uusittua kuvatiedostoa vastaavat julkaisulähdettä ja Android-pakettia.
+- Lähdecommit: 8d3515931418c845a315926e5e33ac72379a9f25. Cloudflare: https://4da791c5.fightwise.pages.dev. GitHub Pages -julkaisu 42501107563 onnistui.
+- Android 1.1.2 (15) lähetetty suljetun Alpha-testin tarkistukseen. Console vahvisti tilan "Muutoksia tarkistetaan". Googlen esitarkastus ja hyväksyntä ovat kesken; saatavuutta Play Kaupasta ei ole vielä vahvistettu. Aiempi 1.1.1 oli jo hyväksytty ja testaajien saatavilla.
 # Coach-äänikorjaus 1.1.1 – 8.11.2026
 
 - Korjattu puhelimen vaatima Continue-painallus peräkkäisten coach-ohjeiden välillä. Kaikki ohjeet käyttävät samaa aloituspainalluksella avattua soitinta. Myöhästyvät toistopyynnöt eivät enää keskeytä uudempaa ohjetta; tilapäinen latausvirhe yritetään kerran uudelleen.
