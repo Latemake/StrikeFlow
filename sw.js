@@ -1,15 +1,15 @@
-const CACHE = 'fightwise-v96';
+const CACHE = 'fightwise-v99';
 const ASSETS = [
   './index.html',
-  './onboarding.js?v=84',
-  './onboarding.css?v=84',
+  './onboarding.js?v=98',
+  './onboarding.css?v=98',
   './training-sports.js?v=84',
   './training-audio.js?v=84',
   './coach-rounds.js?v=89',
-  './coach-rounds.css?v=92',
+  './coach-rounds.css?v=97',
   './coach-audio-manifest.js?v=84',
   './coach-maya-manifest.js?v=84',
-  './coach-rounds-audio-manifest.js?v=87',
+  './coach-rounds-audio-manifest.js?v=98',
   './privacy-policy.html',
   './manifest.json',
   './FightWise logo.png?v=94',
@@ -31,7 +31,7 @@ const ASSETS = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => Promise.all(['./coach-audio/manifest.json','./coach-audio-maya/manifest.json','./coach-rounds-audio/manifest.json','./coach-rounds-audio-maya/manifest.json'].map(url => fetch(url).then(r => r.json()))).then(manifests => cache.addAll([...ASSETS, ...manifests.flatMap(manifest => Object.values(manifest))])))
+    caches.open(CACHE).then(cache => Promise.all(['./coach-audio/manifest.json','./coach-audio-maya/manifest.json','./coach-rounds-audio/manifest.json','./coach-rounds-audio-maya/manifest.json'].map(url => fetch(url, {cache:'no-cache'}).then(r => r.json()))).then(manifests => cache.addAll([...ASSETS, ...manifests.flatMap(manifest => Object.values(manifest))])))
   );
   self.skipWaiting();
 });

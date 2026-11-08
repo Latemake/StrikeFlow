@@ -15,7 +15,10 @@ async function main(){
   const queue=Object.entries(manifests[coach]);let completed=0;
   await Promise.all(Array.from({length:6},async()=>{
    while(queue.length){
-    const [text,path]=queue.shift();
+    const [text,basePath]=queue.shift();
+    const tightenedPath=basePath.replace(/\.mp3$/,'-tight-v1.mp3');
+    const path=fs.existsSync(tightenedPath)?tightenedPath:basePath;
+    manifests[coach][text]=path;
     if(!fs.existsSync(path)){
      let response;
      for(let attempt=0;attempt<4;attempt++){

@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="coach-rounds.css?v=92">
+    <link rel="stylesheet" href="coach-rounds.css?v=97">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>FightWise - Fight Timer</title>
@@ -4683,6 +4683,17 @@
 #modeChoice .mode-actions{gap:18px}#modeChoice .mode-card{min-height:184px;padding:28px}
 #modeChoice .mode-card-marker{top:22px;left:28px}#modeChoice .mode-card-title{font-size:36px}}
 </style>
+<style>
+/* The portrait is decorative; the whole coach card remains the preview button. */
+.setup-coaches button{position:relative;isolation:isolate;overflow:hidden;min-height:150px;padding:22px 14px;gap:14px;background:#080808}
+.setup-coaches button::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#080808 0%,#080808e8 38%,#08080818 100%);pointer-events:none}
+.setup-coaches .setup-coach-art{position:absolute;right:0;bottom:0;width:56%;height:100%;object-fit:cover;object-position:right center;z-index:-2;pointer-events:none}
+.setup-coaches .setup-coach-copy{min-width:0;max-width:65%}
+.setup-coaches strong{font-size:28px}.setup-coaches small{line-height:1.45}
+.setup-coaches .setup-coach-play{position:absolute;right:12px;top:12px;width:28px;height:28px;display:grid;place-items:center;border:1px solid currentColor;border-radius:50%;background:#080808aa}
+.setup-coaches [aria-pressed=true]{background:#080808;color:#20ff50}
+@media(max-width:360px){.setup-coaches button{gap:10px}.setup-coaches .setup-coach-copy{max-width:60%}.setup-coaches small{font-size:12px}}
+</style>
 </head>
 <body>
     <svg width="0" height="0" style="position:absolute; overflow:hidden" aria-hidden="true" focusable="false">
@@ -5240,12 +5251,12 @@
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
     </script>
     <script src="training-sports.js?v=84"></script>
-    <script src="onboarding.js?v=84"></script>
+    <script src="onboarding.js?v=98"></script>
     <script src="training-audio.js?v=84"></script>
     <script src="coach-rounds.js?v=89"></script>
     <script src="coach-audio-manifest.js?v=84"></script>
     <script src="coach-maya-manifest.js?v=84"></script>
-    <script src="coach-rounds-audio-manifest.js?v=87"></script>
+    <script src="coach-rounds-audio-manifest.js?v=98"></script>
     <script>
         // Training tasks by difficulty
         const TASKS = {

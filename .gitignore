@@ -12,3 +12,4 @@ www/
 *.keystore
 keystore.properties
 android/keystore.properties
+.coach-audio-originals/

@@ -66,3 +66,9 @@
 #sectionSwitchDialog #sectionSwitchCancel{background:#2bff4a;color:#000;border-color:#2bff4a}
 @media(min-width:700px){.coach-rounds-panel{padding-top:0}.coach-rounds-panel h1{margin-top:12px}.coach-intro{margin-bottom:16px}.coach-rounds-panel fieldset{margin:14px 0}.coach-intensities{gap:6px}.coach-intensities button{padding:10px}}
 @media(max-width:480px){.has-section-nav .timer-section{padding-bottom:150px}.coach-rounds-section{padding:calc(14px + var(--app-safe-top)) max(18px,var(--app-safe-right)) 14px max(18px,var(--app-safe-left))}.coach-intensities button{padding:12px}.coach-combo{font-size:26px}.has-section-nav .guided-session .timer-ring-wrap{width:min(84vw,340px)}}
+
+/* In-flow sticky actions reserve real space below the last choice. */
+.coach-setup-panel{width:100%;min-height:100%;box-sizing:border-box;display:flex;flex-direction:column;padding:10px 0 0}
+.coach-setup-footer{position:sticky;bottom:0;left:auto;transform:none;width:100%;margin-top:auto;padding:14px 0 0;box-shadow:0 -10px 14px #080808;flex-shrink:0}
+.coach-setup-choices{padding-bottom:18px}
+@media(max-width:600px),(max-height:800px){.coach-setup-panel{padding-top:0}.coach-setup-progress{margin:10px 0 18px}.coach-setup-panel h1{font-size:28px;margin-bottom:8px}.coach-setup-panel .coach-intro{margin-bottom:16px;font-size:14px}.coach-setup-choices{gap:10px}.coach-choice-card{min-height:108px;padding:16px}.coach-sport-choice{min-height:98px}.coach-choice-main{gap:5px}.coach-choice-main strong{font-size:25px}.coach-choice-main small{font-size:12px}.coach-setup-footer button{min-height:48px}}

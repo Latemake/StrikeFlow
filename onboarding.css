@@ -22,3 +22,13 @@
 #trainingDurationStep .duration-number{display:block;font-size:52px;line-height:1;font-weight:950}#trainingDurationStep .duration-unit{display:block;font-size:11px;line-height:1.4;letter-spacing:2px;color:#888;margin-top:5px}#trainingDurationStep .duration-card{min-height:116px}#trainingDurationStep .duration-card .training-card-title{font-size:24px}#trainingDurationStep .duration-card .training-card-desc{align-self:end}#trainingDurationStep .duration-stats{align-self:start;margin-top:4px}@media(max-width:600px){#trainingDurationStep .duration-number{font-size:44px}#trainingDurationStep .duration-card{min-height:116px}}
 
 .setup-coaches{margin-top:26px;border-top:1px solid #444}.setup-coaches button{display:flex;align-items:center;gap:20px;width:100%;text-align:left;border:0;border-bottom:1px solid #444;padding:26px 14px}.setup-coaches button>span:nth-child(2){flex:1}.setup-coaches strong{font-size:32px;font-weight:950;text-transform:uppercase;display:block}.setup-coaches small{display:block;color:#aaa;font-size:13px;margin-top:7px}.setup-coaches .coach-number{font-size:12px;color:#777}.setup-coaches [aria-pressed=true]{background:#151915;color:#2bff4a}.setup-coaches [aria-pressed=true] small{color:#c2d1c5}
+
+/* The portrait is decorative; the whole coach card remains the preview button. */
+.setup-coaches button{position:relative;isolation:isolate;overflow:hidden;min-height:150px;padding:22px 14px;gap:14px;background:#080808}
+.setup-coaches button::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#080808 0%,#080808e8 38%,#08080818 100%);pointer-events:none}
+.setup-coaches .setup-coach-art{position:absolute;right:0;bottom:0;width:56%;height:100%;object-fit:cover;object-position:right center;z-index:-2;pointer-events:none}
+.setup-coaches .setup-coach-copy{min-width:0;max-width:65%}
+.setup-coaches strong{font-size:28px}.setup-coaches small{line-height:1.45}
+.setup-coaches .setup-coach-play{position:absolute;right:12px;top:12px;width:28px;height:28px;display:grid;place-items:center;border:1px solid currentColor;border-radius:50%;background:#080808aa}
+.setup-coaches [aria-pressed=true]{background:#080808;color:#20ff50}
+@media(max-width:360px){.setup-coaches button{gap:10px}.setup-coaches .setup-coach-copy{max-width:60%}.setup-coaches small{font-size:12px}}
