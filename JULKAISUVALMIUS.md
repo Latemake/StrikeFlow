@@ -1,3 +1,12 @@
+# Julkaisupäivitys 1.1.3 – 8.11.2026
+
+- Maxin ja Mayan 942 comboäänitteen pitkät hiljaiset välit lyhennetty. Esimerkin Jab/Cross tauko 0,568 s → 0,138 s. Muut puheäänitteet ja Coach Roundsin äänenkorkeuden säilyttävä toistonopeus säilyvät.
+- Coach Roundsin mobiilivalinnat ja alatunniste korjattu. Alimman lajin ja intensiteetin voi vierittää kokonaan painikkeiden yläpuolelle. Personoinnissa näkyvät Maxin ja Mayan kuvat ja esikatselut toimivat.
+- 87 testiä läpi. Kaikki 942 muokattua MP3-tiedostoa dekoodattiin onnistuneesti. Android bundleRelease, lintRelease ja testReleaseUnitTest onnistuivat. Fyysistä puhelinta ei testattu.
+- Molemmat verkkosivut julkaistu ja tarkistettu: https://fightwise.pages.dev/ ja https://latemake.github.io/StrikeFlow/. Kymmenen lähdetiedoston tarkistus kattoi koodin, tyylit, manifestit ja molempien coachien muokatut ääninäytteet. Service worker v99.
+- Lähdecommit 3169afad1fe3c56a5a40198562f75686d0280aec. Cloudflare-tuotantoversio https://84fa934a.fightwise.pages.dev. GitHub Pages -julkaisutyö 42505019103 onnistui.
+- Android 1.1.3 (16) allekirjoitettu ja lähde-/ääninäytteet tarkistettu paketista. AAB SHA-256 D02C6716C8CF6868E62B0698E405318F83D142101B1EDB2BEEFEB31349F0E58F.
+- Android-päivitys lähetetty suljetun Alpha-testin tarkistukseen; Play Console vahvisti "Muutoksia tarkistetaan". Googlen esitarkastus ja hyväksyntä ovat kesken. Saatavuutta Play Kaupasta ei ole vielä vahvistettu. Aiempi 1.1.2 on jo testaajien saatavilla.
 # Julkaisupäivitys 1.1.2 – 8.11.2026
 
 - Uudistettu päävalikko, yksinkertaistetut neonvihreät FW- ja FightWise-logot sekä samanväriset Sparring-, Training- ja Coach Rounds -kuvat. Korttien kellertävä sävytys poistettu.
