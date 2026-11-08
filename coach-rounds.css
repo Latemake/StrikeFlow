@@ -1,6 +1,6 @@
-:root{--section-nav-height:calc(68px + env(safe-area-inset-bottom))}
+:root{--section-nav-height:calc(68px + var(--app-safe-bottom))}
 #sectionNav[hidden],.coach-rounds-section[hidden]{display:none!important}
-#sectionNav{position:fixed;inset:auto 0 0;z-index:9750;display:flex;justify-content:center;padding:4px 8px calc(4px + env(safe-area-inset-bottom));background:#101010;border-top:1px solid #333;box-sizing:border-box;min-height:var(--section-nav-height)}
+#sectionNav{position:fixed;inset:auto 0 0;z-index:9750;display:flex;justify-content:center;padding:4px 8px calc(4px + var(--app-safe-bottom));background:#101010;border-top:1px solid #333;box-sizing:border-box;min-height:var(--section-nav-height)}
 #sectionNav button{max-width:230px;flex:1;min-width:0;min-height:58px;background:none;border:0;color:#999;font:inherit;font-size:12px;line-height:1.3;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:5px 4px;white-space:normal}
 #sectionNav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 #sectionNav button[aria-current=page]{color:var(--accent-primary,#2bff4a)}
@@ -8,7 +8,7 @@
 .has-section-nav .controls{bottom:var(--section-nav-height);padding-bottom:14px}
 .has-section-nav .app-content{padding-bottom:calc(150px + var(--section-nav-height))}
 .has-section-nav .training-section,.has-section-nav .sparring-setup{bottom:var(--section-nav-height)}
-.coach-rounds-section{position:fixed;inset:0 0 var(--section-nav-height);z-index:9600;overflow-y:auto;background:#080808;color:#f5f5f5;padding:24px 20px;box-sizing:border-box;overscroll-behavior:contain}
+.coach-rounds-section{position:fixed;inset:0 0 var(--section-nav-height);z-index:9600;overflow-y:auto;background:#080808;color:#f5f5f5;padding:calc(24px + var(--app-safe-top)) max(20px,var(--app-safe-right)) 24px max(20px,var(--app-safe-left));box-sizing:border-box;overscroll-behavior:contain}
 .coach-rounds-panel{max-width:620px;margin:auto;padding:10px 0 104px}
 .coach-home{border:0;background:none;color:#aaa;font:inherit;padding:10px 0;cursor:pointer}
 .coach-rounds-panel h1{font-size:clamp(30px,6vw,46px);line-height:1.1;margin:22px 0 12px;text-transform:none;letter-spacing:-1px}
@@ -65,4 +65,4 @@
 #sectionSwitchDialog button{flex:1;min-width:120px;min-height:48px;border:1px solid #555;background:#242424;color:#fff;border-radius:3px;font:inherit;padding:12px;cursor:pointer}
 #sectionSwitchDialog #sectionSwitchCancel{background:#2bff4a;color:#000;border-color:#2bff4a}
 @media(min-width:700px){.coach-rounds-panel{padding-top:0}.coach-rounds-panel h1{margin-top:12px}.coach-intro{margin-bottom:16px}.coach-rounds-panel fieldset{margin:14px 0}.coach-intensities{gap:6px}.coach-intensities button{padding:10px}}
-@media(max-width:480px){.has-section-nav .timer-section{padding-bottom:150px}.coach-rounds-section{padding:14px 18px}.coach-intensities button{padding:12px}.coach-combo{font-size:26px}.has-section-nav .guided-session .timer-ring-wrap{width:min(84vw,340px)}}
+@media(max-width:480px){.has-section-nav .timer-section{padding-bottom:150px}.coach-rounds-section{padding:calc(14px + var(--app-safe-top)) max(18px,var(--app-safe-right)) 14px max(18px,var(--app-safe-left))}.coach-intensities button{padding:12px}.coach-combo{font-size:26px}.has-section-nav .guided-session .timer-ring-wrap{width:min(84vw,340px)}}
