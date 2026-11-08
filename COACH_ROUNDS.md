@@ -14,4 +14,4 @@ Generate missing recordings locally with `node scripts/generate-coach-rounds-aud
 
 Run `npm test`, then `npm run cap:sync`. Android verification uses the installed JDK 21 and Gradle `--no-daemon --max-workers=1 --no-parallel :app:assembleDebug :app:lintDebug :app:testDebugUnitTest`. Do not run Capacitor sync while Gradle is building.
 
-Release 1.1.0 uses Android version code 13. Deploy the complete web bundle, including both new audio directories, their manifests and SVG intensity icons. Keep versioned script/style URLs in the HTML and service worker precache aligned.
+Release 1.1.1 uses Android version code 14. Coach recordings share one persistent media element, unlocked by an initial user gesture. Silent unlocking cannot interrupt later speech, and a transient load failure retries once on the same player. Deploy the complete web bundle, including both new audio directories, their manifests and SVG intensity icons. Keep versioned script/style URLs in the HTML and service worker precache aligned.

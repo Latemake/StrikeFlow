@@ -85,8 +85,8 @@ android/app/build/outputs/bundle/release/app-release.aab
 
 - App name: `FightWise`
 - Package name: `com.fightwise.app`
-- Version name: `1.1.0`
-- Version code: `13` (increase for each newly uploaded bundle)
+- Version name: `1.1.1`
+- Version code: `14` (increase for each newly uploaded bundle)
 - Privacy policy: include the hosted `privacy-policy.html` URL
 - Category: Health & Fitness or Sports
 - Content rating: complete in Play Console
