@@ -5,7 +5,9 @@
 - Nyrkkeilyssä 161, potkunyrkkeilyssä 320 ja Muay Thaissa 471 yhdistelmää. Lajikohtainen satunnaisvalikoima säilyy eri harjoitusten välillä. Mukana 26 kannustusta tai muistutusta sekä 16 liikkumisohjetta.
 - 79 automaattista testiä läpi. bundleRelease, lintRelease ja testReleaseUnitTest onnistuivat. Selaimessa tarkistettu tavallinen Training, Coach Rounds, tauotus, jatkaminen ja ohitus sekä sparrin kahden erän valmistuminen.
 - Tauon ohituksen jälkeinen vanhan ohjeen väliaikainen näkyminen korjattu. Päävalikko ja kolmen vaiheen valinnat tarkistettu eri näyttökoissa.
-- Verkkoversiot julkaistaan nykyisiin GitHub Pages- ja Cloudflare Pages -kohteisiin. Androidin kohde on nykyinen suljettu Alpha-testi; tuotantolupa odottaa testijakson valmistumista. Fyysistä Android-laitetta ei testattu tällä julkaisupaketilla.
+- Molemmat verkkoversiot julkaistu ja tarkistettu: https://fightwise.pages.dev/ ja https://latemake.github.io/StrikeFlow/. Cloudflare-tuotantoversio: https://fff5b8b3.fightwise.pages.dev. Julkaisun lähdecommit: 470a5b78614931bbcbad616b5eae56c01d2451c7. GitHub Pages -julkaisutyö 42486691375 onnistui.
+- Android 1.1.0 (13) lähetetty suljetun Alpha-testin tarkistukseen. Console vahvisti tilan "Muutoksia tarkistetaan". Esitarkastus ja Googlen hyväksyntä ovat vielä kesken, joten uuden paketin saatavuutta ei ole vahvistettu. Tuotantolupa odottaa testijakson valmistumista.
+- Julkisten sivujen HTML, JavaScript, CSS, SVG-liekkisymbolit, coach-kuvat ja uusien kannustusäänien näytteet vastaavat paikallista julkaisulähdettä. Service worker on v89. Fyysistä Android-laitetta ei testattu tällä julkaisupaketilla.
 
 # Tietoturvapäivitys 1.0.9 – 7.11.2026
 
