@@ -8,8 +8,11 @@ const files = [
   'onboarding.css',
   'training-sports.js',
   'training-audio.js',
+  'coach-rounds.js',
+  'coach-rounds.css',
   'coach-audio-manifest.js',
   'coach-maya-manifest.js',
+  'coach-rounds-audio-manifest.js',
   'sw.js',
   'manifest.json',
   'privacy-policy.html',
@@ -17,8 +20,14 @@ const files = [
   'FightWise text.png',
   'Fightwise app icon.png',
   'Unlock 50+ workouts with premium AD.png',
-  'Sparring photo.png',
-  'Training photo.png',
+  'Sparring simple.png',
+  'Training simple.png',
+  'Coach Rounds simple.png',
+  'Coach Max.png',
+  'Coach Maya.png',
+  'Intensity Light.svg',
+  'Intensity Steady.svg',
+  'Intensity Hard.svg',
   'Round Bell START.mp3',
   'Round Bell END.mp3'
 ];
@@ -49,3 +58,5 @@ console.log(`Prepared ${files.length + renamedFiles.length} web assets in ${webD
 cpSync('coach-audio', join(webDir, 'coach-audio'), { recursive: true });
 
 cpSync('coach-audio-maya', join(webDir, 'coach-audio-maya'), { recursive: true });
+cpSync('coach-rounds-audio', join(webDir, 'coach-rounds-audio'), { recursive: true });
+cpSync('coach-rounds-audio-maya', join(webDir, 'coach-rounds-audio-maya'), { recursive: true });

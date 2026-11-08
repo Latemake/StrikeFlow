@@ -61,3 +61,15 @@ test('changing coach preferences preserves the other saved audio choices', () =>
  vm.runInContext(html.slice(start,end),c);c.setTrainingAudioPreference('voiceCoachEnabled',false);
  assert.equal(stored.uiClickSoundsEnabled,true);assert.equal(stored.roundSoundsEnabled,false);assert.equal(stored.vibrationEnabled,false);assert.equal(stored.voiceCoachEnabled,false);
 });
+
+test('Coach Rounds speeds up both coaches and their previews while preserving pitch and ordinary training playback',async()=>{
+ let source,audio;
+ class Audio{constructor(src){source=src;audio=this;}play(){return Promise.resolve();}pause(){}}
+ const c=vm.createContext({settings:{coachVoice:'maya'},Audio,COACH_AUDIO_MANIFEST:{Test:'ordinary-max.mp3'},COACH_MAYA_MANIFEST:{Test:'ordinary-maya.mp3'},COACH_ROUNDS_AUDIO_MANIFEST:{max:{Test:'projected-max.mp3',Preview:'preview-max.mp3'},maya:{Test:'projected-maya.mp3'}},COACH_ROUNDS:{previewText:'Preview'},activeTrainingWorkout:{coachRounds:true}});
+ const start=html.indexOf('let coachRecording = null;'),end=html.indexOf('const trainingCueController',start);
+ vm.runInContext('let pendingBrowserSpeech=null;function cancelCoachSpeech(){if(pendingBrowserSpeech)pendingBrowserSpeech();}\n'+html.slice(start,end),c);
+ let playing=c.speakCoachText('Test');assert.equal(source,'projected-maya.mp3');assert.equal(audio.playbackRate,1.2);assert.equal(audio.preservesPitch,true);c.cancelCoachSpeech();await playing;
+ c.activeTrainingWorkout=null;
+ playing=c.speakCoachText('Preview','max');assert.equal(source,'preview-max.mp3');assert.equal(audio.playbackRate,1.2);assert.equal(audio.preservesPitch,true);c.cancelCoachSpeech();await playing;
+ playing=c.speakCoachText('Test');assert.equal(source,'ordinary-maya.mp3');assert.equal(audio.playbackRate,1);c.cancelCoachSpeech();await playing;
+});

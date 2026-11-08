@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="coach-rounds.css?v=87">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>FightWise - Fight Timer</title>
@@ -1773,11 +1774,11 @@
         }
 
         .mode-card.spar-card::before {
-            background-image: url("Sparring photo.png");
+            background-image: url("Sparring simple.png");
         }
 
         .mode-card.training-card-entry::before {
-            background-image: url("Training photo.png");
+            background-image: url("Training simple.png");
         }
 
         .mode-card:hover,
@@ -4601,6 +4602,51 @@
 @media(min-width:1000px){.timer-ring-wrap{width:min(48vw,calc(100dvh - 160px),820px);height:auto}.guided-session .timer-ring-wrap{width:min(46vw,calc(100dvh - 180px),760px)}.guided-session .timer-display{font-size:clamp(90px,24cqw,220px)}}
 @media(max-width:480px){.guided-session .timer-section{padding-left:18px;padding-right:18px;gap:22px}.guided-session .timer-ring-wrap{width:min(88vw,calc(100dvh - 310px),500px)}.guided-session .guide-title{font-size:32px}.guided-session .guide-note{font-size:23px}.timer-display,.guided-session .timer-display{font-size:clamp(60px,24cqw,160px)}}
 </style>
+<style>
+/* Three clear entry points, with matching illustrations and no idle card motion. */
+#modeChoice{background:#070907;padding:24px 20px max(24px,env(safe-area-inset-bottom));align-items:flex-start}
+#modeChoice::before,#modeChoice::after{display:none}
+#modeChoice .mode-panel{width:min(100%,680px);display:flex;flex-direction:column;align-items:stretch;gap:0;text-align:left}
+#modeChoice .mode-home-header{margin:0 0 24px;padding-right:36px}
+#modeChoice .mode-logo-stack{flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;min-height:0;margin:0 0 28px}
+#modeChoice .mode-logo-stack::before{display:none}
+#modeChoice .mode-logo{width:44px;filter:none;flex-shrink:0}
+#modeChoice .mode-logo-text{width:170px;max-width:calc(100% - 56px);margin:0;filter:none}
+#modeChoice .mode-title{font-size:clamp(29px,7vw,38px);line-height:1.12;letter-spacing:-.7px;margin:0;max-width:none;text-transform:none}
+#modeChoice .mode-actions{display:grid;grid-template-columns:1fr;gap:12px;width:100%;margin:0;align-self:stretch}
+#modeChoice .mode-card{min-height:140px;padding:24px 20px;animation:none;will-change:auto;background:#090c09;border:1px solid #353c32;border-radius:6px;justify-content:center}
+#modeChoice .mode-card::before{background-position:right center;background-size:auto 100%;background-repeat:no-repeat;background-color:#000;transform:none;filter:none}
+#modeChoice .mode-card::after{background:linear-gradient(90deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.65) 45%,rgba(0,0,0,.12) 100%)}
+#modeChoice .coach-card-entry::before{background-image:url('Coach Rounds simple.png')}
+#modeChoice .mode-card-top{flex:0;width:100%;padding-right:24px}
+#modeChoice .mode-card-main{width:100%}
+#modeChoice .mode-card-title{font-size:clamp(26px,6vw,34px);line-height:1.08;letter-spacing:.3px;margin:0 0 8px;overflow-wrap:normal}
+#modeChoice .mode-card-desc{font-size:14px;line-height:1.45;color:#d2d6cf;max-width:76%;text-wrap:pretty}
+#modeChoice .mode-card:focus-visible{outline:2px solid var(--accent-primary);outline-offset:4px}
+#modeChoice .mode-card:hover{border-color:var(--accent-primary);transform:translateY(-2px)}
+#modeChoice .mode-card:active{transform:scale(.99)}
+@media(max-width:360px),(max-height:700px) and (max-width:959px){
+    #modeChoice{padding-top:18px;padding-bottom:18px}
+    #modeChoice .mode-home-header{margin-bottom:18px}
+    #modeChoice .mode-logo-stack{margin-bottom:20px}
+    #modeChoice .mode-card{min-height:122px;padding:18px}
+    #modeChoice .mode-actions{gap:10px}
+}
+@media(min-width:960px){
+    #modeChoice{padding:40px;align-items:center}
+    #modeChoice .mode-panel{width:min(100%,1100px);display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.2fr);gap:64px;margin:auto 0}
+    #modeChoice .mode-home-header{align-self:center;margin:0;padding:0}
+    #modeChoice .mode-logo-stack{margin-bottom:38px}
+    #modeChoice .mode-logo{width:58px}
+    #modeChoice .mode-logo-text{width:220px}
+    #modeChoice .mode-title{font-size:clamp(42px,4.2vw,58px);max-width:380px}
+    #modeChoice .mode-actions{grid-column:2;grid-row:1;gap:16px}
+    #modeChoice .mode-card{min-height:158px;padding:26px}
+    #modeChoice .mode-card-title{font-size:36px}
+    #modeChoice .mode-card-desc{font-size:16px;max-width:72%}
+}
+@media(prefers-reduced-motion:reduce){#modeChoice .mode-panel,#modeChoice .mode-card{animation:none;transition:none;transform:none}}
+</style>
 </head>
 <body>
     <svg width="0" height="0" style="position:absolute; overflow:hidden" aria-hidden="true" focusable="false">
@@ -4683,34 +4729,39 @@
 
     <!-- Daily Mode Choice -->
     <div class="mode-choice" id="modeChoice">
-        <div class="mode-bg-logo" aria-hidden="true"></div>
         <button class="mode-settings-btn" onclick="openSettings()" aria-label="Open settings">
             <svg class="icon icon-md"><use href="#icon-gear"></use></svg>
         </button>
         <div class="mode-panel">
-            <div class="mode-logo-stack" aria-label="FightWise">
-                <img class="mode-logo" src="FightWise logo.png" alt="">
-                <img class="mode-logo-text" src="FightWise text.png" alt="FightWise">
-            </div>
-            <div class="mode-lockup">Fight Timer & Guided Workouts</div>
-            <div class="mode-title">Train. Fight. Improve.</div>
-            <div class="mode-subtitle">Choose your session and get to work.</div>
-            <div class="mode-actions">
+            <header class="mode-home-header">
+                <div class="mode-logo-stack" aria-label="FightWise">
+                    <img class="mode-logo" src="FightWise logo.png" alt="">
+                    <img class="mode-logo-text" src="FightWise text.png" alt="FightWise">
+                </div>
+                <h1 class="mode-title">Choose your session</h1>
+            </header>
+            <div class="mode-actions" aria-label="Training modes">
                 <button class="mode-card spar-card" onclick="chooseSparMode()">
                     <div class="mode-card-top">
                         <div class="mode-card-main">
-                            <div class="mode-card-number">Fight rounds</div>
                             <div class="mode-card-title">Sparring</div>
-                            <div class="mode-card-desc">Rounds, bells and breaks.</div>
+                            <div class="mode-card-desc">Set your rounds, rest and bells.</div>
                         </div>
                     </div>
                 </button>
                 <button class="mode-card training-card-entry" onclick="openTrainingSection()">
                     <div class="mode-card-top">
                         <div class="mode-card-main">
-                            <div class="mode-card-number">Guided work</div>
                             <div class="mode-card-title">Training</div>
-                            <div class="mode-card-desc">Workouts, combos and instructions.</div>
+                            <div class="mode-card-desc">Follow a structured workout.</div>
+                        </div>
+                    </div>
+                </button>
+                <button class="mode-card coach-card-entry" onclick="openCoachRounds()">
+                    <div class="mode-card-top">
+                        <div class="mode-card-main">
+                            <div class="mode-card-title">Coach Rounds</div>
+                            <div class="mode-card-desc">Your coach calls. You react.</div>
                         </div>
                     </div>
                 </button>
@@ -5141,11 +5192,17 @@
         </div>
     </div>
 
-    <script src="training-sports.js"></script>
-    <script src="onboarding.js"></script>
-    <script src="training-audio.js"></script>
-    <script src="coach-audio-manifest.js"></script>
-    <script src="coach-maya-manifest.js"></script>
+    <script>
+        // Register independently of app startup so an outdated cached module cannot prevent recovery.
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+    </script>
+    <script src="training-sports.js?v=84"></script>
+    <script src="onboarding.js?v=84"></script>
+    <script src="training-audio.js?v=84"></script>
+    <script src="coach-rounds.js?v=89"></script>
+    <script src="coach-audio-manifest.js?v=84"></script>
+    <script src="coach-maya-manifest.js?v=84"></script>
+    <script src="coach-rounds-audio-manifest.js?v=87"></script>
     <script>
         // Training tasks by difficulty
         const TASKS = {
@@ -5981,6 +6038,10 @@
             .map(entry => entry[0]).sort((a, b) => b.length - a.length).join('|') + ')\\b', 'gi');
 
         const EXTRA_TRANSLATIONS = [
+            ['Choose your session', 'Valitse harjoitus', 'Wähle dein Training'],
+            ['Set your rounds, rest and bells.', 'Valitse erät, tauot ja kelloäänet.', 'Runden, Pausen und Glocken einstellen.'],
+            ['Follow a structured workout.', 'Seuraa valmista treeniohjelmaa.', 'Einem strukturierten Workout folgen.'],
+            ['Your coach calls. You react.', 'Coach kertoo yhdistelmän. Sinä teet.', 'Dein Coach sagt an. Du reagierst.'],
             ['Sport', 'Laji', 'Sportart'],
             ['All sports', 'Kaikki lajit', 'Alle Sportarten'],
             ['Fast hands', 'Nopeat kädet', 'Schnelle Hände'],
@@ -6247,6 +6308,7 @@
         }
 
         function translateTextNode(node) {
+            if(node.parentElement?.closest('[data-coach-i18n]'))return;
             // Keep the source when changing languages, but accept fresh content
             // written into an existing node as the timer or tutorial advances.
             if (node._i18nOriginalText === undefined || node.nodeValue !== node._i18nTranslatedText) {
@@ -6263,7 +6325,7 @@
             const skipTags = new Set(['SCRIPT', 'STYLE', 'SVG', 'PATH', 'CANVAS']);
             const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
                 acceptNode(node) {
-                    if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                    if (!node.nodeValue.trim() || node.parentElement?.closest('[data-coach-i18n]')) return NodeFilter.FILTER_REJECT;
                     if (node.parentElement && skipTags.has(node.parentElement.tagName)) return NodeFilter.FILTER_REJECT;
                     return NodeFilter.FILTER_ACCEPT;
                 }
@@ -6545,11 +6607,17 @@
         let coachRecording = null;
         function speakCoachText(text, coach = settings.coachVoice) {
             const manifest = coach === 'maya' && typeof COACH_MAYA_MANIFEST !== 'undefined' ? COACH_MAYA_MANIFEST : COACH_AUDIO_MANIFEST;
-            const src = manifest[text];
+            const roundsManifest = typeof COACH_ROUNDS_AUDIO_MANIFEST !== 'undefined' ? COACH_ROUNDS_AUDIO_MANIFEST[coach] : null;
+            const isRounds = typeof activeTrainingWorkout !== 'undefined' && !!activeTrainingWorkout?.coachRounds;
+            const isRoundsPreview = typeof COACH_ROUNDS !== 'undefined' && text === COACH_ROUNDS.previewText;
+            const roundsSrc = (isRounds || isRoundsPreview) && roundsManifest?.[text];
+            const src = roundsSrc || manifest[text];
             if (!src) return Promise.reject(new Error('No coach recording for this instruction'));
             cancelCoachSpeech();
             return new Promise((resolve, reject) => {
                 const audio = new Audio(src);
+                audio.playbackRate = roundsSrc ? 1.2 : 1;
+                audio.preservesPitch = true;
                 coachRecording = audio;
                 let finished = false;
                 const finish = error => {
@@ -6617,7 +6685,35 @@
             return !!workout && (workout.voicePilot || workout.id === 'quick-technique');
         }
 
+        const coachRoundsMemory = createCoachRoundsMemory({
+            getItem: key => localStorage.getItem(key),
+            setItem: (key,value) => localStorage.setItem(key,value)
+        });
+        const coachRoundsController = createCoachRoundsController({
+            restore: state => coachRoundsMemory.read(state.sport,state.combos),
+            remember: (state,progress) => coachRoundsMemory.write(state.sport,state.combos,progress),
+            cancelSpeech: cancelCoachSpeech, stopSounds: stopTrainingSounds,
+            bell: rest => rest ? new Promise(resolve => { playTrainingGong(1); window.setTimeout(resolve,700); }) : playTrainingStartBell(),
+            speak: text => speakCoachText(text),
+            onStep: () => { coachRoundCue=''; coachRoundTip=''; coachRoundMovement=''; updateUI(); },
+            onCombo: text => { coachRoundCue=text; coachRoundMovement=''; coachRoundError=false; updateUI(); },
+            onMovement: text => { coachRoundMovement=text; updateUI(); },
+            onTip: text => { coachRoundTip=text; updateUI(); },
+            onError: () => { coachRoundError=true; if(timerState.isRunning) toggleTimer(); updateUI(); }
+        });
+        function syncCoachRoundsAudio() {
+            if(appMode!=='training'||!activeTrainingWorkout?.coachRounds)return;
+            const step=getCurrentGuideStep();if(!step)return;
+            const plan=activeTrainingWorkout.coachRounds,index=trainingTimeline.indexOf(step);
+            coachRoundsController.update({key:activeTrainingWorkout.id+':'+index,
+                elapsed:Math.max(0,settings.roundTime-timerState.timeLeft-step.start),duration:step.end-step.start,
+                running:timerState.isRunning&&!timerState.isFinished,rest:step.kind==='rest',
+                roundIndex:trainingTimeline.slice(0,index).filter(s=>s.kind==='round').length,
+                sport:plan.sport,level:plan.level,combos:plan.combos,comments:plan.comments,movements:plan.movements,bellEnabled:settings.roundSoundsEnabled});
+        }
+
         function syncTrainingAudio() {
+            if (activeTrainingWorkout?.coachRounds) { syncCoachRoundsAudio(); return; }
             if (appMode !== 'training' || !activeTrainingWorkout) return;
             const step = getCurrentGuideStep();
             if (!step) return;
@@ -6717,9 +6813,11 @@
         }
 
         function renderSessionSummary() {
-            const rounds = Math.min(sessionStats.completedRounds, settings.numberOfRounds);
-            const completion = settings.numberOfRounds > 0
-                ? Math.round((rounds / settings.numberOfRounds) * 100)
+            const coachPlan = activeTrainingWorkout?.coachRounds;
+            const targetRounds = coachPlan?.rounds || settings.numberOfRounds;
+            const rounds = coachPlan ? trainingTimeline.filter(step => step.kind === 'round' && step.end <= settings.roundTime-timerState.timeLeft).length : Math.min(sessionStats.completedRounds, settings.numberOfRounds);
+            const completion = targetRounds > 0
+                ? Math.round((rounds / targetRounds) * 100)
                 : 0;
 
             const finishedTitle = document.querySelector('.finished-title');
@@ -6735,7 +6833,7 @@
                     : 'Great work!';
             }
 
-            summaryRounds.textContent = `${rounds}/${settings.numberOfRounds}`;
+            summaryRounds.textContent = `${rounds}/${targetRounds}`;
             summaryActive.textContent = formatTime(sessionStats.activeSeconds);
             summaryBreak.textContent = formatTime(sessionStats.breakSeconds);
             summarySkips.textContent = `${sessionStats.skippedBreaks}`;
@@ -6906,7 +7004,8 @@
             const deltaSeconds = (now - lastTickMs) / 1000;
             lastTickMs = now;
             timerState.timeLeft = Math.max(0, timerState.timeLeft - deltaSeconds);
-            if (timerState.isRound) sessionStats.activeSeconds += deltaSeconds;
+            const guidedRest = activeTrainingWorkout?.coachRounds && getCurrentGuideStep()?.kind === 'rest';
+            if (timerState.isRound && !guidedRest) sessionStats.activeSeconds += deltaSeconds;
             else sessionStats.breakSeconds += deltaSeconds;
 
             const wholeSeconds = Math.ceil(timerState.timeLeft);
@@ -6972,7 +7071,8 @@
             if (timerState.isRound) {
                 // Round ending
                 sessionStats.completedRounds++;
-                if (appMode === 'training') trainingCueController.finish(settings.trainingCuesEnabled);
+                if (activeTrainingWorkout?.coachRounds) { coachRoundsController.reset(); if(settings.roundSoundsEnabled) playTrainingGong(1); }
+                else if (appMode === 'training') trainingCueController.finish(settings.trainingCuesEnabled);
                 else playRoundEnd();
                 if (timerState.currentRound >= settings.numberOfRounds) {
                     timerState.isFinished = true;
@@ -7096,6 +7196,8 @@
         // Reset timer
         function resetTimer() {
             clearInterval(intervalId);
+            if(typeof coachRoundsController!=='undefined')coachRoundsController.reset();
+            coachRoundCue='';coachRoundTip='';coachRoundMovement='';coachRoundError=false;
             trainingCueController.reset();
             resetManagedAudioPlayback();
             stopPreRoundDisplay();
@@ -8491,6 +8593,7 @@
         }
 
         function showModeChoice() {
+            document.getElementById('coachRoundsSection').hidden=true;setSectionNav(null);cancelCoachSpeech();
             modeChoice.classList.remove('hidden');
             trainingSection.classList.add('hidden');
             sparringSetup.classList.add('hidden');
@@ -8498,6 +8601,7 @@
 
         function openModeChoice() {
             clearInterval(intervalId);
+            coachRoundsController.reset();
             trainingCueController.reset();
             resetManagedAudioPlayback();
             stopPreRoundDisplay();
@@ -8508,6 +8612,7 @@
         }
 
         function chooseSparMode() {
+            document.getElementById('coachRoundsSection').hidden=true;setSectionNav('spar');
             const sparSettings = appMode === 'training' && savedSparringPreferences ? savedSparringPreferences : settings;
             setupStep = 0;
             setupCustomActive = false;
@@ -8711,6 +8816,7 @@
         }
 
         function openTrainingSection() {
+            document.getElementById('coachRoundsSection').hidden=true;setSectionNav('training');
             modeChoice.classList.add('hidden');
             sparringSetup.classList.add('hidden');
             trainingSection.classList.remove('hidden');
@@ -9155,6 +9261,7 @@
         function renderTrainingGuide() {
             const step = getCurrentGuideStep();
             if (!step) return '';
+            if(activeTrainingWorkout?.coachRounds)return renderCoachRoundsGuide(step);
 
             const index = trainingTimeline.indexOf(step);
             const hasStarted = !!sessionStats.startedAt || timerState.timeLeft < settings.roundTime;
@@ -9343,6 +9450,7 @@
             trainingPlanTitle = title;
             activeTrainingWorkout = customWorkout || requestedWorkout;
             trainingTimeline = activeTrainingWorkout ? buildTrainingTimeline(activeTrainingWorkout) : [];
+            document.getElementById('coachRoundsSection').hidden=true;setSectionNav(activeTrainingWorkout?.coachRounds?'coach':'training');
             currentGuideIndex = -1;
             settings.roundTime = activeTrainingWorkout ? getTrainingDuration(activeTrainingWorkout) : durationSeconds;
             settings.breakTime = 60;
@@ -9398,7 +9506,9 @@
             document.getElementById('trainingCuesToggle').checked = settings.trainingCuesEnabled;
             document.getElementById('periodicCuesToggle').checked = settings.periodicCuesEnabled;
             document.getElementById('periodicCuesToggle').disabled = !settings.trainingCuesEnabled;
-            document.getElementById('voiceCoachToggle').checked = settings.voiceCoachEnabled;
+            const coachSessionVisible = appMode === 'training' && !!activeTrainingWorkout?.coachRounds && modeChoice.classList.contains('hidden') && trainingSection.classList.contains('hidden') && document.getElementById('coachRoundsSection').hidden;
+            document.getElementById('voiceCoachToggle').checked = coachSessionVisible || settings.voiceCoachEnabled;
+            document.getElementById('voiceCoachToggle').disabled = coachSessionVisible;
             updateVoiceCoachStatus();
 
             ['main', 'timing', 'task', 'sound'].forEach(tab => {
@@ -9574,6 +9684,9 @@
             trainingCueController.cancelVoice();
             voiceCoachStatusMessage = '';
             settings.language = language;
+            renderCoachRoundsPicker();
+            const selectedNav=document.querySelector('#sectionNav [aria-current="page"]');
+            if(selectedNav)setSectionNav(selectedNav.dataset.section);
             try { localStorage.setItem(LANGUAGE_KEY, language); } catch (e) {}
             updateSettingsUI();
             updateUI();
@@ -10090,6 +10203,7 @@ function previewRoundBell(count) {
             if (tutActive) e.stopPropagation();
         });
 
+        initCoachRoundsUI();
         // Apply initial theme
         resetPremiumOnRefresh();
         applyTheme();
@@ -10130,10 +10244,6 @@ function previewRoundBell(count) {
         } catch(e) {}
         setTimeout(() => { if(!setupFlow.completed()) setupFlow.open(); },120);
 
-        // Register service worker for PWA/offline support
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').catch(() => {});
-        }
     </script>
 </body>
 </html>

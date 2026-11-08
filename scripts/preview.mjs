@@ -4,7 +4,7 @@ import { resolve, extname, sep } from 'node:path';
 
 const root = resolve('www');
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript',
-    '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.mp3': 'audio/mpeg' };
+    '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.mp3': 'audio/mpeg' };
 createServer(async (request, response) => {
     try {
         const name = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);

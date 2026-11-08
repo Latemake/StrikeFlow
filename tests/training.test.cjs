@@ -70,7 +70,7 @@ test('starting a guided workout uses timeline duration instead of its category',
     const s = vm.createContext({ requested: workout([{ title: 'Warmup - 2 min', items: [] }]),
         findTrainingWorkout: () => ({ premium: false, title: 'Two minutes', sections: [{ title: 'Warmup - 2 min', items: [] }] }),
         appMode:'spar', savedSparringPreferences:null, settings:{roundTime:180, breakTime:60, numberOfRounds:5, taskSparEnabled:false}, modeChoice: {classList: {add() {}}}, trainingSection: {classList: {add() {}}},
-        workoutPreview: {classList: {remove() {}}}, resetTimer() {} });
+        workoutPreview: {classList: {remove() {}}}, document:{getElementById(){return {hidden:true};}},setSectionNav(){},resetTimer() {} });
     vm.runInContext(html.slice(html.indexOf('function parseMinutesFromTitle('), html.indexOf('function getCurrentGuideStep(')), s);
     vm.runInContext(html.slice(html.indexOf('function startTrainingPlan('), html.indexOf('// Settings', html.indexOf('function startTrainingPlan('))), s);
     s.startTrainingPlan(1800, 'Test', 30, 'test');

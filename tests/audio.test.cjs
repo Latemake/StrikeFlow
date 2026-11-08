@@ -213,7 +213,7 @@ function addSessionFlow(c) {
         sessionStats: { completedRounds: 0 }, taskState: {}, appMode: 'spar',
         intervalId: null, lastTickMs: null, lastWholeSecond: null,
         performance: { now: () => 1000 }, setInterval: () => 1, clearInterval() {},
-        trainingCueController: { reset() {} }, stopPreRoundDisplay() {}, releaseWakeLock() {},
+        trainingCueController: { reset() {} }, coachRoundsController: { reset() {} }, coachRoundCue:'', coachRoundError:false, stopPreRoundDisplay() {}, releaseWakeLock() {},
         requestWakeLock() {}, showModeChoice() {}, updateUI() {}, syncTrainingAudio() {}, tick() {},
         PRE_ROUND_READ_SECONDS: 5, finishedOverlay: { classList: { remove() {} } }
     });

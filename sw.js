@@ -1,12 +1,15 @@
-const CACHE = 'fightwise-v81';
+const CACHE = 'fightwise-v89';
 const ASSETS = [
   './index.html',
-  './onboarding.js',
-  './onboarding.css',
-  './training-sports.js',
-  './training-audio.js',
-  './coach-audio-manifest.js',
-  './coach-maya-manifest.js',
+  './onboarding.js?v=84',
+  './onboarding.css?v=84',
+  './training-sports.js?v=84',
+  './training-audio.js?v=84',
+  './coach-rounds.js?v=89',
+  './coach-rounds.css?v=87',
+  './coach-audio-manifest.js?v=84',
+  './coach-maya-manifest.js?v=84',
+  './coach-rounds-audio-manifest.js?v=87',
   './privacy-policy.html',
   './manifest.json',
   './FightWise logo.png',
@@ -14,15 +17,21 @@ const ASSETS = [
   './Fightwise app icon.png',
   './click-soundeffect.mp3',
   './Unlock 50+ workouts with premium AD.png',
-  './Sparring photo.png',
-  './Training photo.png',
+  './Sparring simple.png',
+  './Training simple.png',
+  './Coach Rounds simple.png',
+  './Coach Max.png',
+  './Coach Maya.png',
+  './Intensity Light.svg',
+  './Intensity Steady.svg',
+  './Intensity Hard.svg',
   './Round Bell START.mp3',
   './Round Bell END.mp3'
 ];
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => Promise.all(['./coach-audio/manifest.json','./coach-audio-maya/manifest.json'].map(url => fetch(url).then(r => r.json()))).then(manifests => cache.addAll([...ASSETS, ...manifests.flatMap(manifest => Object.values(manifest))])))
+    caches.open(CACHE).then(cache => Promise.all(['./coach-audio/manifest.json','./coach-audio-maya/manifest.json','./coach-rounds-audio/manifest.json','./coach-rounds-audio-maya/manifest.json'].map(url => fetch(url).then(r => r.json()))).then(manifests => cache.addAll([...ASSETS, ...manifests.flatMap(manifest => Object.values(manifest))])))
   );
   self.skipWaiting();
 });

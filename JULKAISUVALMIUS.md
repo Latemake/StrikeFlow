@@ -1,3 +1,33 @@
+# Julkaisupaketti 1.1.0 – 8.11.2026
+
+- Androidin versiokoodi 13. Allekirjoitettu AAB ja sen lähdetiedostot tarkistettu. SHA-256: C98D60DD83766D5DE06370E75FFB7FF2EC206471C5974B77D1258ABB3E029BDA.
+- Coach Rounds: laji → coach → intensiteetti; Maxin ja Mayan kuvat sekä yksinkertaiset SVG-liekkisymbolit intensiteeteille. Puhe on 20 % nopeampaa luonnollisella äänenkorkeudella.
+- Nyrkkeilyssä 161, potkunyrkkeilyssä 320 ja Muay Thaissa 471 yhdistelmää. Lajikohtainen satunnaisvalikoima säilyy eri harjoitusten välillä. Mukana 26 kannustusta tai muistutusta sekä 16 liikkumisohjetta.
+- 79 automaattista testiä läpi. bundleRelease, lintRelease ja testReleaseUnitTest onnistuivat. Selaimessa tarkistettu tavallinen Training, Coach Rounds, tauotus, jatkaminen ja ohitus sekä sparrin kahden erän valmistuminen.
+- Tauon ohituksen jälkeinen vanhan ohjeen väliaikainen näkyminen korjattu. Päävalikko ja kolmen vaiheen valinnat tarkistettu eri näyttökoissa.
+- Verkkoversiot julkaistaan nykyisiin GitHub Pages- ja Cloudflare Pages -kohteisiin. Androidin kohde on nykyinen suljettu Alpha-testi; tuotantolupa odottaa testijakson valmistumista. Fyysistä Android-laitetta ei testattu tällä julkaisupaketilla.
+
+# Tietoturvapäivitys 1.0.9 – 7.11.2026
+
+- Capacitor päivitetty 8.6.0:aan. Treenin otsikoiden HTML-käsittely korjattu, Androidin tiedostonjakopolku rajattu ja salaamaton liikenne estetty.
+- 55 testiä läpi. bundleRelease, lintRelease ja testReleaseUnitTest onnistuivat. Fyysistä Android-laitetta ei testattu.
+- Selaimessa tarkistettu sparrauksen asetukset, käynnistys/pysäytys, ohjatun treenin valinta ja vaiheenvaihto, ääniasetukset, käyttöönotto ja paluu tietosuojasivulta. Äänien kuuluvaa laatua ei vahvistettu kuuntelemalla.
+- GitHub commit 999a5cce79c81a4662dc6156ea5b57a01c7d4d8d. GitHub Pages -julkaisu onnistui. Molempien julkisten sivujen HTML vastaa lähdettä ja service worker on v81.
+- Play Consoleen lähetetty suljetun Alpha-testin versio 1.0.9, versiokoodi 11. Console vahvisti yhden muutoksen lähetyksen tarkistukseen. Googlen esitarkistus/tarkistus on kesken; päivitystä ei vielä vahvistettu ladattavaksi.
+- AAB SHA-256: E187C82BEC09C05D387B4F385199862EA92725C7B1F11057CFD6796BFF4F09A2. AAB:n HTML vastaa lähdettä, eikä paketissa ole .env- tai allekirjoitusavaintiedostoja.
+
+# Kehityspäivitys 31.10.2026 – paikallinen testiversio
+
+- Treenin valintapolku: kesto, treeni ja esikatselu. Lajit (kaikki / nyrkkeily / K1 / Muay Thai) valitaan treenilistan suodatinvalikosta lajittelun rinnalla. Sparritimerissä ei ole lajivalintaa, ja sen tehtävät käyttävät yhteistä vaikeustason mukaista valikoimaa.
+- Lisätty 20 lajikohtaista nyrkkeily- ja K1-ohjelmaa (kaksi ohjelmarunkoa viidellä kestolla kummallekin lajille). Aiemmat Premium-lukitukset säilyvät.
+- Treenikorttien ja esikatselujen osio-, erä- ja taukotiedot lasketaan todellisesta aikajanasta.
+- Ohjattujen treenien osioäänet: yksi gongi alussa, yksi 15 sekuntia ennen loppua, kaksi osion päättyessä. Erikseen valittava 30 sekunnin piippaus on oletuksena pois päältä.
+- Puheopastuskokeilu on oletuksena pois päältä. Se on saatavilla uusissa 30 minuutin nyrkkeily- ja K1-ohjelmissa sekä Terävät perusteet (Sharp basics) -treenissä. Puhe käyttää valitun kielen asennettua offline-ääntä; Androidilla on oma TextToSpeech-toteutus. Puhe perutaan tauotuksessa, vaiheen ohituksessa, nollauksessa ja kielenvaihdossa.
+- Täydennetty suomen ja saksan tekniikkasanastoa ja ohjeita sekä korjattu alkuperäisen tekstin säilyminen kielenvaihdossa. Myös CSS:n Premium-tekstit kääntyvät.
+- Sparritimerin äänien uudelleenkäynnistys korjattu: poistuminen ja nollaus pysäyttävät vanhat mediaäänet ja mitätöivät niiden keskeneräiset toistokutsut. Aloitus ja jatkaminen valmistavat äänet käyttäjän painalluksessa. Valmiin harjoituksen nollaus säilyttää avatun AudioContextin. Puhemoottorin pysäytys kutsutaan vain, jos puhetta todella on käynnissä.
+- 45 JavaScript-testiä läpi, mukaan lukien sparrin aloitus–poistuminen–uusi aloitus sekä kesken jääneiden ääni- ja avauskutsujen käsittely. Androidin debug-paketti, lintDebug ja testDebugUnitTest onnistuvat. Selaimessa tarkistettu puhelimen 390 × 844 näkymä, lajisuodattimet, esikatselu, treenin käynnistys ja suomenkielinen puheäänen kokeilu.
+- Fyysisen Android-laitteen puhetoisto ja taustalle siirtyminen on vielä testattava. Tätä kehityspäivitystä ei ole julkaistu Google Playhin.
+
 # Päivitys 16.10.2026 – versio 1.0.3 (5)
 
 - Treenin esikatselun aloituspainike on aina näkyvässä alareunassa; ohjelma vierii omalla alueellaan.
