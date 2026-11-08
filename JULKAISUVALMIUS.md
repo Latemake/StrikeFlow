@@ -1,3 +1,10 @@
+# Coach-äänikorjaus 1.1.1 – 8.11.2026
+
+- Korjattu puhelimen vaatima Continue-painallus peräkkäisten coach-ohjeiden välillä. Kaikki ohjeet käyttävät samaa aloituspainalluksella avattua soitinta. Myöhästyvät toistopyynnöt eivät enää keskeytä uudempaa ohjetta; tilapäinen latausvirhe yritetään kerran uudelleen.
+- 85 automaattista testiä läpi, mukaan lukien mobiiliselaimen soitinkohtaisen toistorajoituksen regressiotesti ja useiden ajastettujen ohjeiden ketju. Selaimessa ohjeet etenivät automaattisesti seuraavaan erään. Fyysistä Android-puhelinta ei testattu.
+- Android bundleRelease, lintRelease ja testReleaseUnitTest onnistuivat. Allekirjoitettu AAB 1.1.1 (14), SHA-256 F4EEE73E4EC7044BE1FBDAB240E18170BFAAC24A710E79D3E1A7565517359652. Paketin HTML ja service worker vastaavat lähdettä.
+- Molemmat verkkosivut julkaistu ja niiden HTML sekä service worker v90 tarkistettu: https://fightwise.pages.dev/ ja https://latemake.github.io/StrikeFlow/. Cloudflare-julkaisu https://c22559b5.fightwise.pages.dev. Lähdecommit 18a50cf15bbc1205a0e7ddd6f9a8d5e6a35e3457. GitHub Pages -julkaisutyö 42496741966 onnistui.
+- Android 1.1.1 (14) lähetetty suljetun Alpha-testin tarkistukseen. Play Console vahvisti "Muutoksia tarkistetaan"; esitarkastus ja Googlen hyväksyntä odottavat. Päivityksen saatavuutta puhelimella ei vielä vahvistettu.
 # Julkaisupaketti 1.1.0 – 8.11.2026
 
 - Androidin versiokoodi 13. Allekirjoitettu AAB ja sen lähdetiedostot tarkistettu. SHA-256: C98D60DD83766D5DE06370E75FFB7FF2EC206471C5974B77D1258ABB3E029BDA.
