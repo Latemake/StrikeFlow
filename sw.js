@@ -1,12 +1,14 @@
-const CACHE = 'fightwise-v99';
+const CACHE = 'fightwise-v106';
 const ASSETS = [
   './index.html',
-  './onboarding.js?v=98',
+  './tv-display.css?v=105',
+  './tv-display.js?v=105',
+  './onboarding.js?v=106',
   './onboarding.css?v=98',
   './training-sports.js?v=84',
   './training-audio.js?v=84',
-  './coach-rounds.js?v=89',
-  './coach-rounds.css?v=97',
+  './coach-rounds.js?v=106',
+  './coach-rounds.css?v=102',
   './coach-audio-manifest.js?v=84',
   './coach-maya-manifest.js?v=84',
   './coach-rounds-audio-manifest.js?v=98',
@@ -47,14 +49,12 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.mode === 'navigate') {
+    const isHome = new URL(e.request.url).pathname === new URL(self.registration.scope).pathname;
+    const offlinePage = isHome ? './index.html' : e.request;
     e.respondWith(
-      fetch(e.request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE).then(cache => cache.put('./index.html', copy));
-          return response;
-        })
-        .catch(() => caches.match('./index.html'))
+      fetch(e.request).catch(() =>
+        caches.open(CACHE).then(cache => cache.match(offlinePage, { ignoreSearch: true }))
+      )
     );
     return;
   }

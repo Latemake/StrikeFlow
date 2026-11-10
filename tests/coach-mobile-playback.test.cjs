@@ -15,7 +15,7 @@ function setup(){
   pause(){this.paused=true;this.pauses++;}
   load(){this.loads++;this.playbackRate=1;}
  }
- const c=vm.createContext({Audio:MobileAudio,settings:{coachVoice:'max'},COACH_AUDIO_MANIFEST:{A:'ordinary-a.mp3'},COACH_MAYA_MANIFEST:{A:'ordinary-maya-a.mp3'},COACH_ROUNDS_AUDIO_MANIFEST:{max:{A:'a.mp3',B:'b.mp3',C:'c.mp3'},maya:{A:'maya-a.mp3',B:'maya-b.mp3',C:'maya-c.mp3'}},activeTrainingWorkout:{coachRounds:true},managedAudioPools:[],primeAudioElement(){},ensureAudioReady(){}});
+ const c=vm.createContext({Audio:MobileAudio,setTimeout,clearTimeout,settings:{coachVoice:'max'},COACH_AUDIO_MANIFEST:{A:'ordinary-a.mp3'},COACH_MAYA_MANIFEST:{A:'ordinary-maya-a.mp3'},COACH_ROUNDS_AUDIO_MANIFEST:{max:{A:'a.mp3',B:'b.mp3',C:'c.mp3'},maya:{A:'maya-a.mp3',B:'maya-b.mp3',C:'maya-c.mp3'}},activeTrainingWorkout:{coachRounds:true},managedAudioPools:[],primeAudioElement(){},ensureAudioReady(){}});
  const start=html.indexOf('let coachRecording = null;'),end=html.indexOf('function playTrainingStartBell(',start);
  vm.runInContext('let pendingBrowserSpeech=null;function cancelCoachSpeech(){if(pendingBrowserSpeech)pendingBrowserSpeech();}\n'+html.slice(start,end),c);
  const unlockStart=html.indexOf('function unlockAppAudio()'),unlockEnd=html.indexOf('function resetManagedAudioPlayback(',unlockStart);
@@ -80,4 +80,36 @@ test('the shipped Coach Rounds controller runs successive timer-driven cues unde
   if(heard.length>before)finishAt=elapsed+2;
  }
  controller.reset();await settle();assert.equal(errors,0);assert.equal(s.players.length,1);assert.ok(heard.length>=10,'the regression occurs only after the first cue');
+});
+
+test('a coach recording that never ends releases the player and the round calls the next combo', async () => {
+ const s=setup();
+ let deadline;
+ s.c.setTimeout=(callback, delay)=>{assert.equal(delay,15000);deadline=callback;return 1;};
+ s.c.clearTimeout=()=>{deadline=null;};
+ vm.runInContext(fs.readFileSync('coach-rounds.js','utf8'),s.c);
+ s.gesture(()=>s.c.unlockAppAudio());
+ await settle();
+ const calls=[], errors=[];
+ const controller=s.c.createCoachRoundsController({
+  random:()=>.5, cancelSpeech:s.c.cancelCoachSpeech, stopSounds(){}, speak:s.c.speakCoachText,
+  onCombo:text=>calls.push(text), onError:()=>errors.push('playback error')
+ });
+ const update=elapsed=>controller.update({key:'round',elapsed,duration:120,running:true,rest:false,level:'hard',combos:['A','B','C']});
+ update(0);
+ await settle();
+ assert.equal(calls.length,1);
+ update(15);
+ deadline();
+ await settle();
+ assert.equal(s.players[0].paused,true);
+ update(20);
+ await settle();
+ assert.equal(calls.length,2);
+ assert.notEqual(calls[0],calls[1]);
+ assert.equal(s.players.length,1);
+ assert.deepEqual(errors,[]);
+ s.players[0].onended();
+ await settle();
+ assert.equal(deadline,null);
 });

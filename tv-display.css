@@ -1,0 +1,120 @@
+.display-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.display-button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid #555;
+    border-radius: 8px;
+    background: #181818;
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.display-button[hidden] { display: none; }
+.display-button[aria-pressed="true"] { border-color: #2bff4a; color: #2bff4a; }
+.tv-mode :is(button, a, input, select, [tabindex="0"]):focus {
+    outline: 3px solid #2bff4a;
+    outline-offset: 3px;
+}
+
+.tv-mode .app { background: #080808; }
+.tv-mode .app .bg-layer { display: none; }
+
+.tv-mode .app-content {
+    --tv-gutter: clamp(30px, 4vw, 95px);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 0;
+    padding: calc(2vh + var(--app-safe-top)) calc(var(--tv-gutter) + var(--app-safe-right))
+        calc(2vh + var(--app-safe-bottom)) calc(var(--tv-gutter) + var(--app-safe-left));
+}
+
+.tv-mode .app .top-bar { padding: 0 0 12px; font-size: clamp(18px, 2.5vw, 42px); }
+.tv-mode .app .timer-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    justify-self: stretch;
+    gap: clamp(8px, 2vh, 24px);
+    width: 100%;
+    max-width: none;
+    padding: 0 0 12px;
+}
+
+.tv-mode .app #phaseBanner {
+    flex-direction: column;
+    align-items: center;
+    width: auto;
+    max-width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    text-align: center;
+}
+
+.tv-mode .app #timerStatus { font-size: clamp(28px, 6vh, 74px); }
+.tv-mode .app #phaseHint { font-size: clamp(16px, 3vh, 32px); }
+.tv-mode .app .timer-ring-wrap { width: 100%; height: auto; aspect-ratio: auto; margin: 0; container-type: normal; }
+.tv-mode .app .timer-ring { display: none; }
+.tv-mode .app #timerDisplay {
+    color: #f6f6f6;
+    font-size: clamp(100px, min(23vw, 42vh), 620px);
+    line-height: .95;
+    letter-spacing: -.065em;
+    animation: none;
+}
+.tv-mode .app.break #timerDisplay { color: #ffd36a; }
+.tv-mode .app.paused #timerDisplay { color: #f6f6f6; }
+.tv-mode .app #taskDisplay:not(.training-guide) { margin: 0; font-size: clamp(22px, 4vh, 54px); }
+
+.tv-mode .app.guided-session .timer-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    align-content: center;
+    column-gap: clamp(24px, 4vw, 85px);
+}
+.tv-mode .app.guided-session #phaseBanner { grid-column: 1; grid-row: 1; justify-self: center; }
+.tv-mode .app.guided-session .timer-ring-wrap { grid-column: 1; grid-row: 2; align-self: center; }
+.tv-mode .app.guided-running .timer-ring-wrap { grid-row: 1 / span 2; }
+.tv-mode .app.guided-session #timerDisplay { font-size: clamp(65px, min(13vw, 30vh), 360px); }
+.tv-mode .app.guided-session #taskDisplay.training-guide {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    max-width: none;
+    margin: 0;
+    padding-left: clamp(20px, 3vw, 68px);
+    border-left: 1px solid #444;
+    overflow-wrap: anywhere;
+}
+.tv-mode .app .guide-round-label { font-size: clamp(18px, 3.2vh, 42px); }
+.tv-mode .app .guide-title { font-size: clamp(25px, 5vh, 58px); }
+.tv-mode .app .coach-combo { font-size: clamp(21px, min(3vw, 5vh), 64px); line-height: 1.12; }
+.tv-mode .app .coach-combo li { padding: .08em 0; }
+.tv-mode .app :is(.guide-note, .coach-detail, .coach-tip) { font-size: clamp(16px, 2.8vh, 36px); }
+.tv-mode .app .controls {
+    position: static;
+    padding: 8px 0 0;
+    background: none;
+    gap: 16px;
+}
+.tv-mode .app .controls .btn { font-size: clamp(18px, 3.1vh, 38px); }
+.tv-mode #modeChoice .mode-panel { width: min(100%, 1520px); }
+.tv-mode #modeChoice .mode-card-title { font-size: clamp(28px, 3vw, 58px); }
+.tv-mode #modeChoice .mode-card-desc { font-size: clamp(16px, 1.5vw, 28px); }

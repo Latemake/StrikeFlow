@@ -12,7 +12,7 @@ function setup(overrides={}){
 function setupWizard(){
  const c=context(),root={hidden:true,innerHTML:'',scrollTop:77},previews=[],nodes=new Map();let started=null,cancelled=0;
  const classes={add(){},remove(){}};
- Object.assign(c,{settings:{language:'en',coachVoice:'max'},modeChoice:{classList:classes},trainingSection:{classList:classes},sparringSetup:{classList:classes},document:{getElementById(id){if(id==='coachRoundsSection')return root;if(!nodes.has(id))nodes.set(id,{focus(){}});return nodes.get(id);}},cancelCoachSpeech(){cancelled++;},setSectionNav(){},setCoachVoice(voice){c.settings.coachVoice=voice;},unlockAppAudio(){},speakCoachText(text,voice){previews.push(voice);return Promise.resolve();},formatTime:seconds=>String(seconds),getTrainingDuration:plan=>plan.coachRounds.rounds*120+(plan.coachRounds.rounds-1)*30,startTrainingPlan(...args){started=args[4];},showModeChoice(){root.hidden=true;}});
+ Object.assign(c,{settings:{language:'en',coachVoice:'max'},modeChoice:{classList:classes},trainingSection:{classList:classes},sparringSetup:{classList:classes},document:{getElementById(id){if(id==='coachRoundsSection')return root;if(!nodes.has(id))nodes.set(id,{focus(){}});return nodes.get(id);}},cancelCoachSpeech(){cancelled++;},setCoachVoice(voice){c.settings.coachVoice=voice;},unlockAppAudio(){},speakCoachText(text,voice){previews.push(voice);return Promise.resolve();},formatTime:seconds=>String(seconds),getTrainingDuration:plan=>plan.coachRounds.rounds*120+(plan.coachRounds.rounds-1)*30,startTrainingPlan(...args){started=args[4];},showModeChoice(){root.hidden=true;}});
  return {c,root,previews,get started(){return started;},get cancelled(){return cancelled;}};
 }
 
@@ -100,7 +100,7 @@ test('corrupt or unavailable local storage cannot break coaching',()=>{
 test('versioned code and styles match the offline cache and worker registration survives app errors',()=>{
  const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
  const urls=[...html.matchAll(/(?:src|href)="([^"\s]+\.(?:js|css)\?v=\d+)"/g)].map(m=>m[1]);
- assert.equal(urls.length,8);
+ assert.equal(urls.length,10);
  for(const url of urls){assert.ok(sw.includes("'./"+url+"'"),url);assert.ok(fs.existsSync(url.split('?')[0]));}
  const register=html.indexOf("navigator.serviceWorker.register('./sw.js')");
  assert.ok(register>0&&register<html.indexOf('const coachRoundsMemory ='));
@@ -140,15 +140,46 @@ async function simulatePace(level){
  return {calls,spec};
 }
 
-test('Hard creates variable quick bursts after finished speech instead of a fixed metronome',async()=>{
+test('execution time grows with each technique and counts double punches and slower actions',()=>{
+ const c=context(),duration=c.coachComboExecutionTime;
+ const two=duration('Jab. Cross.'),three=duration('Jab. Cross. Lead hook.');
+ assert.ok(two>=1.5&&two<2);
+ assert.ok(three>two);
+ assert.equal(duration('Double jab. Cross.'),three,'double jab counts as two punches');
+ assert.ok(duration('Jab. Rear kick.')>two,'kicks need additional recovery time');
+ assert.ok(duration('Jab. Pivot out.')>two,'footwork needs additional time');
+});
+
+test('Hard varies its rhythm while reserving execution time after each combination',async()=>{
  const {calls,spec}=await simulatePace('hard');
  const gaps=calls.slice(1).map((call,i)=>call.start-calls[i].end);
  assert.ok(gaps.every(gap=>gap>=.25),'speech must finish before the next cue');
- assert.ok(gaps.some(gap=>gap<=1),'a fast burst should follow almost immediately');
+ const comboGaps=calls.slice(1).flatMap((call,i)=>spec.lines.includes(calls[i].text)?[call.start-calls[i].end]:[]);
+ assert.ok(comboGaps.every(gap=>gap>=1.5),'even short combos need execution time after the last spoken word');
  assert.ok(gaps.some(gap=>gap>=2),'short resets separate bursts');
  assert.ok(new Set(gaps).size>=5,'timing should vary');
  const combos=calls.filter(call=>spec.lines.includes(call.text));
  assert.equal(new Set(combos.map(call=>call.text)).size,combos.length);
+});
+
+test('Hard waits after completed audio and gives complex combinations longer execution time',async()=>{
+ async function gapFor(text){
+  const c=context(),calls=[];let now=0,resolveSpeech;
+  const ctrl=c.createCoachRoundsController({random:()=>0,cancelSpeech(){},stopSounds(){},bell:()=>Promise.resolve(),onCombo(){},onError(){throw Error('Audio failed');},speak(){calls.push(now);return new Promise(resolve=>resolveSpeech=resolve);}});
+  const state={key:'round',level:'hard',duration:120,running:true,rest:false,bellEnabled:false,combos:[text],comments:[],movements:[]};
+  ctrl.update({...state,elapsed:0});await settle();
+  // Even when the recording runs longer than expected, the execution allowance starts at its end.
+  for(now=.1;now<=4;now+=.1){ctrl.update({...state,elapsed:now});await settle();}
+  assert.equal(calls.length,1);const ended=now;resolveSpeech();await settle();
+  for(;now<12&&calls.length<2;now+=.1){ctrl.update({...state,elapsed:now});await settle();}
+  const gap=calls[1]-ended;ctrl.reset();resolveSpeech();await settle();return gap;
+ }
+ const gaps=[];
+ for(let count=2;count<=6;count++)gaps.push(await gapFor(['Jab','Cross','Lead hook','Cross','Lead uppercut','Cross'].slice(0,count).join('. ')+'.'));
+ assert.ok(gaps[0]>=1.5&&gaps[0]<2.3,'jab-cross has a brief execution allowance');
+ for(let i=1;i<gaps.length;i++)assert.ok(gaps[i]>=gaps[i-1]+.5,'each additional technique adds execution time');
+ const complex=await gapFor('Double jab. Cross. Lead hook. Rear kick. Slip. Cross.');
+ assert.ok(complex>gaps.at(-1),'double punches and slower actions add time too');
 });
 
 test('Light actively coaches movement and leaves execution time without long empty waits',async()=>{
@@ -157,7 +188,7 @@ test('Light actively coaches movement and leaves execution time without long emp
  assert.ok(movements.length>=4);
  for(const move of movements){const next=light.calls[light.calls.indexOf(move)+1];if(next)assert.ok(next.start-move.end>=3);}
  const gaps=light.calls.slice(1).map((call,i)=>call.start-light.calls[i].end);
- assert.ok(Math.max(...gaps)<=5.5,'long silent waits should be replaced by purposeful movement');
+ assert.ok(Math.max(...gaps)<=7.5,'execution time must stay bounded even for complex combos');
  assert.ok(hard.calls.length>light.calls.length);
 });
 

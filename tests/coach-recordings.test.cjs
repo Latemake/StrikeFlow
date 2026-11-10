@@ -10,7 +10,7 @@ test('recorded coach plays identical files and cancels on pause without device s
   play(){return Promise.resolve();}
   pause(){this.paused=true;}
  }
- const c=vm.createContext({settings:{coachVoice:"max"},Audio, COACH_AUDIO_MANIFEST:{'Test instruction':'coach-audio/test.mp3'}});
+ const c=vm.createContext({setTimeout,clearTimeout,settings:{coachVoice:"max"},Audio, COACH_AUDIO_MANIFEST:{'Test instruction':'coach-audio/test.mp3'}});
  const start=html.indexOf('let coachRecording = null;');
  const end=html.indexOf('const trainingCueController',start);
  vm.runInContext('let pendingBrowserSpeech = null; function cancelCoachSpeech(){if(pendingBrowserSpeech)pendingBrowserSpeech();}\n'+html.slice(start,end),c);
@@ -46,7 +46,7 @@ test('Maya has the same workout and tutorial coverage as Max', () => {
 test('selected coach controls which recording plays', async () => {
  let audio;
  class Audio { constructor(src){this.src=src;audio=this;} play(){return Promise.resolve();} pause(){} }
- const c=vm.createContext({settings:{coachVoice:'maya'},Audio,COACH_AUDIO_MANIFEST:{Test:'max.mp3'},COACH_MAYA_MANIFEST:{Test:'maya.mp3'}});
+ const c=vm.createContext({setTimeout,clearTimeout,settings:{coachVoice:'maya'},Audio,COACH_AUDIO_MANIFEST:{Test:'max.mp3'},COACH_MAYA_MANIFEST:{Test:'maya.mp3'}});
  const start=html.indexOf('let coachRecording = null;'),end=html.indexOf('const trainingCueController',start);
  vm.runInContext('let pendingBrowserSpeech=null;function cancelCoachSpeech(){if(pendingBrowserSpeech)pendingBrowserSpeech();}\n'+html.slice(start,end),c);
  const playing=c.speakCoachText('Test');assert.equal(audio.src,'maya.mp3');c.cancelCoachSpeech();await playing;
@@ -65,7 +65,7 @@ test('changing coach preferences preserves the other saved audio choices', () =>
 test('Coach Rounds speeds up both coaches and their previews while preserving pitch and ordinary training playback',async()=>{
  let audio;
  class Audio{constructor(src){this.src=src;audio=this;}play(){return Promise.resolve();}pause(){}}
- const c=vm.createContext({settings:{coachVoice:'maya'},Audio,COACH_AUDIO_MANIFEST:{Test:'ordinary-max.mp3'},COACH_MAYA_MANIFEST:{Test:'ordinary-maya.mp3'},COACH_ROUNDS_AUDIO_MANIFEST:{max:{Test:'projected-max.mp3',Preview:'preview-max.mp3'},maya:{Test:'projected-maya.mp3'}},COACH_ROUNDS:{previewText:'Preview'},activeTrainingWorkout:{coachRounds:true}});
+ const c=vm.createContext({setTimeout,clearTimeout,settings:{coachVoice:'maya'},Audio,COACH_AUDIO_MANIFEST:{Test:'ordinary-max.mp3'},COACH_MAYA_MANIFEST:{Test:'ordinary-maya.mp3'},COACH_ROUNDS_AUDIO_MANIFEST:{max:{Test:'projected-max.mp3',Preview:'preview-max.mp3'},maya:{Test:'projected-maya.mp3'}},COACH_ROUNDS:{previewText:'Preview'},activeTrainingWorkout:{coachRounds:true}});
  const start=html.indexOf('let coachRecording = null;'),end=html.indexOf('const trainingCueController',start);
  vm.runInContext('let pendingBrowserSpeech=null;function cancelCoachSpeech(){if(pendingBrowserSpeech)pendingBrowserSpeech();}\n'+html.slice(start,end),c);
  let playing=c.speakCoachText('Test');assert.equal(audio.src,'projected-maya.mp3');assert.equal(audio.playbackRate,1.2);assert.equal(audio.preservesPitch,true);c.cancelCoachSpeech();await playing;

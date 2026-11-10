@@ -39,7 +39,7 @@ class FakeAudio {
     }
 }
 function setup() {
-    const context = vm.createContext({ Audio: FakeAudio, Promise, WeakMap, setTimeout, clearTimeout,
+    const context = vm.createContext({ Audio: FakeAudio, Promise, WeakMap, performance, setTimeout, clearTimeout,
         document: { addEventListener() {} }, navigator: { vibrate() {} },
         settings: { roundBellRepeats: 1, uiClickSoundsEnabled: true, roundSoundsEnabled: true, vibrationEnabled: false },
         ensureAudioReady() {}, clicks: 0, bells: 0,
@@ -336,4 +336,30 @@ test('bell preview uses the requested count even when round sounds are disabled'
  c.previewRoundBell(2);assert.equal(c.pools[1][0].plays,1);assert.equal(timers.size,1);
  for(const fn of [...timers.values()])fn();assert.equal(c.pools[1][0].plays,2);
  c.cancelRoundBellRepeats();assert.equal(timers.size,0);
+});
+
+test('skipping a break preserves every end bell before queuing the start bells', () => {
+    const context = setup();
+    let now = 0;
+    const scheduled = new Map();
+    context.performance = { now: () => now };
+    context.setTimeout = (callback, delay) => {
+        const due = now + delay;
+        scheduled.set(due, callback);
+        return due;
+    };
+    context.clearTimeout = due => scheduled.delete(due);
+    context.settings.roundBellRepeats = 3;
+
+    context.playRoundEnd();
+    now = 100;
+    context.playRoundStart(true);
+    assert.deepEqual([...scheduled.keys()], [900, 1800, 2700, 3600, 4500]);
+    assert.equal(context.pools[1][0].plays, 0);
+    for (const [due, callback] of scheduled) {
+        now = due;
+        callback();
+        if (due === 1800) assert.equal(context.pools[2][0].plays, 3);
+    }
+    assert.equal(context.pools[1][0].plays, 3);
 });

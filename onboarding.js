@@ -34,7 +34,7 @@ function createFightWiseSetup(host) {
         root.querySelectorAll('[data-sport]').forEach(button=>button.onclick=()=>{draft.sport=button.dataset.sport;render();});
         if(el('setupPreview')) el('setupPreview').onclick=async()=>{host.stopAudio();try{await host.preview();}catch{el('setupAudioStatus').textContent=draft.language==='fi'?'Äänen toisto ei onnistunut.':'Audio could not be played.';}};
         el('setupHeading').focus();
-        if(step===2 && !coachIntroPlayed){coachIntroPlayed=true;draft.coachVoice='max';root.querySelectorAll('[data-coach]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.coach==='max')));host.preview('max').catch(()=>{});}
+        if(step===2 && !coachIntroPlayed){coachIntroPlayed=true;host.preview(draft.coachVoice).catch(()=>{});}
     }
     function close() { host.stopAudio(); root.hidden=true; document.body.classList.remove('setup-open'); host.showHome(); previousFocus?.focus(); }
     el('setupBack').onclick=()=>{host.stopAudio();step--;render();};

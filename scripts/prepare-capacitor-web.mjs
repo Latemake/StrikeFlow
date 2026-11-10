@@ -4,6 +4,8 @@ import { basename, join } from 'node:path';
 const webDir = 'www';
 const files = [
   'index.html',
+  'tv-display.css',
+  'tv-display.js',
   'onboarding.js',
   'onboarding.css',
   'training-sports.js',

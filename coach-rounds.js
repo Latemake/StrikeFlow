@@ -210,6 +210,15 @@ function createCoachRoundsMemory(storage){
     };
 }
 
+// Execution allowance in seconds, measured after the last spoken technique.
+function coachComboExecutionTime(text){
+    const parts=text.split('.').map(t=>t.trim()).filter(Boolean);
+    const doubles=(text.match(/\bdouble\b/gi)||[]).length;
+    const triples=(text.match(/\btriple\b/gi)||[]).length;
+    const slowerActions=(text.match(/\b(?:kick|knee|elbow|roll|slip|pivot|switch|step)\b/gi)||[]).length;
+    return .25+(parts.length+doubles+triples*2)*.65+slowerActions*.3;
+}
+
 function createCoachRoundsController(output) {
     let generation=0,key=null,running=false,busy=false,due=0,current='',latest=null;
     let comboBag=[],tipBag=[],movementBag=[],poolSignature='',lastCombo='',lastTip='',lastMovement='',currentMovement='',sinceTip=0,nextTip=4,burstLeft=0;
@@ -238,11 +247,13 @@ function createCoachRoundsController(output) {
         if(kind==='movement')return latest.level==='light'?range(3,5):range(1.5,2.5);
         if(kind==='tip')return range(.5,1.3);
         const techniques=text.split('.').filter(t=>t.trim()).length;
-        if(latest.level==='light')return range(1.8,3.8)+techniques*.12;
-        if(latest.level==='steady')return range(1,2.7)+techniques*.1;
-        if(burstLeft>0){burstLeft--;return range(.35,.85)+techniques*.08;}
-        burstLeft=1+Math.floor(random()*3);
-        return range(1.7,3)+techniques*.1;
+        // This starts AFTER speech ends: tightening the recording must not remove execution time.
+        const execution=coachComboExecutionTime(text);
+        if(latest.level==='light')return Math.max(range(1.8,3.8)+techniques*.12,execution+.8);
+        if(latest.level==='steady')return Math.max(range(1,2.7)+techniques*.1,execution+.4);
+        if(burstLeft>0){burstLeft--;return execution+range(0,.45);}
+        burstLeft=1+Math.floor(random()*2);
+        return execution+range(.25,.65);
     }
     function speak(text,kind='combo'){
         const ticket=generation;busy=true;
@@ -253,6 +264,10 @@ function createCoachRoundsController(output) {
         Promise.resolve().then(()=>{
             if(ticket!==generation||!running)return;
             return output.speak(text);
+        }).catch(error=>{
+            // A stalled clip has already been stopped by the player. Keep coaching
+            // after the athlete has had time to perform the displayed instructions.
+            if(error?.name!=='TimeoutError')throw error;
         }).then(()=>{
             if(ticket!==generation||!running)return;
             const delay=delayAfter(text,kind);
@@ -315,57 +330,13 @@ function coachLevelName(level){return ({light:coachText('Light','Kevyt','Leicht'
 function coachPaceDescription(level){return ({
     light:coachText('Technique, footwork and room to learn.','Tekniikkaa, liikkumista ja aikaa oppia.','Technik, Beinarbeit und Zeit zum Lernen.'),
     steady:coachText('Varied calls. Keep your rhythm.','Vaihteleva rytmi. Pysy liikkeessä.','Wechselnde Ansagen. Im Rhythmus bleiben.'),
-    hard:coachText('Fast bursts. Short resets.','Nopeita sarjoja ja lyhyitä palautuksia.','Schnelle Serien. Kurze Pausen.')
+    hard:coachText('Hard pace. Time to finish each combo.','Kova tahti. Aikaa tehdä jokainen yhdistelmä.','Hohes Tempo. Zeit für jede Kombination.')
 })[level];}
-function setSectionNav(section){
-    const nav=document.getElementById('sectionNav');if(!nav)return;
-    nav.hidden=!section;document.body.classList.toggle('has-section-nav',!!section);
-    nav.querySelectorAll('button').forEach(button=>{
-        const active=button.dataset.section===section;
-        if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
-    });
-    document.getElementById('navSparLabel').textContent=coachText('Spar','Sparri','Sparring');
-    document.getElementById('navTrainingLabel').textContent=coachText('Training','Treenit','Training');
-    document.getElementById('navCoachLabel').textContent=coachText('Coach Rounds','Coach-erät','Coach-Runden');
-}
-let pendingSectionSwitch=null,sectionSwitchWasRunning=false;
-function closeSectionSwitch(resume){
-    document.getElementById('sectionSwitchDialog')?.remove();pendingSectionSwitch=null;
-    if(resume&&sectionSwitchWasRunning)continueTimer();
-    document.querySelector('#sectionNav [aria-current="page"]')?.focus();
-    sectionSwitchWasRunning=false;
-}
-function confirmSectionSwitch(){const section=pendingSectionSwitch;closeSectionSwitch(false);if(section)leaveForSection(section,true);}
-function requestSectionSwitch(section){
-    if(document.getElementById('sectionSwitchDialog'))return;
-    pendingSectionSwitch=section;sectionSwitchWasRunning=timerState.isRunning;
-    if(timerState.isRunning)toggleTimer();
-    const root=document.createElement('div');root.id='sectionSwitchDialog';root.setAttribute('data-coach-i18n','');
-    root.innerHTML=`<div role="dialog" aria-modal="true" aria-labelledby="sectionSwitchTitle"><h2 id="sectionSwitchTitle">${coachText('End this session and switch?','Lopetetaanko harjoitus ja vaihdetaanko näkymää?','Diese Einheit beenden und wechseln?')}</h2><div><button id="sectionSwitchCancel" onclick="closeSectionSwitch(true)">${coachText('Keep training','Jatka treeniä','Weiter trainieren')}</button><button onclick="confirmSectionSwitch()">${coachText('End and switch','Lopeta ja vaihda','Beenden und wechseln')}</button></div></div>`;
-    root.addEventListener('keydown',event=>{
-        if(event.key==='Escape'){event.preventDefault();closeSectionSwitch(true);}
-        if(event.key==='Tab'){const buttons=[...root.querySelectorAll('button')],i=buttons.indexOf(document.activeElement);event.preventDefault();buttons[(i+(event.shiftKey?-1:1)+buttons.length)%buttons.length].focus();}
-    });
-    document.body.append(root);document.getElementById('sectionSwitchCancel').focus();
-}
-function leaveForSection(section,approved=false){
-    const hasProgress=!!sessionStats.startedAt&&!timerState.isFinished;
-    const current=activeTrainingWorkout?.coachRounds?'coach':appMode==='training'?'training':'spar';
-    const pickerVisible=!document.getElementById('coachRoundsSection').hidden||!trainingSection.classList.contains('hidden')||!sparringSetup.classList.contains('hidden');
-    if(current===section&&!pickerVisible)return;
-    if(hasProgress&&!approved){requestSectionSwitch(section);return;}
-    clearInterval(intervalId);timerState.isRunning=false;coachRoundsController.reset();trainingCueController.reset();
-    cancelRoundBellRepeats();resetManagedAudioPlayback();stopPreRoundDisplay();releaseWakeLock();
-    closeWorkoutPreview();finishedOverlay.classList.remove('show');
-    // Reset progress after an approved switch; the sparring draft is retained separately.
-    sessionStats.startedAt=null;
-    if(section==='spar')chooseSparMode();else if(section==='training')openTrainingSection();else openCoachRounds();
-}
 function openCoachRounds(){
     cancelCoachSpeech();coachSetupStep=0;
     modeChoice.classList.add('hidden');trainingSection.classList.add('hidden');sparringSetup.classList.add('hidden');
     document.getElementById('coachRoundsSection').hidden=false;
-    setSectionNav('coach');renderCoachRoundsPicker('coachSetupHeading');
+    renderCoachRoundsPicker('coachSetupHeading');
 }
 function closeCoachRoundsSetup(){cancelCoachSpeech();showModeChoice();}
 function selectCoachSport(sport){if(!COACH_ROUNDS.pools[sport])return;coachRoundSport=sport;renderCoachRoundsPicker('coach-sport-'+sport);}
@@ -407,7 +378,6 @@ function startCoachRounds(){
     const plan=COACH_ROUNDS.plan(coachRoundSport,coachRoundLevel);
     coachRoundError=false;coachRoundCue='';coachRoundTip='';coachRoundMovement='';
     startTrainingPlan(getTrainingDuration(plan),'COACH ROUNDS',null,null,plan);
-    setSectionNav('coach');
 }
 function renderCoachRoundsGuide(step){
     const plan=activeTrainingWorkout.coachRounds;
@@ -475,8 +445,5 @@ function renderCoachRoundsGuide(step){
 }
 function initCoachRoundsUI(){
     const section=document.createElement('section');section.id='coachRoundsSection';section.hidden=true;section.className='coach-rounds-section';document.body.append(section);
-    const nav=document.createElement('nav');nav.id='sectionNav';nav.hidden=true;nav.setAttribute('aria-label','Session navigation');nav.setAttribute('data-coach-i18n','');
-    nav.innerHTML=`<button data-section="spar" onclick="leaveForSection('spar')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M9 2h6M12 9v5l3 2"/></svg><span id="navSparLabel">Spar</span></button><button data-section="training" onclick="leaveForSection('training')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v17H5zM8 8h8M8 12h8M8 16h5"/></svg><span id="navTrainingLabel">Training</span></button><button data-section="coach" onclick="leaveForSection('coach')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13V11a8 8 0 0 1 16 0v2M4 12h3v7H4zM17 12h3v7h-3z"/></svg><span id="navCoachLabel">Coach Rounds</span></button>`;
-    document.body.append(nav);
     if(['boxing','k1','muaythai'].includes(selectedTrainingSport))coachRoundSport=selectedTrainingSport;
 }

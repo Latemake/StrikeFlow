@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="coach-rounds.css?v=97">
+    <link rel="stylesheet" href="coach-rounds.css?v=102">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>FightWise - Fight Timer</title>
@@ -325,19 +325,25 @@
             transform: translateY(-1px);
         }
 
-        .mode-btn {
+        .home-btn {
             background: #181818;
             border: 1px solid rgba(255, 255, 255, 0.28);
             border-radius: 8px;
-            font-size: 12px;
-            font-weight: 900;
-            letter-spacing: 1.2px;
-            padding: 9px 11px;
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            padding: 0;
             cursor: pointer;
             transition: transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
         }
 
-        .mode-btn:hover {
+        .home-btn:focus-visible {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 3px;
+        }
+
+        .home-btn:hover {
             transform: translateY(-1px);
             opacity: 0.86;
             border-color: var(--accent-primary);
@@ -4584,7 +4590,7 @@
 .guided-session .timer-ring-wrap{order:2;width:min(62vw,320px);height:auto;aspect-ratio:1;margin:0 auto;flex-shrink:0}
 .guided-session .timer-display{font-size:clamp(48px,12vw,84px)}
 @media(min-width:1000px){.guided-session .timer-section{display:grid;grid-template-columns:1fr 1fr;gap:32px 60px;align-items:center;padding-top:24px}.guided-session #phaseBanner{grid-column:1;grid-row:1}.guided-session #taskDisplay.training-guide{grid-column:1;grid-row:2}.guided-running #taskDisplay.training-guide{grid-row:1 / span 2}.guided-session .timer-ring-wrap{grid-column:2;grid-row:1 / span 2;width:min(38vw,500px);height:auto}.guided-session .timer-display{font-size:clamp(64px,8vw,110px)}}
-@media(max-width:480px){.guided-session .timer-section{gap:20px;padding-left:22px;padding-right:22px;padding-bottom:110px}.guided-session .guide-note{font-size:20px}.guided-session .timer-ring-wrap{width:min(62vw,270px)}}
+@media(max-width:480px){.guided-session .timer-section{gap:20px;padding-left:22px;padding-right:22px;padding-bottom:calc(110px + var(--app-safe-bottom))}.guided-session .guide-note{font-size:20px}.guided-session .timer-ring-wrap{width:min(62vw,270px)}}
 </style>
 <style>
 #settingsModal{padding:calc(16px + var(--app-safe-top)) max(16px,var(--app-safe-right)) calc(16px + var(--app-safe-bottom)) max(16px,var(--app-safe-left));box-sizing:border-box;background:#000c}#settingsModal .modal-content{box-sizing:border-box;width:min(100%,600px);max-width:600px;max-height:calc(100dvh - 32px - var(--app-safe-top) - var(--app-safe-bottom));border:1px solid #3b3b3b;border-radius:4px;padding:24px;background:#101010;box-shadow:none;scrollbar-gutter:stable;transform:none;transition:opacity .15s}
@@ -4694,11 +4700,19 @@
 .setup-coaches [aria-pressed=true]{background:#080808;color:#20ff50}
 @media(max-width:360px){.setup-coaches button{gap:10px}.setup-coaches .setup-coach-copy{max-width:60%}.setup-coaches small{font-size:12px}}
 </style>
+    <link rel="stylesheet" href="tv-display.css?v=105">
 </head>
 <body>
     <svg width="0" height="0" style="position:absolute; overflow:hidden" aria-hidden="true" focusable="false">
         <symbol id="icon-menu" viewBox="0 0 24 24">
             <path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path>
+        </symbol>
+        <symbol id="icon-fullscreen" viewBox="0 0 24 24">
+            <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"></path>
+        </symbol>
+        <symbol id="icon-home" viewBox="0 0 24 24">
+            <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"></path>
+            <path d="M9 21v-7h6v7"></path>
         </symbol>
         <symbol id="icon-x" viewBox="0 0 24 24">
             <path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>
@@ -4742,8 +4756,13 @@
         <div class="app-content">
             <div class="top-bar">
                 <div class="phase-label" id="phaseLabel">ROUND 1/5</div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <button class="mode-btn" onclick="openModeChoice()">MODE</button>
+                <div class="display-actions">
+                    <button class="display-button" type="button" data-tv-fullscreen aria-label="Fullscreen" title="Fullscreen" aria-pressed="false" hidden>
+                        <svg class="icon icon-md" aria-hidden="true"><use href="#icon-fullscreen"></use></svg>
+                    </button>
+                    <button class="home-btn" type="button" onclick="openModeChoice()" aria-label="Back to home" title="Back to home">
+                        <svg class="icon icon-md" aria-hidden="true"><use href="#icon-home"></use></svg>
+                    </button>
                     <button class="settings-btn" onclick="openSettings()" aria-label="Open settings">
                         <svg class="icon icon-lg"><use href="#icon-menu"></use></svg>
                     </button>
@@ -4784,7 +4803,12 @@
                     <img class="mode-logo" src="FightWise logo.png?v=94" alt="">
                     <img class="mode-logo-text" src="FightWise text.png?v=94" alt="FightWise">
                 </div>
-                <button class="mode-settings-btn" onclick="openSettings()" aria-label="Open settings"><svg class="icon icon-md"><use href="#icon-gear"></use></svg></button>
+                <div class="display-actions">
+                    <button class="display-button" type="button" data-tv-fullscreen aria-label="Fullscreen" title="Fullscreen" aria-pressed="false" hidden>
+                        <svg class="icon icon-md" aria-hidden="true"><use href="#icon-fullscreen"></use></svg>
+                    </button>
+                    <button class="mode-settings-btn" onclick="openSettings()" aria-label="Open settings"><svg class="icon icon-md"><use href="#icon-gear"></use></svg></button>
+                </div>
                 </div>
                 <h1 class="mode-title">Choose your session</h1>
             </header>
@@ -5251,9 +5275,9 @@
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
     </script>
     <script src="training-sports.js?v=84"></script>
-    <script src="onboarding.js?v=98"></script>
+    <script src="onboarding.js?v=106"></script>
     <script src="training-audio.js?v=84"></script>
-    <script src="coach-rounds.js?v=89"></script>
+    <script src="coach-rounds.js?v=106"></script>
     <script src="coach-audio-manifest.js?v=84"></script>
     <script src="coach-maya-manifest.js?v=84"></script>
     <script src="coach-rounds-audio-manifest.js?v=98"></script>
@@ -5580,7 +5604,8 @@
                 'BREAK': 'TAUKO',
                 'READY': 'VALMIS',
                 'Tap start': 'Paina Aloita',
-                'MODE': 'TILA',
+                'Back to home': 'Palaa päävalikkoon',
+                'Fullscreen': 'Koko näyttö',
                 'SKIP BREAK': 'OHITA TAUKO',
                 'START': 'ALOITA',
                 'STOP': 'PYSÄYTÄ',
@@ -5783,7 +5808,8 @@
                 'BREAK': 'PAUSE',
                 'READY': 'BEREIT',
                 'Tap start': 'Start druecken',
-                'MODE': 'MODUS',
+                'Back to home': 'Zur Startseite',
+                'Fullscreen': 'Vollbild',
                 'SKIP BREAK': 'PAUSE UEBERSPRINGEN',
                 'START': 'START',
                 'STOP': 'STOPP',
@@ -6717,10 +6743,11 @@
             audio.defaultPlaybackRate = audio.playbackRate;
             audio.preservesPitch = true;
             return new Promise((resolve, reject) => {
-                let finished = false, attemptNumber = 0;
+                let finished = false, attemptNumber = 0, playbackTimeout;
                 const finish = error => {
                     if (finished) return;
                     finished = true;
+                    clearTimeout(playbackTimeout);
                     if (ticket === coachPlaybackGeneration) {
                         audio.onended = audio.onerror = null;
                         coachAudioActive = false;
@@ -6736,6 +6763,7 @@
                 };
                 pendingBrowserSpeech = cancel;
                 const attempt = retry => {
+                    clearTimeout(playbackTimeout);
                     const attemptId = ++attemptNumber;
                     const current = () => !finished && ticket === coachPlaybackGeneration && attemptId === attemptNumber;
                     const failed = error => {
@@ -6750,6 +6778,14 @@
                     };
                     audio.onended = () => { if (current()) finish(); };
                     audio.onerror = () => failed(new Error('Coach recording unavailable'));
+                    // Bundled cues are short. Some media stalls emit neither ended nor error.
+                    playbackTimeout = setTimeout(() => {
+                        if (!current()) return;
+                        const error = new Error('Coach recording timed out');
+                        error.name = 'TimeoutError';
+                        finish(error);
+                        audio.pause();
+                    }, 15000);
                     try {
                         audio.playbackRate = roundsSrc ? 1.2 : 1;
                         Promise.resolve(audio.play()).then(() => {
@@ -7116,6 +7152,22 @@
             return available[Math.floor(Math.random() * available.length)];
         }
 
+        function recordTimerTime(seconds) {
+            let rest = timerState.isRound ? 0 : seconds;
+            if (appMode === 'training' && activeTrainingWorkout) {
+                const from = settings.roundTime - timerState.timeLeft;
+                const to = from + seconds;
+                for (const step of trainingTimeline) {
+                    if (step.start >= to) break;
+                    if (step.kind === 'rest') {
+                        rest += Math.max(0, Math.min(to, step.end) - Math.max(from, step.start));
+                    }
+                }
+            }
+            sessionStats.activeSeconds += seconds - rest;
+            sessionStats.breakSeconds += rest;
+        }
+
         // Timer tick
         function tick() {
             if (!timerState.isRunning || timerState.isFinished) return;
@@ -7127,12 +7179,22 @@
                 return;
             }
 
-            const deltaSeconds = (now - lastTickMs) / 1000;
+            let elapsed = (now - lastTickMs) / 1000;
             lastTickMs = now;
-            timerState.timeLeft = Math.max(0, timerState.timeLeft - deltaSeconds);
-            const guidedRest = activeTrainingWorkout?.coachRounds && getCurrentGuideStep()?.kind === 'rest';
-            if (timerState.isRound && !guidedRest) sessionStats.activeSeconds += deltaSeconds;
-            else sessionStats.breakSeconds += deltaSeconds;
+            while (elapsed > 0 && timerState.isRunning && !taskState.showingPreRound) {
+                const previousTime = timerState.timeLeft;
+                const consumed = Math.min(elapsed, previousTime);
+                recordTimerTime(consumed);
+                timerState.timeLeft -= consumed;
+                elapsed -= consumed;
+
+                if (timerState.timeLeft === 0) {
+                    // Catch up after throttling without replaying old round signals.
+                    handleTransition({playCues: elapsed < 1});
+                } else if (previousTime >= 10 && timerState.timeLeft < 10 && timerState.isRound) {
+                    playWarningVibration();
+                }
+            }
 
             const wholeSeconds = Math.ceil(timerState.timeLeft);
             if (wholeSeconds !== lastWholeSecond) {
@@ -7144,21 +7206,9 @@
                 timerDisplay.classList.add('pulse');
             }
 
-            if (timerState.timeLeft > 0) syncTrainingAudio();
+            if (timerState.isRunning) syncTrainingAudio();
             updateUI();
             updateRingWarning();
-
-            // 10-second vibration cue
-            if (wholeSeconds === 10 && timerState.isRound) {
-                playWarningVibration();
-            }
-
-            if (timerState.timeLeft <= 0) {
-                timerState.timeLeft = 0;
-                handleTransition();
-                lastTickMs = performance.now();
-                lastWholeSecond = Math.ceil(timerState.timeLeft);
-            }
         }
 
         // Handle transition between round/break
@@ -7166,7 +7216,7 @@
             if (!timerState.isRunning || timerState.isRound || timerState.isFinished) return;
             sessionStats.skippedBreaks++;
             timerState.timeLeft = 0;
-            handleTransition();
+            handleTransition({finishEndBells: true});
             lastTickMs = performance.now();
             lastWholeSecond = Math.ceil(timerState.timeLeft);
         }
@@ -7193,13 +7243,13 @@
             updateUI();
         }
 
-        function handleTransition() {
+        function handleTransition({playCues = true, finishEndBells = false} = {}) {
             if (timerState.isRound) {
                 // Round ending
                 sessionStats.completedRounds++;
-                if (activeTrainingWorkout?.coachRounds) { coachRoundsController.reset(); if(settings.roundSoundsEnabled) playTrainingGong(1); }
-                else if (appMode === 'training') trainingCueController.finish(settings.trainingCuesEnabled);
-                else playRoundEnd();
+                if (activeTrainingWorkout?.coachRounds) { coachRoundsController.reset(); if(playCues && settings.roundSoundsEnabled) playTrainingGong(1); }
+                else if (appMode === 'training') trainingCueController.finish(playCues && settings.trainingCuesEnabled);
+                else if (playCues) playRoundEnd();
                 if (timerState.currentRound >= settings.numberOfRounds) {
                     timerState.isFinished = true;
                     timerState.isRunning = false;
@@ -7207,7 +7257,7 @@
                     releaseWakeLock();
                     renderSessionSummary();
                     finishedOverlay.classList.add('show');
-                    if (appMode !== 'training') playWorkoutCompleteFanfare();
+                    if (playCues && appMode !== 'training') playWorkoutCompleteFanfare();
                     updateUI();
                     return;
                 }
@@ -7225,7 +7275,7 @@
                         updateUI();
                     });
                 } else {
-                    playRoundStart();
+                    if (playCues) playRoundStart(finishEndBells);
                     timerState.isRound = true;
                     timerState.currentRound++;
                     timerState.timeLeft = settings.roundTime;
@@ -7267,6 +7317,7 @@
                 }
                 if (taskState.preRoundCountdown < 0) {
                     stopPreRoundDisplay();
+                    lastTickMs = performance.now();
                     if (typeof onComplete === 'function') onComplete();
                     updateUI();
                 }
@@ -8719,7 +8770,7 @@
         }
 
         function showModeChoice() {
-            document.getElementById('coachRoundsSection').hidden=true;setSectionNav(null);cancelCoachSpeech();
+            document.getElementById('coachRoundsSection').hidden=true;cancelCoachSpeech();
             modeChoice.classList.remove('hidden');
             trainingSection.classList.add('hidden');
             sparringSetup.classList.add('hidden');
@@ -8738,7 +8789,7 @@
         }
 
         function chooseSparMode() {
-            document.getElementById('coachRoundsSection').hidden=true;setSectionNav('spar');
+            document.getElementById('coachRoundsSection').hidden=true;
             const sparSettings = appMode === 'training' && savedSparringPreferences ? savedSparringPreferences : settings;
             setupStep = 0;
             setupCustomActive = false;
@@ -8868,8 +8919,8 @@
             }
 
             if (step.custom.type === 'rounds') {
-                const rounds = parseInt(String(value || '').trim(), 10);
-                return Number.isInteger(rounds) && rounds >= 1 && rounds <= 99 ? rounds : null;
+            const rounds = parseSetupSecondsInput(value);
+            return rounds >= 1 && rounds <= 99 ? rounds : null;
             }
 
             return null;
@@ -8942,7 +8993,7 @@
         }
 
         function openTrainingSection() {
-            document.getElementById('coachRoundsSection').hidden=true;setSectionNav('training');
+            document.getElementById('coachRoundsSection').hidden=true;
             modeChoice.classList.add('hidden');
             sparringSetup.classList.add('hidden');
             trainingSection.classList.remove('hidden');
@@ -9576,7 +9627,7 @@
             trainingPlanTitle = title;
             activeTrainingWorkout = customWorkout || requestedWorkout;
             trainingTimeline = activeTrainingWorkout ? buildTrainingTimeline(activeTrainingWorkout) : [];
-            document.getElementById('coachRoundsSection').hidden=true;setSectionNav(activeTrainingWorkout?.coachRounds?'coach':'training');
+            document.getElementById('coachRoundsSection').hidden=true;
             currentGuideIndex = -1;
             settings.roundTime = activeTrainingWorkout ? getTrainingDuration(activeTrainingWorkout) : durationSeconds;
             settings.breakTime = 60;
@@ -9811,8 +9862,6 @@
             voiceCoachStatusMessage = '';
             settings.language = language;
             renderCoachRoundsPicker();
-            const selectedNav=document.querySelector('#sectionNav [aria-current="page"]');
-            if(selectedNav)setSectionNav(selectedNav.dataset.section);
             try { localStorage.setItem(LANGUAGE_KEY, language); } catch (e) {}
             updateSettingsUI();
             updateUI();
@@ -9870,9 +9919,10 @@
         }
 
         function cancelRoundBellRepeats() {
- (playRoundBellSequence.pending || []).forEach(clearTimeout);
- playRoundBellSequence.pending = [];
-}
+            (playRoundBellSequence.pending || []).forEach(clearTimeout);
+            playRoundBellSequence.pending = [];
+            playRoundBellSequence.until = 0;
+        }
 function setRoundBellRepeats(value, preview = false) {
  const count = Number(value); if (![1,2,3].includes(count)) return;
  cancelRoundBellRepeats(); settings.roundBellRepeats = count;
@@ -9880,12 +9930,19 @@ function setRoundBellRepeats(value, preview = false) {
  updateSettingsUI();
  if (preview) previewRoundBell(count);
 }
-function playRoundBellSequence(play, repeats = settings.roundBellRepeats || 3, preview = false) {
- cancelRoundBellRepeats(); play();
- for(let i=1;i<repeats;i++) {
- playRoundBellSequence.pending.push(setTimeout(() => { if(preview || settings.roundSoundsEnabled) play(); }, i*900));
- }
-}
+        function playRoundBellSequence(play, repeats = settings.roundBellRepeats || 3, preview = false, queue = false) {
+            const now = performance.now();
+            const delay = queue ? Math.max(0, (playRoundBellSequence.until || 0) - now) : 0;
+            if (!delay) cancelRoundBellRepeats();
+            for (let index = 0; index < repeats; index++) {
+                const offset = delay + index * 900;
+                if (!offset) play();
+                else playRoundBellSequence.pending.push(setTimeout(() => {
+                    if (preview || settings.roundSoundsEnabled) play();
+                }, offset));
+            }
+            playRoundBellSequence.until = now + delay + repeats * 900;
+        }
 function previewRoundBell(count) {
             if (![1,2,3].includes(Number(count))) return;
             cancelCoachSpeech();
@@ -9899,12 +9956,12 @@ function previewRoundBell(count) {
             cancelRoundBellRepeats();
             return speakCoachText(coach === 'maya' ? "Hi, I am Maya, your FightWise coach. Stay focused, trust your technique, and let us get to work!" : "Hi, I am Max, your FightWise coach. Clear instructions, sharp technique. Let us get to work!", coach).catch(() => {});
         }
-        function playRoundStart() {
+        function playRoundStart(finishEndBells = false) {
             if (!settings.roundSoundsEnabled && !settings.vibrationEnabled) return;
             try {
                 if (settings.roundSoundsEnabled) {
                     playRoundBellSequence(() => { const result = playLoudAudioFromPool(roundStartAudioPool, roundStartAudioIndex, playFallbackBell);
-                    roundStartAudioIndex = result.nextIndex; });
+                    roundStartAudioIndex = result.nextIndex; }, undefined, false, finishEndBells);
                 }
                 if (settings.vibrationEnabled && navigator.vibrate) navigator.vibrate([150, 80, 150]);
             } catch (e) {}
@@ -10371,5 +10428,6 @@ function previewRoundBell(count) {
         setTimeout(() => { if(!setupFlow.completed()) setupFlow.open(); },120);
 
     </script>
+    <script src="tv-display.js?v=105"></script>
 </body>
 </html>
