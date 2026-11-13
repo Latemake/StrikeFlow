@@ -77,7 +77,13 @@ test('starting a guided workout uses timeline duration instead of its category',
     assert.equal(s.settings.roundTime, 120);
     s.startTrainingPlan(1800, 'Another', 30, 'test');
     s.sparringSetup={classList:{remove(){}}}; s.renderSparringSetup=()=>{};
+    vm.runInContext(html.slice(html.indexOf('const SPARRING_SETUP_STEPS ='), html.indexOf('const TRAINING_WORKOUTS =')), s);
     vm.runInContext(html.slice(html.indexOf('function chooseSparMode('),html.indexOf('function renderSparringSetup(')),s);
+    s.chooseSparMode();
+    assert.equal(s.sparringDraft.roundTime,180);
+    assert.equal(s.sparringDraft.breakTime,60);
+    assert.equal(s.sparringDraft.numberOfRounds,5);
+    s.savedSparringPreferences = {roundTime: 87, breakTime: 23, numberOfRounds: 9, taskSparEnabled: false};
     s.chooseSparMode();
     assert.equal(s.sparringDraft.roundTime,180);
     assert.equal(s.sparringDraft.breakTime,60);

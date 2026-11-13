@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="coach-rounds.css?v=102">
+    <link rel="stylesheet" href="coach-rounds.css?v=107">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>FightWise - Fight Timer</title>
@@ -5277,10 +5277,10 @@
     <script src="training-sports.js?v=84"></script>
     <script src="onboarding.js?v=106"></script>
     <script src="training-audio.js?v=84"></script>
-    <script src="coach-rounds.js?v=106"></script>
+    <script src="coach-rounds.js?v=110"></script>
     <script src="coach-audio-manifest.js?v=84"></script>
     <script src="coach-maya-manifest.js?v=84"></script>
-    <script src="coach-rounds-audio-manifest.js?v=98"></script>
+    <script src="coach-rounds-audio-manifest.js?v=108"></script>
     <script>
         // Training tasks by difficulty
         const TASKS = {
@@ -6852,8 +6852,8 @@
             setItem: (key,value) => localStorage.setItem(key,value)
         });
         const coachRoundsController = createCoachRoundsController({
-            restore: state => coachRoundsMemory.read(state.sport,state.combos),
-            remember: (state,progress) => coachRoundsMemory.write(state.sport,state.combos,progress),
+            restore: state => coachRoundsMemory.read(`${state.sport}:${state.stance}`,state.combos),
+            remember: (state,progress) => coachRoundsMemory.write(`${state.sport}:${state.stance}`,state.combos,progress),
             cancelSpeech: cancelCoachSpeech, stopSounds: stopTrainingSounds,
             bell: rest => rest ? new Promise(resolve => { playTrainingGong(1); window.setTimeout(resolve,700); }) : playTrainingStartBell(),
             speak: text => speakCoachText(text),
@@ -6871,7 +6871,7 @@
                 elapsed:Math.max(0,settings.roundTime-timerState.timeLeft-step.start),duration:step.end-step.start,
                 running:timerState.isRunning&&!timerState.isFinished,rest:step.kind==='rest',
                 roundIndex:trainingTimeline.slice(0,index).filter(s=>s.kind==='round').length,
-                sport:plan.sport,level:plan.level,combos:plan.combos,comments:plan.comments,movements:plan.movements,bellEnabled:settings.roundSoundsEnabled});
+                sport:plan.sport,stance:plan.stance,level:plan.level,combos:plan.combos,comments:plan.comments,movements:plan.movements,clinch:plan.clinch,bellEnabled:settings.roundSoundsEnabled});
         }
 
         function syncTrainingAudio() {
@@ -7441,7 +7441,7 @@
                 key: 'roundTime',
                 title: 'Round time',
                 subtitle: 'How long should each round be?',
-                custom: { type: 'seconds', label: 'Custom round time in seconds', placeholder: '90', help: 'Enter seconds only. Example: 90 = 1 min 30 sec.' },
+                custom: { type: 'seconds', label: 'Custom round time in seconds', help: 'Enter seconds only. Example: 90 = 1 min 30 sec.' },
                 options: [
                     { label: '2 min', desc: 'Fast technical rounds.', value: 120 },
                     { label: '3 min', desc: 'Standard K1 / Muay Thai round.', value: 180 },
@@ -7452,7 +7452,7 @@
                 key: 'breakTime',
                 title: 'Break time',
                 subtitle: 'How much rest between rounds?',
-                custom: { type: 'seconds', label: 'Custom break time in seconds', placeholder: '45', help: 'Enter seconds only. Example: 45 = 45 sec.' },
+                custom: { type: 'seconds', label: 'Custom break time in seconds', help: 'Enter seconds only. Example: 45 = 45 sec.' },
                 options: [
                     { label: '30 sec', desc: 'Hard pace, short recovery.', value: 30 },
                     { label: '1 min', desc: 'Classic fight rest.', value: 60 },
@@ -7463,7 +7463,7 @@
                 key: 'numberOfRounds',
                 title: 'Rounds',
                 subtitle: 'How many rounds are you doing?',
-                custom: { type: 'rounds', label: 'Custom rounds', placeholder: '7', help: 'Choose any amount from 1 to 99 rounds.' },
+                custom: { type: 'rounds', label: 'Custom rounds', help: 'Choose any amount from 1 to 99 rounds.' },
                 options: [
                     { label: '3 rounds', desc: 'Sharp and focused.', value: 3 },
                     { label: '5 rounds', desc: 'Championship rhythm.', value: 5 },
@@ -8793,10 +8793,12 @@
             const sparSettings = appMode === 'training' && savedSparringPreferences ? savedSparringPreferences : settings;
             setupStep = 0;
             setupCustomActive = false;
+            const presetValue = (key, fallback) => SPARRING_SETUP_STEPS.find(step => step.key === key)
+                .options.some(option => option.value === sparSettings[key]) ? sparSettings[key] : fallback;
             sparringDraft = {
-                roundTime: sparSettings.roundTime,
-                breakTime: sparSettings.breakTime,
-                numberOfRounds: sparSettings.numberOfRounds,
+                roundTime: presetValue('roundTime', 180),
+                breakTime: presetValue('breakTime', 60),
+                numberOfRounds: presetValue('numberOfRounds', 5),
                 taskSparEnabled: sparSettings.taskSparEnabled
             };
             modeChoice.classList.add('hidden');
@@ -8864,9 +8866,7 @@
             input.min = step.custom.type === 'rounds' ? '1' : '5';
             input.max = step.custom.type === 'rounds' ? '99' : '1800';
             input.step = '1';
-            input.placeholder = step.custom.placeholder;
             input.setAttribute('aria-label', step.custom.label);
-            input.setAttribute('data-i18n-original-placeholder', step.custom.placeholder);
             input.setAttribute('data-i18n-original-aria-label', step.custom.label);
             input.value = hasCustomValue ? sparringDraft[step.key] : '';
             input.classList.remove('invalid');
@@ -9058,9 +9058,9 @@
             closeTrainingSortMenu();
             if (customWorkoutSteps.length === 0) {
                 customWorkoutSteps = [
-                    { title: 'Warmup', minutes: 5, note: 'Easy movement, mobility and light shadowboxing.' },
-                    { title: 'Main work', minutes: 20, note: 'Work your chosen combinations with clean technique.' },
-                    { title: 'Cooldown', minutes: 5, note: 'Breathe, stretch and let your heart rate come down.' }
+                    { title: 'Warmup', minutes: '', note: 'Easy movement, mobility and light shadowboxing.' },
+                    { title: 'Main work', minutes: '', note: 'Work your chosen combinations with clean technique.' },
+                    { title: 'Cooldown', minutes: '', note: 'Breathe, stretch and let your heart rate come down.' }
                 ];
             }
             document.getElementById('trainingTitle').textContent = 'Custom workout';
@@ -9084,7 +9084,7 @@
                     </div>
                     <div class="custom-field">
                         <label>Minutes</label>
-                        <input type="number" min="1" max="90" step="1" value="${step.minutes}" oninput="updateCustomWorkoutStep(${index}, 'minutes', this.value)">
+                        <input type="number" min="1" max="90" step="1" required value="${escapeHtml(step.minutes)}" oninput="updateCustomWorkoutStep(${index}, 'minutes', this.value)">
                     </div>
                     <div class="custom-field">
                         <label>Instructions</label>
@@ -9105,16 +9105,11 @@
         function updateCustomWorkoutStep(index, key, value) {
             const step = customWorkoutSteps[index];
             if (!step) return;
-            if (key === 'minutes') {
-                const minutes = Math.max(1, Math.min(90, parseInt(value, 10) || 1));
-                step.minutes = minutes;
-                return;
-            }
             step[key] = value;
         }
 
         function addCustomWorkoutStep() {
-            customWorkoutSteps.push({ title: 'New step', minutes: 3, note: 'Add your instructions here.' });
+            customWorkoutSteps.push({ title: 'New step', minutes: '', note: 'Add your instructions here.' });
             renderCustomWorkoutSteps();
         }
 
@@ -9125,12 +9120,15 @@
         }
 
         function startCustomWorkout() {
+            for (const input of document.querySelectorAll('#customStepList input[type="number"]')) {
+                if (!input.reportValidity()) return;
+            }
             const nameInput = document.getElementById('customWorkoutName');
             const title = (nameInput && nameInput.value.trim()) || 'Custom workout';
             const cleanSteps = customWorkoutSteps
                 .map(step => ({
                     title: (step.title || 'Step').trim(),
-                    minutes: Math.max(1, Math.min(90, Number(step.minutes) || 1)),
+                    minutes: Number(step.minutes),
                     note: (step.note || 'Follow your plan for this step.').trim()
                 }))
                 .filter(step => step.title);

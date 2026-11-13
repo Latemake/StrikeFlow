@@ -3,7 +3,7 @@ const fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto');
 const context=vm.createContext({});
 vm.runInContext(fs.readFileSync('coach-rounds.js','utf8'),context);
 const spec=vm.runInContext('COACH_ROUNDS',context);
-const texts=[...new Set([...spec.lines,...spec.comments,...spec.movements.map(m=>m[0]),spec.previewText,spec.restText])];
+const texts=[...new Set([...spec.recordedCombos,...spec.comments,...spec.movements.map(m=>m[0]),spec.previewText,spec.restText,spec.clinch.enter,spec.clinch.exit])];
 const style='projected-gym-v1';
 const manifests=Object.fromEntries(['max','maya'].map(coach=>[coach,Object.fromEntries(texts.map(text=>[text,`coach-rounds-audio${coach==='maya'?'-maya':''}/${crypto.createHash('sha256').update(style+text).digest('hex').slice(0,20)}.mp3`]))]));
 const env=fs.existsSync('.env.local')?fs.readFileSync('.env.local','utf8'):'';

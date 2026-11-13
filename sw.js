@@ -1,4 +1,4 @@
-const CACHE = 'fightwise-v106';
+const CACHE = 'fightwise-v110';
 const ASSETS = [
   './index.html',
   './tv-display.css?v=105',
@@ -7,11 +7,11 @@ const ASSETS = [
   './onboarding.css?v=98',
   './training-sports.js?v=84',
   './training-audio.js?v=84',
-  './coach-rounds.js?v=106',
-  './coach-rounds.css?v=102',
+  './coach-rounds.js?v=110',
+  './coach-rounds.css?v=107',
   './coach-audio-manifest.js?v=84',
   './coach-maya-manifest.js?v=84',
-  './coach-rounds-audio-manifest.js?v=98',
+  './coach-rounds-audio-manifest.js?v=108',
   './privacy-policy.html',
   './manifest.json',
   './FightWise logo.png?v=94',

@@ -1,127 +1,274 @@
 // Recorded, continuous combination coaching. No network or device TTS is used.
 const COACH_ROUNDS = (() => {
-    const originals = [
-    "Jab. Cross.",
-    "Double jab. Cross.",
-    "Jab. Cross. Lead hook.",
-    "Jab to the body. Cross to the head.",
-    "Slip. Cross. Lead hook.",
-    "Jab. Cross. Lead uppercut. Cross.",
-    "Jab. Lead hook. Cross.",
-    "Double jab. Lead hook.",
-    "Cross. Lead hook. Cross.",
-    "Lead uppercut. Cross. Lead hook.",
-    "Jab. Cross. Roll. Lead hook.",
-    "Jab. Step back. Cross.",
-    "Double jab. Cross. Step out.",
-    "Jab. Cross. Lead hook to the body.",
-    "Lead hook to the body. Lead hook to the head.",
-    "Jab. Rear uppercut. Lead hook.",
-    "Slip. Jab. Cross.",
-    "Jab. Cross. Slip. Cross.",
-    "Jab. Lead uppercut. Cross.",
-    "Cross to the body. Lead hook to the head.",
-    "Jab. Cross. Pivot out.",
-    "Double jab. Cross. Lead hook.",
-    "Jab to the body. Jab to the head. Cross.",
-    "Lead hook. Cross. Lead hook.",
-    "Jab. Slip. Cross.",
-    "Rear uppercut. Lead hook. Cross.",
-    "Jab. Cross. Lead hook. Cross.",
-    "Double jab. Step back. Cross.",
-    "Lead hook to the body. Cross.",
-    "Jab. Cross to the body. Lead hook to the head.",
-    "Jab. Lead hook. Pivot out.",
-    "Slip. Cross. Lead uppercut.",
-    "Jab. Cross. Roll. Cross.",
-    "Double jab. Lead uppercut. Cross.",
-    "Cross. Lead hook. Step out.",
-    "Jab to the body. Cross. Lead hook.",
-    "Jab. Cross. Rear low kick.",
-    "Double jab. Rear body kick.",
-    "Check. Cross. Rear low kick.",
-    "Check. Cross. Rear body kick.",
-    "Jab. Rear low kick.",
-    "Cross. Lead hook. Rear low kick.",
-    "Jab. Cross. Lead body kick.",
-    "Lead front kick. Jab. Cross.",
-    "Jab. Lead hook. Rear body kick.",
-    "Rear low kick. Cross. Lead hook.",
-    "Jab. Cross. Rear body kick.",
-    "Double jab. Rear low kick.",
-    "Check. Jab. Cross.",
-    "Jab. Lead low kick. Cross.",
-    "Lead hook. Rear body kick.",
-    "Cross. Lead body kick.",
-    "Jab. Cross. Lead hook. Rear low kick.",
-    "Rear front kick. Jab. Cross.",
-    "Jab. Rear body kick. Step out.",
-    "Check. Lead hook. Rear low kick.",
-    "Double jab. Lead body kick.",
-    "Cross. Lead hook. Rear body kick.",
-    "Jab to the body. Rear low kick.",
-    "Lead front kick. Cross. Lead hook.",
-    "Jab. Cross. Rear low kick. Step out.",
-    "Jab. Lead low kick.",
-    "Check. Cross. Lead hook.",
-    "Jab. Rear front kick.",
-    "Lead low kick. Jab. Cross.",
-    "Cross. Lead hook. Lead body kick.",
-    "Jab. Cross to the body. Rear low kick.",
-    "Double jab. Cross. Rear body kick.",
-    "Jab. Cross. One rear knee. Step out.",
-    "Jab. Rear teep.",
-    "Jab. Cross. Lead elbow.",
-    "Jab. Cross. Two knees. Step out.",
-    "Lead teep. Jab. Cross.",
-    "Jab. Cross. Rear elbow.",
-    "Jab. Lead knee. Step out.",
-    "Cross. Lead hook. Rear knee.",
-    "Check. Cross. Rear knee.",
-    "Jab. Rear teep. Step out.",
-    "Double jab. Rear knee.",
-    "Lead elbow. Rear knee. Step out.",
-    "Jab. Cross. Lead knee.",
-    "Rear teep. Cross. Lead hook.",
-    "Jab. Lead elbow. Rear elbow.",
-    "Cross. Lead elbow. Step out.",
-    "Lead teep. Rear body kick.",
-    "Jab. Cross. Rear knee. Lead elbow.",
-    "Check. Cross. Lead elbow.",
-    "Jab. Lead teep.",
-    "Double jab. Cross. Rear elbow.",
-    "Lead hook. Rear knee. Step out.",
-    "Jab. Cross. Lead elbow. Rear knee.",
-    "Rear teep. Jab. Rear low kick.",
-    "Jab. Cross. Lead knee. Step out.",
-    "Check. Jab. Rear teep.",
-    "Jab. Lead hook. Rear elbow.",
-    "Lead teep. Cross. Rear knee.",
-    "Jab. Rear elbow. Lead elbow.",
-    "Cross. Lead hook. Two knees. Step out."
-];
-    // Deliberate punch sequences, extended only with compatible finishes.
-    // No random technique-word concatenation occurs during a workout.
-    const stems=[
-        'Jab. Cross.','Double jab. Cross.','Jab to the body. Cross to the head.',
-        'Slip. Cross.','Jab. Rear uppercut.','Jab. Cross to the body.',
-        'Lead uppercut. Cross.','Step back. Cross.','Jab to the head. Cross to the body.',
-        'Jab. Slip. Cross.','Jab. Cross. Roll. Cross.','Double jab. Rear uppercut.',
-        'Jab. Lead hook. Cross.','Slip. Jab. Cross.','Lead hook to the body. Cross.',
-        'Rear uppercut. Lead hook. Cross.','Jab. Step back. Cross.','Double jab. Cross to the body.'
+    const boxingStrikes = [
+        "Double jab.",
+        "Jab. Rear hook.",
+        "Jab. Lead hook. Rear hook. Lead hook to the body.",
+        // Punch sequences and changes of target.
+        "Jab. Cross.",
+        "Double jab. Cross.",
+        "Jab. Cross. Lead hook.",
+        "Jab to the body. Cross to the head.",
+        "Jab. Cross. Lead uppercut. Cross.",
+        "Jab. Lead hook. Cross.",
+        "Double jab. Lead hook.",
+        "Cross. Lead hook. Cross.",
+        "Lead uppercut. Cross. Lead hook.",
+        "Jab. Cross. Lead hook to the body.",
+        "Lead hook to the body. Lead hook to the head.",
+        "Jab. Rear uppercut. Lead hook.",
+        "Jab. Lead uppercut. Cross.",
+        "Cross to the body. Lead hook to the head.",
+        "Double jab. Cross. Lead hook.",
+        "Jab to the body. Jab to the head. Cross.",
+        "Lead hook. Cross. Lead hook.",
+        "Rear uppercut. Lead hook. Cross.",
+        "Jab. Cross. Lead hook. Cross.",
+        "Lead hook to the body. Cross.",
+        "Jab. Cross to the body. Lead hook to the head.",
+        "Double jab. Lead uppercut. Cross.",
+        "Jab to the body. Cross. Lead hook.",
+        "Jab. Cross. Lead uppercut.",
+        "Jab. Cross. Lead hook to the body. Cross.",
+        "Double jab. Cross. Lead uppercut.",
+        "Double jab. Cross. Lead hook to the body.",
+        "Double jab. Cross. Lead hook. Cross.",
+        "Double jab. Cross. Lead uppercut. Cross.",
+        "Jab to the body. Cross to the head. Lead hook.",
+        "Jab to the body. Cross to the head. Lead hook to the body.",
+        "Jab to the body. Cross to the head. Lead hook. Cross.",
+        "Jab. Rear uppercut. Lead hook to the body.",
+        "Jab. Rear uppercut. Lead hook. Cross.",
+        "Jab. Rear uppercut. Lead hook to the body. Cross.",
+        "Jab. Cross to the body. Lead hook.",
+        "Jab. Cross to the body. Lead uppercut.",
+        "Jab. Cross to the body. Lead hook. Cross.",
+        "Jab. Cross to the body. Lead hook to the body. Cross.",
+        "Lead uppercut. Cross. Lead hook to the body.",
+        "Lead uppercut. Cross. Lead hook. Cross.",
+        "Lead uppercut. Cross. Lead hook to the body. Cross.",
+        "Jab to the head. Cross to the body. Lead hook.",
+        "Jab to the head. Cross to the body. Lead hook. Cross.",
+        "Jab to the head. Cross to the body. Lead hook to the body. Cross.",
+        "Double jab. Rear uppercut. Lead hook.",
+        "Double jab. Rear uppercut. Lead hook to the body.",
+        "Double jab. Rear uppercut. Lead hook. Cross.",
+        "Jab. Lead hook. Cross. Lead hook.",
+        "Jab. Lead hook. Cross. Lead uppercut.",
+        "Jab. Lead hook. Cross. Lead hook to the body.",
+        "Jab. Lead hook. Cross. Lead hook. Cross.",
+        "Jab. Lead hook. Cross. Lead hook to the body. Cross.",
+        "Lead hook to the body. Cross. Lead hook.",
+        "Lead hook to the body. Cross. Lead uppercut.",
+        "Lead hook to the body. Cross. Lead hook to the head.",
+        "Lead hook to the body. Cross. Lead hook. Cross.",
+        "Rear uppercut. Lead hook. Cross. Lead hook.",
+        "Rear uppercut. Lead hook. Cross. Lead hook to the body.",
+        "Rear uppercut. Lead hook. Cross. Lead hook. Cross.",
+        "Double jab. Cross to the body. Lead hook.",
+        "Double jab. Cross to the body. Lead uppercut.",
+        "Double jab. Cross to the body. Lead hook. Cross.",
+        // Pull back and counter, or finish on an angle.
+        "Jab. Step back. Cross.",
+        "Double jab. Cross. Step out.",
+        "Jab. Cross. Pivot out.",
+        "Double jab. Step back. Cross.",
+        "Jab. Lead hook. Pivot out.",
+        "Cross. Lead hook. Step out.",
+        "Step back. Cross. Lead hook.",
+        "Step back. Cross. Lead hook to the body.",
+        "Jab. Step back. Cross. Lead hook.",
     ];
-    const extend=(starts,ends)=>starts.flatMap(start=>ends.map(end=>start+' '+end)).filter(text=>text.split('.').filter(t=>t.trim()).length<=5);
-    const boxing=[...new Set([...originals.slice(0,36),...extend(stems,[
-        'Lead hook.','Lead uppercut.','Lead hook to the body.','Lead hook to the head.',
-        'Lead hook. Cross.','Lead uppercut. Cross.','Lead hook to the body. Cross.','Lead hook. Roll. Cross.'
-    ])])];
-    const kickAdditions=[...new Set([...originals.slice(36,68),...extend([...stems,
-        'Lead front kick. Jab. Cross.','Rear low kick. Jab. Cross.','Check. Jab. Cross.','Lead low kick. Cross.'
-    ],['Rear low kick.','Rear body kick.','Lead low kick.','Lead body kick.','Rear front kick.','Lead front kick.'])])];
-    const thaiAdditions=[...new Set([...originals.slice(68),...extend([...stems,
-        'Lead teep. Jab. Cross.','Check. Cross.','Rear teep. Jab. Cross.','Lead body kick. Cross.'
-    ],['Rear knee. Step out.','Lead knee. Step out.','Lead elbow.','Rear elbow.','Lead elbow. Rear knee.','Two knees. Step out.'])])];
-    const lines=[...boxing,...kickAdditions,...thaiAdditions];
+    // Directions are relative to the athlete. Each slip loads the side of the counter.
+    const orthodoxSlips = [
+        "Jab. Slip to the left. Lead hook.",
+        "Jab. Slip to the right. Rear hook.",
+        "Jab. Slip to the right. Cross.",
+        "Cross. Slip to the left. Lead hook.",
+        "Cross. Slip to the left. Lead uppercut.",
+        "Slip to the right. Cross.",
+    ];
+    const southpawSlips = orthodoxSlips.map(line => line.replace(/Slip to the (left|right)/,
+        (_, direction) => direction === 'left' ? 'Slip to the right' : 'Slip to the left'));
+    const boxing = [...boxingStrikes, ...orthodoxSlips];
+    const kickAdditions = [
+        // Punches into low and body kicks.
+        "Jab. Cross. Rear low kick.",
+        "Double jab. Rear body kick.",
+        "Jab. Rear low kick.",
+        "Cross. Lead hook. Rear low kick.",
+        "Jab. Cross. Lead body kick.",
+        "Jab. Lead hook. Rear body kick.",
+        "Jab. Cross. Rear body kick.",
+        "Double jab. Rear low kick.",
+        "Lead hook. Rear body kick.",
+        "Cross. Lead body kick.",
+        "Jab. Cross. Lead hook. Rear low kick.",
+        "Jab. Rear body kick. Step out.",
+        "Double jab. Lead body kick.",
+        "Cross. Lead hook. Rear body kick.",
+        "Jab to the body. Rear low kick.",
+        "Cross. Lead hook. Lead body kick.",
+        "Jab. Cross to the body. Rear low kick.",
+        "Double jab. Cross. Rear body kick.",
+        "Jab. Cross. Lead low kick.",
+        "Double jab. Cross. Rear low kick.",
+        "Double jab. Cross. Lead low kick.",
+        "Double jab. Cross. Lead body kick.",
+        "Jab to the body. Cross to the head. Rear low kick.",
+        "Jab to the body. Cross to the head. Rear body kick.",
+        "Jab to the body. Cross to the head. Lead low kick.",
+        "Jab to the body. Cross to the head. Lead body kick.",
+        "Jab. Rear uppercut. Lead low kick.",
+        "Jab. Rear uppercut. Lead body kick.",
+        "Lead uppercut. Cross. Rear low kick.",
+        "Lead uppercut. Cross. Rear body kick.",
+        "Lead uppercut. Cross. Lead low kick.",
+        "Lead uppercut. Cross. Lead body kick.",
+        "Jab to the head. Cross to the body. Rear low kick.",
+        "Jab to the head. Cross to the body. Rear body kick.",
+        "Jab to the head. Cross to the body. Lead low kick.",
+        "Jab to the head. Cross to the body. Lead body kick.",
+        "Double jab. Rear uppercut. Lead low kick.",
+        "Double jab. Rear uppercut. Lead body kick.",
+        "Jab. Lead hook. Cross. Rear low kick.",
+        "Jab. Lead hook. Cross. Rear body kick.",
+        "Jab. Lead hook. Cross. Lead low kick.",
+        "Jab. Lead hook. Cross. Lead body kick.",
+        "Lead hook to the body. Cross. Rear low kick.",
+        "Lead hook to the body. Cross. Rear body kick.",
+        "Lead hook to the body. Cross. Lead low kick.",
+        "Lead hook to the body. Cross. Lead body kick.",
+        "Rear uppercut. Lead hook. Cross. Rear low kick.",
+        "Rear uppercut. Lead hook. Cross. Rear body kick.",
+        "Rear uppercut. Lead hook. Cross. Lead low kick.",
+        "Rear uppercut. Lead hook. Cross. Lead body kick.",
+        "Double jab. Cross to the body. Rear low kick.",
+        "Double jab. Cross to the body. Rear body kick.",
+        "Double jab. Cross to the body. Lead low kick.",
+        "Double jab. Cross to the body. Lead body kick.",
+        // Checks, kick entries and changes of range.
+        "Check. Cross. Rear low kick.",
+        "Check. Cross. Rear body kick.",
+        "Lead front kick. Jab. Cross.",
+        "Rear low kick. Cross. Lead hook.",
+        "Check. Jab. Cross.",
+        "Jab. Lead low kick. Cross.",
+        "Rear front kick. Jab. Cross.",
+        "Check. Lead hook. Rear low kick.",
+        "Lead front kick. Cross. Lead hook.",
+        "Jab. Cross. Rear low kick. Step out.",
+        "Jab. Lead low kick.",
+        "Check. Cross. Lead hook.",
+        "Jab. Rear front kick.",
+        "Lead low kick. Jab. Cross.",
+        "Jab. Cross. Rear front kick.",
+        "Jab. Cross. Lead front kick.",
+        "Lead front kick. Jab. Cross. Rear low kick.",
+        "Lead front kick. Jab. Cross. Rear body kick.",
+        "Rear low kick. Jab. Cross. Rear low kick.",
+        "Rear low kick. Jab. Cross. Rear body kick.",
+        "Check. Jab. Cross. Rear low kick.",
+        "Check. Jab. Cross. Rear body kick.",
+        "Check. Jab. Cross. Lead low kick.",
+        "Check. Jab. Cross. Lead body kick.",
+        "Lead low kick. Cross. Rear low kick.",
+        "Lead low kick. Cross. Rear body kick.",
+    ];
+    const thaiAdditions = [
+        // Knees, elbows and close-range exits.
+        "Jab. Cross. One rear knee. Step out.",
+        "Jab. Cross. Lead elbow.",
+        "Jab. Cross. Two knees. Step out.",
+        "Jab. Cross. Rear elbow.",
+        "Jab. Lead knee. Step out.",
+        "Cross. Lead hook. Rear knee.",
+        "Check. Cross. Rear knee.",
+        "Double jab. Rear knee.",
+        "Lead elbow. Rear knee. Step out.",
+        "Jab. Cross. Lead knee.",
+        "Jab. Lead elbow. Rear elbow.",
+        "Cross. Lead elbow. Step out.",
+        "Jab. Cross. Rear knee. Lead elbow.",
+        "Check. Cross. Lead elbow.",
+        "Double jab. Cross. Rear elbow.",
+        "Lead hook. Rear knee. Step out.",
+        "Jab. Cross. Lead elbow. Rear knee.",
+        "Jab. Cross. Lead knee. Step out.",
+        "Jab. Lead hook. Rear elbow.",
+        "Jab. Rear elbow. Lead elbow.",
+        "Cross. Lead hook. Two knees. Step out.",
+        "Jab. Cross. Rear knee. Step out.",
+        "Double jab. Cross. Rear knee. Step out.",
+        "Double jab. Cross. Lead knee. Step out.",
+        "Double jab. Cross. Lead elbow.",
+        "Double jab. Cross. Lead elbow. Rear knee.",
+        "Double jab. Cross. Two knees. Step out.",
+        "Jab to the body. Cross to the head. Rear knee. Step out.",
+        "Jab to the body. Cross to the head. Lead knee. Step out.",
+        "Jab to the body. Cross to the head. Lead elbow.",
+        "Jab to the body. Cross to the head. Rear elbow.",
+        "Jab to the body. Cross to the head. Lead elbow. Rear knee.",
+        "Jab. Rear uppercut. Rear knee. Step out.",
+        "Jab. Rear uppercut. Lead knee. Step out.",
+        "Jab. Rear uppercut. Lead elbow.",
+        "Jab. Rear uppercut. Rear elbow.",
+        "Jab. Cross to the body. Rear knee. Step out.",
+        "Jab. Cross to the body. Lead knee. Step out.",
+        "Jab. Cross to the body. Lead elbow.",
+        "Jab. Cross to the body. Rear elbow.",
+        "Lead uppercut. Cross. Rear knee. Step out.",
+        "Lead uppercut. Cross. Lead knee. Step out.",
+        "Lead uppercut. Cross. Lead elbow.",
+        "Lead uppercut. Cross. Rear elbow.",
+        "Double jab. Rear uppercut. Rear knee. Step out.",
+        "Double jab. Rear uppercut. Lead knee. Step out.",
+        "Double jab. Rear uppercut. Lead elbow.",
+        "Double jab. Rear uppercut. Rear elbow.",
+        "Jab. Lead hook. Cross. Rear knee. Step out.",
+        "Jab. Lead hook. Cross. Lead knee. Step out.",
+        "Jab. Lead hook. Cross. Lead elbow.",
+        "Jab. Lead hook. Cross. Rear elbow.",
+        "Lead hook to the body. Cross. Rear knee. Step out.",
+        "Lead hook to the body. Cross. Lead knee. Step out.",
+        "Lead hook to the body. Cross. Lead elbow.",
+        "Lead hook to the body. Cross. Rear elbow.",
+        "Rear uppercut. Lead hook. Cross. Rear knee. Step out.",
+        "Rear uppercut. Lead hook. Cross. Lead knee. Step out.",
+        "Rear uppercut. Lead hook. Cross. Lead elbow.",
+        "Rear uppercut. Lead hook. Cross. Rear elbow.",
+        "Double jab. Cross to the body. Rear knee. Step out.",
+        "Double jab. Cross to the body. Lead knee. Step out.",
+        "Double jab. Cross to the body. Lead elbow.",
+        "Double jab. Cross to the body. Rear elbow.",
+        "Check. Cross. Rear knee. Step out.",
+        "Check. Cross. Lead knee. Step out.",
+        "Check. Cross. Rear elbow.",
+        // Teeps and follow-ups at range.
+        "Jab. Rear teep.",
+        "Lead teep. Jab. Cross.",
+        "Jab. Rear teep. Step out.",
+        "Rear teep. Cross. Lead hook.",
+        "Lead teep. Rear body kick.",
+        "Jab. Lead teep.",
+        "Rear teep. Jab. Rear low kick.",
+        "Check. Jab. Rear teep.",
+        "Lead teep. Cross. Rear knee.",
+    ];
+    const lines = [...boxing, ...kickAdditions, ...thaiAdditions];
+    const clinch = {
+        enter: 'Get close. Work inside.',
+        exit: 'Step back. Reset your distance.',
+        combos: [
+            'Lead hook to the body. Rear hook.',
+            'Lead uppercut. Rear hook.',
+            'Rear uppercut. Lead hook to the body.'
+        ]
+    };
+    const thaiClinch = {
+        ...clinch,
+        combos: [...clinch.combos, 'Lead hook to the body. Rear knee.', 'Rear hook. Lead knee.', 'Lead knee. Rear knee.']
+    };
     const movements=[
         ['Circle left. Keep your stance.','Kierrä vasemmalle. Säilytä otteluasento.','Nach links kreisen. Kampfstellung halten.'],
         ['Circle right. Keep your guard up.','Kierrä oikealle. Pidä suojaus ylhäällä.','Nach rechts kreisen. Deckung oben halten.'],
@@ -178,14 +325,15 @@ const COACH_ROUNDS = (() => {
         steady: {rounds:4, seconds:120, rest:30},
         hard: {rounds:5, seconds:120, rest:30}
     };
-    function plan(sport, level) {
+    function plan(sport, level, stance = 'orthodox') {
         if (!pools[sport] || !intensity[level]) throw new Error('Unknown coach session');
         const recipe=intensity[level];
+        const catalogue = stance === 'southpaw' ? [...boxingStrikes, ...southpawSlips, ...kickAdditions, ...thaiAdditions] : lines;
         return {id:`coach-${sport}-${level}`, title:'Coach Rounds', voicePilot:true,
-            coachRounds:{sport,level,...recipe,combos:pools[sport][level].map(i=>lines[i]),comments,movements:movements.map(m=>m[0])},
+            coachRounds:{sport,level,stance,...recipe,combos:pools[sport][level].map(i=>catalogue[i]),comments,movements:movements.map(m=>m[0]),clinch:sport==='boxing'?clinch:sport==='muaythai'?thaiClinch:null},
             sections:[{title:`Rounds - ${recipe.rounds} x 2 min, 30 s rest`,rounds:Array.from({length:recipe.rounds},(_,i)=>[`Round ${i+1} - Coach Rounds`,'Listen for the next combination.'])}]};
     }
-    return {lines,comments,movements,sportCounts,previewText,pools,intensity,plan,restText:'Rest. Breathe, reset your stance and get ready for the next round.'};
+    return {lines,recordedCombos:[...new Set([...lines, ...southpawSlips, ...thaiClinch.combos])],clinch,comments,movements,sportCounts,previewText,pools,intensity,plan,restText:'Rest. Breathe, reset your stance and get ready for the next round.'};
 })();
 
 // Only catalogue progress is stored locally: no account, audio or workout history.
@@ -213,7 +361,7 @@ function createCoachRoundsMemory(storage){
 // Execution allowance in seconds, measured after the last spoken technique.
 function coachComboExecutionTime(text){
     const parts=text.split('.').map(t=>t.trim()).filter(Boolean);
-    const doubles=(text.match(/\bdouble\b/gi)||[]).length;
+    const doubles=(text.match(/\b(?:double|two)\b/gi)||[]).length;
     const triples=(text.match(/\btriple\b/gi)||[]).length;
     const slowerActions=(text.match(/\b(?:kick|knee|elbow|roll|slip|pivot|switch|step)\b/gi)||[]).length;
     return .25+(parts.length+doubles+triples*2)*.65+slowerActions*.3;
@@ -222,7 +370,25 @@ function coachComboExecutionTime(text){
 function createCoachRoundsController(output) {
     let generation=0,key=null,running=false,busy=false,due=0,current='',latest=null;
     let comboBag=[],tipBag=[],movementBag=[],poolSignature='',lastCombo='',lastTip='',lastMovement='',currentMovement='',sinceTip=0,nextTip=4,burstLeft=0;
+    // Short calls give the athlete room to reset before a longer sequence.
+    const rhythms = [
+        ['short', 'short', 'long'],
+        ['short', 'medium', 'long'],
+        ['short', 'long', 'medium', 'long'],
+        ['medium', 'short', 'long']
+    ];
+    let rhythm = [], rhythmIndex = 0, rhythmPools = null;
+    let clinchQueue = [], clinchBag = [], lastClinchCombo = '', clinchUsed = false, clinchStart = 25, currentKind = 'combo';
     const random=output.random||Math.random;
+    function selectRhythm(opening) {
+        const choices = opening ? rhythms.slice(0, 3) : rhythms.filter(pattern => pattern !== rhythm);
+        rhythm = choices[Math.floor(random() * choices.length)];
+        rhythmIndex = 0;
+    }
+    function comboSize(text) {
+        return text.split('.').filter(part => part.trim()).length
+            + (text.match(/\b(?:double|two)\b/gi) || []).length;
+    }
     function draw(list,bag,last,eligible=()=>true){
         if(!bag.length){
             bag.push(...list);
@@ -246,6 +412,7 @@ function createCoachRoundsController(output) {
         const range=(min,max)=>min+random()*(max-min);
         if(kind==='movement')return latest.level==='light'?range(3,5):range(1.5,2.5);
         if(kind==='tip')return range(.5,1.3);
+        if(kind==='distance')return 2;
         const techniques=text.split('.').filter(t=>t.trim()).length;
         // This starts AFTER speech ends: tightening the recording must not remove execution time.
         const execution=coachComboExecutionTime(text);
@@ -257,6 +424,7 @@ function createCoachRoundsController(output) {
     }
     function speak(text,kind='combo'){
         const ticket=generation;busy=true;
+        if(kind!=='tip')currentKind=kind;
         if(kind==='tip')output.onTip?.(text);
         else if(kind==='movement'){currentMovement=text;output.onMovement?.(text);output.onTip?.('');}
         else {current=text;currentMovement='';output.onMovement?.('');output.onCombo(text);output.onTip?.('');}
@@ -277,8 +445,23 @@ function createCoachRoundsController(output) {
     }
     function next(forceCombo=false){
         const remaining=latest.duration===undefined?Infinity:latest.duration-latest.elapsed;
+        if(clinchQueue.length){
+            if(remaining < 12 && clinchQueue.length > 1)clinchQueue = [latest.clinch.exit];
+            const cue = clinchQueue.shift();
+            speak(cue,cue===latest.clinch.exit?'distance':'combo');
+            return;
+        }
         if(remaining<6){busy=false;due=Infinity;return;}
-        if(!forceCombo&&remaining>12&&sinceTip>=nextTip&&(latest.comments?.length||latest.movements?.length)){
+        if(!forceCombo && latest.clinch && !clinchUsed && rhythmIndex === 0 && latest.elapsed >= clinchStart && remaining >= 32){
+            const {enter,exit,combos}=latest.clinch;
+            const first=draw(combos,clinchBag,lastClinchCombo);
+            lastClinchCombo=draw(combos,clinchBag,first);
+            clinchUsed=true;
+            clinchQueue=[first,lastClinchCombo,exit];
+            speak(enter,'distance');
+            return;
+        }
+        if(!forceCombo&&(!rhythmPools||rhythmIndex===0||rhythmIndex>=3)&&remaining>12&&sinceTip>=nextTip&&(latest.comments?.length||latest.movements?.length)){
             sinceTip=0;nextTip=guidanceThreshold();burstLeft=0;
             const movementChance=latest.level==='light' ? .8 : latest.level==='steady' ? .3 : .1;
             if(latest.movements?.length&&(!latest.comments?.length||random()<movementChance)){
@@ -286,8 +469,28 @@ function createCoachRoundsController(output) {
             }else{lastTip=draw(latest.comments,tipBag,lastTip);speak(lastTip,'tip');}
             return;
         }
-        const combo=draw(latest.combos,comboBag,lastCombo,text=>remaining>=9||text.split('.').filter(t=>t.trim()).length<=3);
+        const fits=text=>remaining>=9||comboSize(text)<=3;
+        const beat=rhythm[rhythmIndex];
+        let combo;
+        if(rhythmPools){
+            const slot=remaining<9 && beat==='long'?'medium':beat;
+            const pool=rhythmPools[slot];
+            const available=pool.filter(text=>comboBag.includes(text));
+            if(!available.length){
+                combo=draw(pool,available,lastCombo);
+                comboBag.push(...available);
+            }else{
+                const candidate=Math.floor(random()*available.length);
+                const end=available.length-1;
+                [available[candidate],available[end]]=[available[end],available[candidate]];
+                combo=draw(pool,available,lastCombo);
+                comboBag.splice(comboBag.indexOf(combo),1);
+            }
+        }else{
+            combo=draw(latest.combos,comboBag,lastCombo,fits);
+        }
         if(!combo){busy=false;due=Infinity;return;}
+        if(rhythmPools && ++rhythmIndex === rhythm.length)selectRhythm(false);
         lastCombo=combo;
         output.remember?.(latest,{remaining:comboBag,last:lastCombo});
         sinceTip++;speak(lastCombo);
@@ -298,14 +501,23 @@ function createCoachRoundsController(output) {
             const signature=JSON.stringify(state.combos);
             if(signature!==poolSignature){
                 poolSignature=signature;
+                const short=state.combos.filter(text=>comboSize(text)===2);
+                const medium=state.combos.filter(text=>comboSize(text)===3);
+                const long=state.combos.filter(text=>comboSize(text)>=4);
+                rhythmPools=state.level&&short.length&&medium.length&&long.length?{short,medium,long}:null;
                 const saved=output.restore?.(state);
-                comboBag=saved?.remaining?[...saved.remaining]:[];lastCombo=saved?.last||'';
+                comboBag=saved?.remaining?[...saved.remaining]:rhythmPools?[...state.combos]:[];
+                lastCombo=saved?.last||'';
+                clinchBag=[];lastClinchCombo='';
                 tipBag=[];movementBag=[];lastTip='';lastMovement='';sinceTip=0;nextTip=state.level?guidanceThreshold():4;burstLeft=0;
             }
             if(!state.running){if(running)invalidate();running=false;return;}
             const resumed=!running;running=true;
             if(key!==state.key){
                 invalidate();key=state.key;current='';currentMovement='';due=0;burstLeft=0;
+                if(rhythmPools && !state.rest)selectRhythm(true);
+                clinchQueue=[];clinchUsed=false;
+                if(state.clinch && !state.rest)clinchStart=25+random()*15;
                 output.onStep?.();
                 const ticket=generation;busy=true;
                 const bell=state.bellEnabled?output.bell(state.rest):Promise.resolve();
@@ -315,15 +527,17 @@ function createCoachRoundsController(output) {
                 });
                 return;
             }
-            if(resumed){if(currentMovement)speak(currentMovement,'movement');else if(current)speak(current);else if(state.rest)speak(COACH_ROUNDS.restText);else next(true);return;}
+            if(resumed){if(currentMovement)speak(currentMovement,'movement');else if(current)speak(current,currentKind);else if(state.rest)speak(COACH_ROUNDS.restText);else next(true);return;}
             if(!state.rest&&!busy&&state.elapsed>=due)next();
         },
-        reset(){invalidate();key=null;running=false;current='';currentMovement='';latest=null;due=0;comboBag=[];tipBag=[];movementBag=[];poolSignature='';sinceTip=0;burstLeft=0;},
+        reset(){invalidate();key=null;running=false;current='';currentMovement='';latest=null;due=0;comboBag=[];tipBag=[];movementBag=[];poolSignature='';sinceTip=0;burstLeft=0;rhythmIndex=0;clinchQueue=[];clinchUsed=false;},
         current(){return current;}
     };
 }
 
 let coachRoundSport='boxing',coachRoundLevel='steady',coachRoundCue='',coachRoundError=false,coachRoundTip='',coachRoundMovement='',coachSetupStep=0;
+let coachRoundStance = 'orthodox';
+try { if (localStorage.getItem('fightwise_coach_stance') === 'southpaw') coachRoundStance = 'southpaw'; } catch {}
 function coachText(en,fi,de){return settings.language==='fi'?fi:settings.language==='de'?de:en;}
 function coachSportName(sport){return sport==='boxing'?coachText('Boxing','Nyrkkeily','Boxen'):sport==='k1'?coachText('Kickboxing','Potkunyrkkeily','Kickboxen'):'Muay Thai';}
 function coachLevelName(level){return ({light:coachText('Light','Kevyt','Leicht'),steady:coachText('Steady','Reipas','Mittel'),hard:coachText('Hard','Kova','Hart')})[level];}
@@ -340,6 +554,11 @@ function openCoachRounds(){
 }
 function closeCoachRoundsSetup(){cancelCoachSpeech();showModeChoice();}
 function selectCoachSport(sport){if(!COACH_ROUNDS.pools[sport])return;coachRoundSport=sport;renderCoachRoundsPicker('coach-sport-'+sport);}
+function selectCoachStance(stance) {
+    if (stance !== 'orthodox' && stance !== 'southpaw') return;
+    coachRoundStance = stance;
+    try { localStorage.setItem('fightwise_coach_stance', stance); } catch {}
+}
 function selectCoachIntensity(level){if(!COACH_ROUNDS.intensity[level])return;coachRoundLevel=level;renderCoachRoundsPicker('coach-level-'+level);}
 function playCoachRoundsPreview(coach){unlockAppAudio();speakCoachText(COACH_ROUNDS.previewText,coach).catch(()=>{});}
 function selectRoundCoach(coach){if(!['max','maya'].includes(coach))return;setCoachVoice(coach);renderCoachRoundsPicker('coach-voice-'+coach);playCoachRoundsPreview(coach);}
@@ -368,14 +587,21 @@ function renderCoachRoundsPicker(focusId){
         <ol class="coach-setup-progress" aria-label="${coachText('Setup progress','Valintojen vaiheet','Einrichtungsschritte')}">${labels.map((label,i)=>`<li class="${i<=coachSetupStep?'reached':''}"${i===coachSetupStep?' aria-current="step"':''}>${i+1}. ${label}</li>`).join('')}</ol>
         <h1 id="coachSetupHeading" tabindex="-1">${titles[coachSetupStep]}</h1><p class="coach-intro">${hints[coachSetupStep]}</p>
         <div class="coach-setup-choices" role="group" aria-label="${titles[coachSetupStep]}">${choices}</div>
-        ${coachSetupStep===1?`<p class="coach-detail">${coachText('Prerecorded English AI coach voices.','Valmiiksi tallennetut englanninkieliset tekoälyäänet.','Aufgezeichnete englische KI-Coach-Stimmen.')}</p>`:coachSetupStep===2?`<p class="coach-session-info">${coachSportName(coachRoundSport)} · ${settings.coachVoice==='maya'?'Maya':'Max'} · ${formatTime(total)}</p><p class="coach-detail">${coachText('Warm up before starting.','Lämmittele ennen aloitusta.','Vor dem Start aufwärmen.')}</p>`:''}
+        ${coachSetupStep===1?`<p class="coach-detail">${coachText('Prerecorded English AI coach voices.','Valmiiksi tallennetut englanninkieliset tekoälyäänet.','Aufgezeichnete englische KI-Coach-Stimmen.')}</p>`:coachSetupStep===2?`<p class="coach-session-info">${coachSportName(coachRoundSport)} · ${settings.coachVoice==='maya'?'Maya':'Max'} · ${formatTime(total)}</p>
+        <label class="coach-stance">${coachText('Stance for slip calls','Otteluasento väistöohjeisiin','Kampfstellung für Ausweichansagen')}
+            <select onchange="selectCoachStance(this.value)">
+                <option value="orthodox" ${coachRoundStance==='orthodox'?'selected':''}>${coachText('Left foot forward','Vasen jalka edessä','Linker Fuß vorn')}</option>
+                <option value="southpaw" ${coachRoundStance==='southpaw'?'selected':''}>${coachText('Right foot forward','Oikea jalka edessä','Rechter Fuß vorn')}</option>
+            </select>
+        </label>
+        <p class="coach-detail">${coachText('Warm up before starting.','Lämmittele ennen aloitusta.','Vor dem Start aufwärmen.')}</p>`:''}
         <div class="coach-setup-footer"><button onclick="moveCoachSetup(-1)">${coachText('Back','Takaisin','Zurück')}</button><button class="coach-setup-next" onclick="moveCoachSetup(1)">${coachSetupStep===2?coachText('Start session','Aloita harjoitus','Einheit starten'):coachText('Continue','Jatka','Weiter')}</button></div>
     </div>`;
     if(focusId){document.getElementById(focusId)?.focus({preventScroll:true});if(focusId==='coachSetupHeading')root.scrollTop=0;}
 }
 function startCoachRounds(){
     cancelCoachSpeech();
-    const plan=COACH_ROUNDS.plan(coachRoundSport,coachRoundLevel);
+    const plan=COACH_ROUNDS.plan(coachRoundSport,coachRoundLevel,coachRoundStance);
     coachRoundError=false;coachRoundCue='';coachRoundTip='';coachRoundMovement='';
     startTrainingPlan(getTrainingDuration(plan),'COACH ROUNDS',null,null,plan);
 }
@@ -389,6 +615,12 @@ function renderCoachRoundsGuide(step){
     const parts=cue?cue.split('.').map(x=>x.trim()).filter(Boolean):[];
     const terms={fi:{'Jab':'Etusuora','Cross':'Takasuora','Double jab':'Tuplaetusuora','Lead hook':'Etukoukku','Lead uppercut':'Etukäden alakoukku','Rear low kick':'Takajalan alapotku','Rear body kick':'Takajalan vartalopotku','Rear teep':'Takajalan työntöpotku','Lead elbow':'Etukäden kyynärpää','One rear knee':'Yksi takajalan polvi','Two knees':'Kaksi polvea','Step out':'Poistu','Slip':'Väistö','Check':'Potkublokki','Jab to the body':'Etusuora vartaloon','Cross to the head':'Takasuora päähän'},de:{'Jab':'Jab','Cross':'Cross','Double jab':'Doppelter Jab','Lead hook':'Führungshaken','Lead uppercut':'Führhand-Aufwärtshaken','Rear low kick':'Lowkick hinten','Rear body kick':'Körpertritt hinten','Rear teep':'Teep hinten','Lead elbow':'Ellbogen vorne','One rear knee':'Ein hinteres Knie','Two knees':'Zwei Knie','Step out':'Rausgehen','Slip':'Ausweichen','Check':'Kick blocken','Jab to the body':'Jab zum Körper','Cross to the head':'Cross zum Kopf'}};
     const extraTerms={
+        'Get close':['Mene lähelle','Geh nah ran'],
+        'Work inside':['Työskentele lähietäisyydeltä','Arbeite in der Nahdistanz'],
+        'Reset your distance':['Palaa otteluetäisyydelle','Geh zurück auf Distanz'],
+        'Slip to the left':['Väistä vasemmalle','Nach links ausweichen'],
+        'Slip to the right':['Väistä oikealle','Nach rechts ausweichen'],
+        'Rear hook':['Takakoukku','Schlaghandhaken'],
         'Lead hook to the body':['Etukoukku vartaloon','Führungshaken zum Körper'],
         'Lead hook to the head':['Etukoukku päähän','Führungshaken zum Kopf'],
         'Cross to the body':['Takasuora vartaloon','Cross zum Körper'],

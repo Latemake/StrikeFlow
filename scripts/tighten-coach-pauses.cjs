@@ -31,7 +31,7 @@ function tightenPauses(pcm,rate=24000){
 async function main(){
  const ffmpeg=process.argv[2];if(!ffmpeg)throw Error('Pass the absolute path to ffmpeg.');
  const c=vm.createContext({});vm.runInContext(fs.readFileSync('coach-rounds.js','utf8'),c);
- const combos=new Set(vm.runInContext('COACH_ROUNDS.lines',c));
+ const combos=new Set(vm.runInContext('COACH_ROUNDS.recordedCombos',c));
  const manifestPaths=['coach-rounds-audio/manifest.json','coach-rounds-audio-maya/manifest.json'];
  const manifests=manifestPaths.map(p=>JSON.parse(fs.readFileSync(p,'utf8')));
  const backup='.coach-audio-originals',jobs=[];

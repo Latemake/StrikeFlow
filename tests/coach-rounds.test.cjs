@@ -26,7 +26,9 @@ test('Coach Rounds setup asks sport, coach and intensity in order and preserves 
  w.c.selectCoachIntensity('hard');w.c.moveCoachSetup(-1);assert.match(w.root.innerHTML,/id="coach-voice-maya"[^>]*aria-pressed="true"/);
  w.c.moveCoachSetup(-1);assert.match(w.root.innerHTML,/id="coach-sport-muaythai"[^>]*aria-pressed="true"/);
  w.c.moveCoachSetup(1);w.c.moveCoachSetup(1);assert.match(w.root.innerHTML,/id="coach-level-hard"[^>]*aria-pressed="true"/);
+ w.c.selectCoachStance('southpaw');
  w.c.moveCoachSetup(1);assert.equal(w.started.id,'coach-muaythai-hard');assert.equal(w.c.settings.coachVoice,'maya');
+ assert.equal(w.started.coachRounds.stance,'southpaw');
 });
 
 test('reopening setup returns to sport; leaving cancels previews; Finnish and German headings follow each stage',()=>{
@@ -55,24 +57,51 @@ test('all nine coach plans have accurate positive round/rest timelines and sport
  assert.match(spec.plan('muaythai','hard').coachRounds.combos.join(' '),/elbow/);
 });
 test('all new combinations have playable local recordings for both coaches',()=>{
- const c=context(),lines=vm.runInContext('[...COACH_ROUNDS.lines,...COACH_ROUNDS.comments,...COACH_ROUNDS.movements.map(m=>m[0]),COACH_ROUNDS.previewText,COACH_ROUNDS.restText]',c);
+ const c=context(),lines=vm.runInContext('[...COACH_ROUNDS.recordedCombos,...COACH_ROUNDS.comments,...COACH_ROUNDS.movements.map(m=>m[0]),COACH_ROUNDS.previewText,COACH_ROUNDS.restText,COACH_ROUNDS.clinch.enter,COACH_ROUNDS.clinch.exit]',c);
+ vm.runInContext(fs.readFileSync('coach-rounds-audio-manifest.js','utf8'),c);
+ const shipped=vm.runInContext('COACH_ROUNDS_AUDIO_MANIFEST',c);
  for(const folder of ['coach-rounds-audio','coach-rounds-audio-maya']){
   const manifest=JSON.parse(fs.readFileSync(folder+'/manifest.json'));
-  for(const line of lines){assert.ok(manifest[line],line);assert.ok(fs.statSync(manifest[line]).size>1000);}
+  const coach=folder.endsWith('-maya')?'maya':'max';
+  for(const line of lines){assert.ok(manifest[line],line);assert.equal(shipped[coach][line],manifest[line]);assert.ok(fs.statSync(manifest[line]).size>1000);}
  }
 });
 
 test('large sport pools are unique and do not shrink with intensity',()=>{
  const spec=vm.runInContext('COACH_ROUNDS',context());
- assert.equal(spec.lines.length,471);assert.equal(new Set(spec.lines).size,471);assert.equal(spec.comments.length,26);assert.equal(spec.movements.length,16);
- for(const [sport,size] of [['boxing',161],['k1',320],['muaythai',471]])for(const level of ['light','steady','hard'])assert.equal(spec.plan(sport,level).coachRounds.combos.length,size);
+ assert.equal(new Set(spec.lines).size,spec.lines.length);assert.equal(spec.comments.length,26);assert.equal(spec.movements.length,16);
+ for(const [sport,size] of [['boxing',81],['k1',161],['muaythai',237]])for(const level of ['light','steady','hard'])assert.equal(spec.plan(sport,level).coachRounds.combos.length,size);
+});
+
+test('slips are single short calls whose side matches the immediate counter and the stance',()=>{
+ const spec=vm.runInContext('COACH_ROUNDS',context());
+ for(const stance of ['orthodox','southpaw']){
+  const {combos}=spec.plan('muaythai','hard',stance).coachRounds;
+  const leadSide=stance==='orthodox'?'left':'right';
+  const rearSide=stance==='orthodox'?'right':'left';
+  assert.ok(combos.includes(`Jab. Slip to the ${leadSide}. Lead hook.`));
+  assert.ok(combos.includes(`Jab. Slip to the ${rearSide}. Rear hook.`));
+  for(const combo of combos){
+   const techniques=combo.split('. ').map(technique=>technique.replace(/\.$/,''));
+   assert.ok((techniques.length>=2||combo==='Double jab.')&&techniques.length<=5,combo);
+   assert.ok(techniques.every((technique,i)=>technique!==techniques[i-1]),combo);
+   const slips=techniques.filter(technique=>/^Slip\b/.test(technique));
+   if(!slips.length)continue;
+   assert.ok(techniques.length<=3&&slips.length===1,combo);
+   const counter=techniques[techniques.indexOf(slips[0])+1];
+   assert.match(counter||'',/^(?:Lead (?:hook|uppercut)|Rear hook|Cross)$/);
+   assert.equal(slips[0],`Slip to the ${counter.startsWith('Lead ')?leadSide:rearSide}`,combo);
+  }
+ }
 });
 
 test('catalogue progress survives new sessions, intensity changes and app relaunches',async()=>{
  const c=context(),spec=vm.runInContext('COACH_ROUNDS',c),data=new Map(),heard=[];
  const storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)};
  let ctrl;
- for(let n=0;n<165;n++){
+ const poolSize=spec.plan('boxing','hard').coachRounds.combos.filter(text=>
+  text.split('. ').length+(/\bdouble\b/i.test(text)?1:0)===2).length;
+ for(let n=0;n<poolSize+4;n++){
   if(n%11===0){
    ctrl?.reset();
    const memory=c.createCoachRoundsMemory(storage);
@@ -81,9 +110,9 @@ test('catalogue progress survives new sessions, intensity changes and app relaun
   const plan=spec.plan('boxing',n%2?'light':'hard').coachRounds;
   ctrl.update({...plan,key:'round-'+n,elapsed:0,duration:120,running:true,rest:false,bellEnabled:false});await settle();
  }
- assert.equal(new Set(heard.slice(0,161)).size,161);
- assert.notEqual(heard[160],heard[161]);
- assert.equal(heard.length,165);
+ assert.equal(new Set(heard.slice(0,poolSize)).size,poolSize);
+ assert.notEqual(heard[poolSize-1],heard[poolSize]);
+ assert.equal(heard.length,poolSize+4);
 });
 
 test('corrupt or unavailable local storage cannot break coaching',()=>{
@@ -95,6 +124,55 @@ test('corrupt or unavailable local storage cannot break coaching',()=>{
  const blocked=c.createCoachRoundsMemory({getItem(){throw Error('Blocked');},setItem(){throw Error('Blocked');}});
  blocked.write('boxing',pool,{remaining:['C'],last:'B'});assert.deepEqual(Array.from(blocked.read('boxing',pool).remaining),['C']);
  assert.equal(memory.read('boxing',['new catalogue']),null);
+});
+
+test('live plans vary their rhythm while grouping short calls with longer sequences',async()=>{
+ const count=text=>text.split('. ').length+(/\b(?:double|two)\b/i.test(text)?1:0);
+ for(const [random,expected] of [[0,[2,2,4,2,3,4,2]],[.99,[2,4,3,4,3,2,4]]]){
+  const s=setup({random:()=>random}),spec=vm.runInContext('COACH_ROUNDS',s.c);
+  for(const level of ['light','steady','hard']){
+   s.ctrl.reset();
+   s.events.length=0;
+   const state={...s.state,...spec.plan('boxing',level).coachRounds,rest:false,clinch:null,comments:[],movements:[],duration:120};
+   for(let elapsed=0;elapsed<75;elapsed+=10){
+    s.ctrl.update({...state,elapsed});
+    await settle();
+   }
+   const sizes=s.events.filter(text=>spec.lines.includes(text)).slice(0,7).map(count);
+   assert.deepEqual(sizes.map(size=>Math.min(size,4)),expected);
+  }
+ }
+});
+
+test('boxing and Muay Thai call two distinct sport-appropriate clinch combos between entry and exit',async()=>{
+ const s=setup(),spec=vm.runInContext('COACH_ROUNDS',s.c);
+ assert.equal(spec.plan('k1','hard').coachRounds.clinch,null);
+ for(const sport of ['boxing','muaythai']){
+  const plan=spec.plan(sport,'hard').coachRounds;
+  const {clinch}=plan;
+  const allowed=sport==='boxing'
+   ? /^(?:Lead|Rear) (?:hook(?: to the body)?|uppercut)$/
+   : /^(?:Lead|Rear) (?:hook(?: to the body)?|uppercut|knee)$/;
+  for(const line of clinch.combos){
+   for(const technique of line.split('.').map(part=>part.trim()).filter(Boolean)){
+    assert.match(technique,allowed);
+   }
+  }
+  s.ctrl.reset();
+  s.events.length=0;
+  const state={...s.state,...plan,rest:false};
+  for(let elapsed=0;elapsed<120;elapsed++){
+   s.ctrl.update({...state,elapsed});
+   await settle();
+  }
+  const entry=s.events.indexOf(clinch.enter);
+  assert.ok(entry>=0);
+  assert.ok(clinch.combos.includes(s.events[entry+1]));
+  assert.ok(clinch.combos.includes(s.events[entry+2]));
+  assert.notEqual(s.events[entry+1],s.events[entry+2]);
+  assert.equal(s.events[entry+3],clinch.exit);
+  assert.equal(s.events.filter(text=>text===clinch.enter).length,1);
+ }
 });
 
 test('versioned code and styles match the offline cache and worker registration survives app errors',()=>{
