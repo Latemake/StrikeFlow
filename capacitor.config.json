@@ -3,6 +3,13 @@
   "appName": "FightWise",
   "webDir": "www",
   "bundledWebRuntime": false,
+  "backgroundColor": "#0a0a0a",
+  "plugins": {
+    "SystemBars": {
+      "style": "DARK",
+      "initialViewportFitValueHint": "cover"
+    }
+  },
   "server": {
     "androidScheme": "https"
   },

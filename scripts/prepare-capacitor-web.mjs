@@ -21,6 +21,7 @@ const files = [
   'FightWise logo.png',
   'FightWise text.png',
   'Fightwise app icon.png',
+  'fightwise-maskable.png',
   'Unlock 50+ workouts with premium AD.png',
   'Sparring simple.png',
   'Training simple.png',
