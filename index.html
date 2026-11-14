@@ -5276,12 +5276,12 @@
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
     </script>
     <script src="training-sports.js?v=84"></script>
-    <script src="onboarding.js?v=106"></script>
+    <script src="onboarding.js?v=113"></script>
     <script src="training-audio.js?v=84"></script>
-    <script src="coach-rounds.js?v=110"></script>
+    <script src="coach-rounds.js?v=115"></script>
     <script src="coach-audio-manifest.js?v=84"></script>
     <script src="coach-maya-manifest.js?v=84"></script>
-    <script src="coach-rounds-audio-manifest.js?v=108"></script>
+    <script src="coach-rounds-audio-manifest.js?v=112"></script>
     <script>
         // Training tasks by difficulty
         const TASKS = {
@@ -5575,7 +5575,14 @@
             const savedLanguage = localStorage.getItem(LANGUAGE_KEY);
             if (savedLanguage && ['en', 'fi', 'de'].includes(savedLanguage)) {
                 settings.language = savedLanguage;
+            } else {
+                const setupLanguage = JSON.parse(localStorage.getItem('fightwise_setup_preferences') || 'null')?.language;
+                if (['en', 'fi', 'de'].includes(setupLanguage)) settings.language = setupLanguage;
             }
+        } catch (e) {}
+        document.documentElement.lang = settings.language;
+
+        try {
             const savedRepeats = Number(localStorage.getItem('fightwise_bell_repeats'));
             if ([1,2,3].includes(savedRepeats)) settings.roundBellRepeats = savedRepeats;
             const savedCoach = localStorage.getItem('fightwise_coach_voice');
@@ -8785,6 +8792,7 @@
             stopPreRoundDisplay();
             releaseWakeLock();
             timerState.isRunning = false;
+            finishedOverlay.classList.remove('show');
             showModeChoice();
             updateUI();
         }
@@ -9860,6 +9868,7 @@
             trainingCueController.cancelVoice();
             voiceCoachStatusMessage = '';
             settings.language = language;
+            document.documentElement.lang = language;
             renderCoachRoundsPicker();
             try { localStorage.setItem(LANGUAGE_KEY, language); } catch (e) {}
             updateSettingsUI();
@@ -10396,6 +10405,7 @@ function previewRoundBell(count) {
 
         // Show tutorial on first launch only. It can be replayed from settings.
         const setupFlow = createFightWiseSetup({
+            saveLanguage: setLanguage,
             read: () => ({coachVoice:settings.coachVoice, uiClickSoundsEnabled:settings.uiClickSoundsEnabled, language:settings.language, sport:selectedTrainingSport, voiceCoachEnabled:settings.voiceCoachEnabled, roundSoundsEnabled:settings.roundSoundsEnabled, roundBellRepeats:settings.roundBellRepeats, vibrationEnabled:settings.vibrationEnabled}),
             preview: coach => speakCoachText(coach === 'maya' ? "Hi, I am Maya, your FightWise coach. Stay focused, trust your technique, and let us get to work!" : "Hi, I am Max, your FightWise coach. Clear instructions, sharp technique. Let us get to work!",coach),
             tutorial: () => { try {localStorage.removeItem(TUT_KEY);}catch{} checkTutorial(); },
@@ -10425,6 +10435,31 @@ function previewRoundBell(count) {
             }
         } catch(e) {}
         setTimeout(() => { if(!setupFlow.completed()) setupFlow.open(); },120);
+
+        window.fightWiseBack = function () {
+            if (setupFlow.back()) return true;
+            if (tutActive || document.getElementById('tutWelcome').style.display === 'flex') skipTutorial();
+            else if (premiumModal.classList.contains('show')) closePremiumModal();
+            else if (settingsModal.classList.contains('show')) {
+                if (activeSettingsTab !== 'main') setSettingsTab('main');
+                else if (openSettingsGroup) toggleSettingsGroup(openSettingsGroup);
+                else closeSettings();
+            }
+            else if (setupCustomModal.classList.contains('show')) closeSetupCustomModal();
+            else if (workoutPreview.classList.contains('show')) closeWorkoutPreview();
+            else if (!document.getElementById('coachRoundsSection').hidden) moveCoachSetup(-1);
+            else if (!sparringSetup.classList.contains('hidden')) setupBack();
+            else if (!trainingSection.classList.contains('hidden')) {
+                if (document.getElementById('trainingFilterBar').classList.contains('open')) closeTrainingSortMenu();
+                else trainingBack();
+            }
+            else if (modeChoice.classList.contains('hidden')) {
+                if (timerState.isRunning) toggleTimer();
+                else openModeChoice();
+            }
+            else return false;
+            return true;
+        };
 
     </script>
     <script src="tv-display.js?v=105"></script>

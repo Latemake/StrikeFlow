@@ -70,7 +70,7 @@ test('all new combinations have playable local recordings for both coaches',()=>
 test('large sport pools are unique and do not shrink with intensity',()=>{
  const spec=vm.runInContext('COACH_ROUNDS',context());
  assert.equal(new Set(spec.lines).size,spec.lines.length);assert.equal(spec.comments.length,26);assert.equal(spec.movements.length,16);
- for(const [sport,size] of [['boxing',81],['k1',161],['muaythai',237]])for(const level of ['light','steady','hard'])assert.equal(spec.plan(sport,level).coachRounds.combos.length,size);
+ for(const [sport,size] of [['boxing',107],['k1',204],['muaythai',295]])for(const level of ['light','steady','hard'])assert.equal(spec.plan(sport,level).coachRounds.combos.length,size);
 });
 
 test('slips are single short calls whose side matches the immediate counter and the stance',()=>{
@@ -83,7 +83,7 @@ test('slips are single short calls whose side matches the immediate counter and 
   assert.ok(combos.includes(`Jab. Slip to the ${rearSide}. Rear hook.`));
   for(const combo of combos){
    const techniques=combo.split('. ').map(technique=>technique.replace(/\.$/,''));
-   assert.ok((techniques.length>=2||combo==='Double jab.')&&techniques.length<=5,combo);
+   assert.ok(techniques.length>=1&&techniques.length<=5,combo);
    assert.ok(techniques.every((technique,i)=>technique!==techniques[i-1]),combo);
    const slips=techniques.filter(technique=>/^Slip\b/.test(technique));
    if(!slips.length)continue;
@@ -100,7 +100,7 @@ test('catalogue progress survives new sessions, intensity changes and app relaun
  const storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)};
  let ctrl;
  const poolSize=spec.plan('boxing','hard').coachRounds.combos.filter(text=>
-  text.split('. ').length+(/\bdouble\b/i.test(text)?1:0)===2).length;
+  c.coachComboSize(text)<=2).length;
  for(let n=0;n<poolSize+4;n++){
   if(n%11===0){
    ctrl?.reset();
@@ -126,9 +126,26 @@ test('corrupt or unavailable local storage cannot break coaching',()=>{
  assert.equal(memory.read('boxing',['new catalogue']),null);
 });
 
+test('combo selection favors a different opening and spaces out repeats at catalogue boundaries',()=>{
+ const c=context(),recent=['Lead hook. Cross.','Double jab. Cross. Lead hook.'];
+ const pool=['Jab to the body. Cross to the head. Rear hook.','Lead hook. Rear uppercut.','Rear uppercut. Lead hook.'];
+ assert.equal(c.chooseCoachCombo(pool,recent,()=>0),'Rear uppercut. Lead hook.');
+ assert.equal(c.chooseCoachCombo(pool.slice(0,2),recent,()=>0),'Lead hook. Rear uppercut.');
+ assert.equal(c.chooseCoachCombo(recent,recent,()=>.99),recent[0]);
+});
+
+test('the last eight combinations survive a reload and old progress restores its last call',()=>{
+ const c=context(),pool=Array.from({length:12},(_,n)=>'Call '+n),data=new Map();
+ const storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)};
+ c.createCoachRoundsMemory(storage).write('boxing',pool,{remaining:pool.slice(10),last:pool[9],recent:pool.slice(2,10)});
+ assert.deepEqual(Array.from(c.createCoachRoundsMemory(storage).read('boxing',pool).recent),pool.slice(2,10));
+ const key=[...data.keys()][0],saved=JSON.parse(data.get(key));
+ delete saved.recent;data.set(key,JSON.stringify(saved));
+ assert.deepEqual(Array.from(c.createCoachRoundsMemory(storage).read('boxing',pool).recent),[pool[9]]);
+});
+
 test('live plans vary their rhythm while grouping short calls with longer sequences',async()=>{
- const count=text=>text.split('. ').length+(/\b(?:double|two)\b/i.test(text)?1:0);
- for(const [random,expected] of [[0,[2,2,4,2,3,4,2]],[.99,[2,4,3,4,3,2,4]]]){
+ for(const [random,expected] of [[0,[2,2,4,2,3,4,2]],[.99,[2,4,2,3,3,2,2]]]){
   const s=setup({random:()=>random}),spec=vm.runInContext('COACH_ROUNDS',s.c);
   for(const level of ['light','steady','hard']){
    s.ctrl.reset();
@@ -138,40 +155,71 @@ test('live plans vary their rhythm while grouping short calls with longer sequen
     s.ctrl.update({...state,elapsed});
     await settle();
    }
-   const sizes=s.events.filter(text=>spec.lines.includes(text)).slice(0,7).map(count);
-   assert.deepEqual(sizes.map(size=>Math.min(size,4)),expected);
+   const sizes=s.events.filter(text=>spec.lines.includes(text)).slice(0,7).map(s.c.coachComboSize);
+   assert.deepEqual(sizes.map(size=>Math.min(Math.max(size,2),4)),expected);
   }
  }
 });
 
-test('boxing and Muay Thai call two distinct sport-appropriate clinch combos between entry and exit',async()=>{
- const s=setup(),spec=vm.runInContext('COACH_ROUNDS',s.c);
+test('clinch varies in frequency and length and uses distinct, sport-appropriate calls',async()=>{
+ let seed=8192;
+ const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
+ let pending;
+ const s=setup({random,speak(text){
+  assert.equal(pending,undefined,'clinch speech must finish before the next call');
+  s.events.push(text);
+  pending=deferred();
+  return pending.promise;
+ }}),spec=vm.runInContext('COACH_ROUNDS',s.c);
  assert.equal(spec.plan('k1','hard').coachRounds.clinch,null);
  for(const sport of ['boxing','muaythai']){
-  const plan=spec.plan(sport,'hard').coachRounds;
+  const plan=spec.plan(sport,'steady').coachRounds;
   const {clinch}=plan;
   const allowed=sport==='boxing'
-   ? /^(?:Lead|Rear) (?:hook(?: to the body)?|uppercut)$/
-   : /^(?:Lead|Rear) (?:hook(?: to the body)?|uppercut|knee)$/;
+   ? /^(?:(?:Lead|Rear) (?:hook(?: to the (?:body|head))?|uppercut)|(?:Two|Three|Four) hooks|Two uppercuts)$/
+   : /^(?:(?:Lead|Rear) (?:hook(?: to the (?:body|head))?|uppercut|knee)|(?:Two|Three|Four) hooks|Two uppercuts|(?:Two|Three) knees)$/;
   for(const line of clinch.combos){
    for(const technique of line.split('.').map(part=>part.trim()).filter(Boolean)){
     assert.match(technique,allowed);
    }
   }
-  s.ctrl.reset();
-  s.events.length=0;
-  const state={...s.state,...plan,rest:false};
-  for(let elapsed=0;elapsed<120;elapsed++){
-   s.ctrl.update({...state,elapsed});
-   await settle();
+  const blockCounts=new Set(),blockLengths=new Set();
+  for(let round=0;round<60;round++){
+   s.events.length=0;
+   for(let elapsed=0;elapsed<120;elapsed++){
+    s.ctrl.update({...s.state,...plan,rest:false,duration:plan.seconds,key:sport+round,elapsed});
+    await settle();
+    if(elapsed%2===1&&pending){pending.resolve();pending=undefined;await settle();}
+   }
+   let blocks=0;
+   for(let i=0;i<s.events.length;i++){
+    if(s.events[i]!==clinch.enter)continue;
+    const end=s.events.indexOf(clinch.exit,i+1);
+    assert.ok(end>i,'every entry must be followed by an exit');
+    const block=s.events.slice(i+1,end);
+    assert.ok(block.length>=3&&block.length<=6,JSON.stringify(block));
+    assert.ok(block.every(text=>clinch.combos.includes(text)));
+    assert.equal(new Set(block).size,block.length);
+    blockLengths.add(block.length);blocks++;i=end;
+   }
+   blockCounts.add(blocks);
   }
-  const entry=s.events.indexOf(clinch.enter);
-  assert.ok(entry>=0);
-  assert.ok(clinch.combos.includes(s.events[entry+1]));
-  assert.ok(clinch.combos.includes(s.events[entry+2]));
-  assert.notEqual(s.events[entry+1],s.events[entry+2]);
-  assert.equal(s.events[entry+3],clinch.exit);
-  assert.equal(s.events.filter(text=>text===clinch.enter).length,1);
+  assert.deepEqual([...blockCounts].sort(),[0,1,2]);
+  assert.deepEqual([...blockLengths].sort(),[3,4,5,6]);
+ }
+});
+
+test('freestyle count calls join the first few regular calls for every sport and intensity',async()=>{
+ for(const sport of ['boxing','k1','muaythai'])for(const level of ['light','steady','hard']){
+  const s=setup(),spec=vm.runInContext('COACH_ROUNDS',s.c);
+  const plan={...spec.plan(sport,level).coachRounds,clinch:null,comments:[],movements:[]};
+  for(let elapsed=0;elapsed<120;elapsed++){
+   s.ctrl.update({...s.state,...plan,rest:false,duration:plan.seconds,elapsed});await settle();
+  }
+  const calls=s.events.filter(text=>plan.combos.includes(text));
+  const first=calls.findIndex(s.c.isFreeChoiceCall);
+  assert.ok(first>=2&&first<=4,sport+' '+level);
+  assert.ok(new Set(calls.filter(s.c.isFreeChoiceCall)).size>=2,sport+' '+level);
  }
 });
 
@@ -209,7 +257,7 @@ async function simulatePace(level){
  const c=context(),spec=vm.runInContext('COACH_ROUNDS',c),calls=[];let now=0,pending=null,seed=1742;
  const random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296);
  const ctrl=c.createCoachRoundsController({random,cancelSpeech(){if(pending){pending.resolve();pending=null;}},stopSounds(){},bell:()=>Promise.resolve(),onCombo(){},onMovement(){},onTip(){},onError(){throw Error('Audio failed');},speak(text){assert.equal(pending,null,'overlapping speech');calls.push({text,start:now,end:now+3});const held=deferred();pending={...held,end:now+3};return held.promise;}});
- const plan=spec.plan('muaythai',level).coachRounds;
+ const plan={...spec.plan('muaythai',level).coachRounds,clinch:null};
  for(now=0;now<180;now+=.25){
   if(pending&&now>=pending.end){pending.resolve();pending=null;await settle();}
   ctrl.update({...plan,key:'round',duration:180,elapsed:now,running:true,rest:false,bellEnabled:false});await settle();
@@ -226,14 +274,20 @@ test('execution time grows with each technique and counts double punches and slo
  assert.equal(duration('Double jab. Cross.'),three,'double jab counts as two punches');
  assert.ok(duration('Jab. Rear kick.')>two,'kicks need additional recovery time');
  assert.ok(duration('Jab. Pivot out.')>two,'footwork needs additional time');
+ assert.ok(duration('Lead hook.')<two);
+ assert.ok(duration('Four hooks.')>=duration('Jab. Cross. Lead hook. Cross.')-1e-9);
+ assert.ok(duration('Two kicks.')>duration('Two hooks.'));
+ assert.ok(duration('Three knees.')>duration('Two knees.'));
 });
 
 test('Hard varies its rhythm while reserving execution time after each combination',async()=>{
  const {calls,spec}=await simulatePace('hard');
  const gaps=calls.slice(1).map((call,i)=>call.start-calls[i].end);
  assert.ok(gaps.every(gap=>gap>=.25),'speech must finish before the next cue');
- const comboGaps=calls.slice(1).flatMap((call,i)=>spec.lines.includes(calls[i].text)?[call.start-calls[i].end]:[]);
- assert.ok(comboGaps.every(gap=>gap>=1.5),'even short combos need execution time after the last spoken word');
+ const execution=context().coachComboExecutionTime;
+ calls.slice(1).forEach((call,i)=>{
+  if(spec.lines.includes(calls[i].text))assert.ok(call.start-calls[i].end+.25>=execution(calls[i].text));
+ });
  assert.ok(gaps.some(gap=>gap>=2),'short resets separate bursts');
  assert.ok(new Set(gaps).size>=5,'timing should vary');
  const combos=calls.filter(call=>spec.lines.includes(call.text));

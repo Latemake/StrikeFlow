@@ -1,6 +1,38 @@
 // Recorded, continuous combination coaching. No network or device TTS is used.
+const coachRepeatCounts = { double: 2, two: 2, triple: 3, three: 3, four: 4 };
+
+function coachActionCount(phrase) {
+    return coachRepeatCounts[phrase.trim().split(' ')[0].toLowerCase()] ?? 1;
+}
+
 const COACH_ROUNDS = (() => {
     const boxingStrikes = [
+        "Jab.",
+        "Cross.",
+        "Lead hook.",
+        "Rear hook.",
+        "Lead uppercut.",
+        "Rear uppercut.",
+        "Lead hook to the body.",
+        "Cross to the body.",
+        "Two hooks.",
+        "Three hooks.",
+        "Four hooks.",
+        "Two uppercuts.",
+        "Four straight punches.",
+        "Feint. Jab.",
+        "Feint. Cross.",
+        "Feint. Lead hook.",
+        "Feint. Rear hook.",
+        "Feint. Lead hook to the body.",
+        "Feint. Rear uppercut.",
+        "Jab. Rear hook to the body.",
+        "Cross. Lead uppercut.",
+        "Lead uppercut. Rear hook.",
+        "Lead hook to the body. Rear hook.",
+        "Lead hook. Rear uppercut.",
+        "Rear uppercut. Lead hook.",
+        "Jab to the body. Lead hook to the head.",
         "Double jab.",
         "Jab. Rear hook.",
         "Jab. Lead hook. Rear hook. Lead hook to the body.",
@@ -92,6 +124,23 @@ const COACH_ROUNDS = (() => {
         (_, direction) => direction === 'left' ? 'Slip to the right' : 'Slip to the left'));
     const boxing = [...boxingStrikes, ...orthodoxSlips];
     const kickAdditions = [
+        "Lead low kick.",
+        "Rear low kick.",
+        "Lead body kick.",
+        "Rear body kick.",
+        "Lead front kick.",
+        "Rear front kick.",
+        "Two kicks.",
+        "Two low kicks.",
+        "Three kicks.",
+        "Feint. Rear low kick.",
+        "Feint. Lead body kick.",
+        "Feint. Rear body kick.",
+        "Check. Rear low kick.",
+        "Check. Cross.",
+        "Cross. Lead low kick.",
+        "Lead hook. Rear low kick.",
+        "Lead front kick. Cross.",
         // Punches into low and body kicks.
         "Jab. Cross. Rear low kick.",
         "Double jab. Rear body kick.",
@@ -176,6 +225,21 @@ const COACH_ROUNDS = (() => {
         "Lead low kick. Cross. Rear body kick.",
     ];
     const thaiAdditions = [
+        "Lead teep.",
+        "Rear teep.",
+        "Lead knee.",
+        "Rear knee.",
+        "Lead elbow.",
+        "Rear elbow.",
+        "Two knees.",
+        "Three knees.",
+        "Two elbows.",
+        "Feint. Lead teep.",
+        "Feint. Rear knee.",
+        "Feint. Lead elbow.",
+        "Lead hook. Rear knee.",
+        "Cross. Lead elbow.",
+        "Lead elbow. Rear knee.",
         // Knees, elbows and close-range exits.
         "Jab. Cross. One rear knee. Step out.",
         "Jab. Cross. Lead elbow.",
@@ -262,12 +326,20 @@ const COACH_ROUNDS = (() => {
         combos: [
             'Lead hook to the body. Rear hook.',
             'Lead uppercut. Rear hook.',
-            'Rear uppercut. Lead hook to the body.'
+            'Rear uppercut. Lead hook to the body.',
+            'Lead hook. Rear uppercut.',
+            'Rear uppercut. Lead hook.',
+            'Lead hook to the body. Lead hook to the head.',
+            'Two hooks.',
+            'Three hooks.',
+            'Four hooks.',
+            'Two uppercuts.'
         ]
     };
     const thaiClinch = {
         ...clinch,
-        combos: [...clinch.combos, 'Lead hook to the body. Rear knee.', 'Rear hook. Lead knee.', 'Lead knee. Rear knee.']
+        combos: [...clinch.combos, 'Lead hook to the body. Rear knee.', 'Rear hook. Lead knee.', 'Lead knee. Rear knee.',
+            'Lead hook. Rear knee.', 'Two knees.', 'Three knees.']
     };
     const movements=[
         ['Circle left. Keep your stance.','Kierrä vasemmalle. Säilytä otteluasento.','Nach links kreisen. Kampfstellung halten.'],
@@ -336,7 +408,9 @@ const COACH_ROUNDS = (() => {
     return {lines,recordedCombos:[...new Set([...lines, ...southpawSlips, ...thaiClinch.combos])],clinch,comments,movements,sportCounts,previewText,pools,intensity,plan,restText:'Rest. Breathe, reset your stance and get ready for the next round.'};
 })();
 
-// Only catalogue progress is stored locally: no account, audio or workout history.
+const coachRecentComboLimit = 8;
+
+// Store only the catalogue draw state locally.
 function createCoachRoundsMemory(storage){
     const cache=new Map();
     const fingerprint=pool=>{let h=2166136261;for(const char of pool.join('\n'))h=Math.imul(h^char.charCodeAt(0),16777619);return (h>>>0).toString(16);};
@@ -348,11 +422,15 @@ function createCoachRoundsMemory(storage){
             if(!saved||saved.signature!==fingerprint(pool)||!Array.isArray(saved.remaining)||saved.remaining.length>pool.length)return null;
             const allowed=new Set(pool);
             if(saved.remaining.some(t=>!allowed.has(t))||new Set(saved.remaining).size!==saved.remaining.length)return null;
-            return {remaining:[...saved.remaining],last:allowed.has(saved.last)?saved.last:''};
+            const last = allowed.has(saved.last) ? saved.last : '';
+            const recent = Array.isArray(saved.recent)
+                ? saved.recent.slice(-coachRecentComboLimit).filter(text => allowed.has(text))
+                : last ? [last] : [];
+            return {remaining:[...saved.remaining],last,recent};
         },
         write(sport,pool,progress){
             const key='fightwise_coach_progress_v1:'+sport;
-            const saved={signature:fingerprint(pool),remaining:[...progress.remaining],last:progress.last};
+            const saved={signature:fingerprint(pool),remaining:[...progress.remaining],last:progress.last,recent:[...(progress.recent || [])]};
             cache.set(key,saved);try{storage.setItem(key,JSON.stringify(saved));}catch{}
         }
     };
@@ -361,10 +439,50 @@ function createCoachRoundsMemory(storage){
 // Execution allowance in seconds, measured after the last spoken technique.
 function coachComboExecutionTime(text){
     const parts=text.split('.').map(t=>t.trim()).filter(Boolean);
-    const doubles=(text.match(/\b(?:double|two)\b/gi)||[]).length;
-    const triples=(text.match(/\btriple\b/gi)||[]).length;
-    const slowerActions=(text.match(/\b(?:kick|knee|elbow|roll|slip|pivot|switch|step)\b/gi)||[]).length;
-    return .25+(parts.length+doubles+triples*2)*.65+slowerActions*.3;
+    return parts.reduce((time, part) => {
+        const slower = /\b(?:kicks?|knees?|elbows?|teeps?|check|roll|slip|pivot|switch|step)\b/i.test(part);
+        return time + coachActionCount(part) * (slower ? .95 : .65);
+    }, .25);
+}
+
+function coachComboSize(text) {
+    const parts = text.split('.').filter(part => part.trim());
+    // One spoken call belongs in a short slot even when it asks for several strikes.
+    return parts.length === 1 ? 1 : parts.reduce((size, part) => size + coachActionCount(part), 0);
+}
+
+function isFreeChoiceCall(text) {
+    return /^(?:Two|Three|Four) (?:straight punches|hooks|uppercuts|(?:low )?kicks|knees|elbows)\.$/.test(text);
+}
+
+function coachComboOpening(text) {
+    return text.toLowerCase().split('.').slice(0, 2).map(part => part.trim()
+        .replace(/^(?:double|triple|two|three|four) /, '')
+        .replace(/ to the (?:head|body|left|right)$/, ''));
+}
+
+function chooseCoachCombo(pool, recent, random) {
+    const unusedRecently = pool.filter(text => !recent.includes(text));
+    if (!unusedRecently.length) {
+        // A small or nearly exhausted slot may only contain recently used calls.
+        return pool.reduce((oldest, text) => recent.lastIndexOf(text) < recent.lastIndexOf(oldest) ? text : oldest);
+    }
+    const openings = recent.map(coachComboOpening).reverse();
+    let bestScore = Infinity;
+    let candidates = [];
+    for (const text of unusedRecently) {
+        const [first, second] = coachComboOpening(text);
+        const score = openings.reduce((total, [recentFirst, recentSecond], index) => {
+            if (first !== recentFirst) return total;
+            return total + (openings.length - index) * (second === recentSecond ? 3 : 1);
+        }, 0);
+        if (score < bestScore) {
+            bestScore = score;
+            candidates = [];
+        }
+        if (score === bestScore) candidates.push(text);
+    }
+    return candidates[Math.floor(random() * candidates.length)];
 }
 
 function createCoachRoundsController(output) {
@@ -374,20 +492,18 @@ function createCoachRoundsController(output) {
     const rhythms = [
         ['short', 'short', 'long'],
         ['short', 'medium', 'long'],
-        ['short', 'long', 'medium', 'long'],
-        ['medium', 'short', 'long']
+        ['short', 'long', 'short', 'medium'],
+        ['medium', 'short', 'short', 'long']
     ];
     let rhythm = [], rhythmIndex = 0, rhythmPools = null;
-    let clinchQueue = [], clinchBag = [], lastClinchCombo = '', clinchUsed = false, clinchStart = 25, currentKind = 'combo';
+    let recentCombos = [];
+    let clinchStarts = [], clinchQueue = [], clinchBag = [], lastClinchCombo = '', currentKind = 'combo';
+    let untilFreeChoice = 0;
     const random=output.random||Math.random;
     function selectRhythm(opening) {
-        const choices = opening ? rhythms.slice(0, 3) : rhythms.filter(pattern => pattern !== rhythm);
+        const choices = (opening ? rhythms.slice(0, 3) : rhythms).filter(pattern => pattern !== rhythm);
         rhythm = choices[Math.floor(random() * choices.length)];
         rhythmIndex = 0;
-    }
-    function comboSize(text) {
-        return text.split('.').filter(part => part.trim()).length
-            + (text.match(/\b(?:double|two)\b/gi) || []).length;
     }
     function draw(list,bag,last,eligible=()=>true){
         if(!bag.length){
@@ -396,12 +512,11 @@ function createCoachRoundsController(output) {
             // A fresh bag cannot immediately repeat the previous bag's last call.
             if(bag.length>1&&bag[bag.length-1]===last)[bag[0],bag[bag.length-1]]=[bag[bag.length-1],bag[0]];
         }
-        // Avoid near-identical openings even when the full combinations differ.
-        const opening=t=>t.split('.').slice(0,2).join('.');
         let index=bag.findLastIndex(eligible);
         if(index<0)return null;
-        if(last&&opening(bag[index])===opening(last)){
-            const alternative=bag.findIndex(t=>eligible(t)&&opening(t)!==opening(last));if(alternative>=0)index=alternative;
+        if(last&&coachComboOpening(bag[index]).join('.')===coachComboOpening(last).join('.')){
+            const alternative=bag.findIndex(text=>eligible(text)&&coachComboOpening(text).join('.')!==coachComboOpening(last).join('.'));
+            if(alternative>=0)index=alternative;
         }
         return bag.splice(index,1)[0];
     }
@@ -446,22 +561,30 @@ function createCoachRoundsController(output) {
     function next(forceCombo=false){
         const remaining=latest.duration===undefined?Infinity:latest.duration-latest.elapsed;
         if(clinchQueue.length){
-            if(remaining < 12 && clinchQueue.length > 1)clinchQueue = [latest.clinch.exit];
+            if(remaining < 14 && clinchQueue.length > 1)clinchQueue = [latest.clinch.exit];
             const cue = clinchQueue.shift();
             speak(cue,cue===latest.clinch.exit?'distance':'combo');
             return;
         }
         if(remaining<6){busy=false;due=Infinity;return;}
-        if(!forceCombo && latest.clinch && !clinchUsed && rhythmIndex === 0 && latest.elapsed >= clinchStart && remaining >= 32){
+        if(!forceCombo && latest.elapsed >= clinchStarts[0] && remaining >= 30){
+            clinchStarts.shift();
             const {enter,exit,combos}=latest.clinch;
-            const first=draw(combos,clinchBag,lastClinchCombo);
-            lastClinchCombo=draw(combos,clinchBag,first);
-            clinchUsed=true;
-            clinchQueue=[first,lastClinchCombo,exit];
+            const maxCalls = Math.min(6, Math.floor((remaining - 8) / 7));
+            const count = 3 + Math.floor(random() * (maxCalls - 2));
+            const block = new Set();
+            for(let i=0;i<count;i++){
+                const unused = clinchBag.filter(text => !block.has(text));
+                if(!unused.length)clinchBag = combos.filter(text => !block.has(text));
+                lastClinchCombo = chooseCoachCombo(clinchBag.filter(text => !block.has(text)), [lastClinchCombo, ...block].filter(Boolean), random);
+                clinchBag.splice(clinchBag.indexOf(lastClinchCombo),1);
+                block.add(lastClinchCombo);
+            }
+            clinchQueue=[...block,exit];
             speak(enter,'distance');
             return;
         }
-        if(!forceCombo&&(!rhythmPools||rhythmIndex===0||rhythmIndex>=3)&&remaining>12&&sinceTip>=nextTip&&(latest.comments?.length||latest.movements?.length)){
+        if(!forceCombo&&(!rhythmPools||rhythmIndex===0||rhythm[rhythmIndex-1]==='long')&&remaining>12&&sinceTip>=nextTip&&(latest.comments?.length||latest.movements?.length)){
             sinceTip=0;nextTip=guidanceThreshold();burstLeft=0;
             const movementChance=latest.level==='light' ? .8 : latest.level==='steady' ? .3 : .1;
             if(latest.movements?.length&&(!latest.comments?.length||random()<movementChance)){
@@ -469,30 +592,33 @@ function createCoachRoundsController(output) {
             }else{lastTip=draw(latest.comments,tipBag,lastTip);speak(lastTip,'tip');}
             return;
         }
-        const fits=text=>remaining>=9||comboSize(text)<=3;
+        const fits=text=>remaining>=9||coachComboSize(text)<=3;
         const beat=rhythm[rhythmIndex];
         let combo;
         if(rhythmPools){
             const slot=remaining<9 && beat==='long'?'medium':beat;
             const pool=rhythmPools[slot];
-            const available=pool.filter(text=>comboBag.includes(text));
-            if(!available.length){
-                combo=draw(pool,available,lastCombo);
-                comboBag.push(...available);
-            }else{
-                const candidate=Math.floor(random()*available.length);
-                const end=available.length-1;
-                [available[candidate],available[end]]=[available[end],available[candidate]];
-                combo=draw(pool,available,lastCombo);
-                comboBag.splice(comboBag.indexOf(combo),1);
+            let available=pool.filter(text=>comboBag.includes(text));
+            if (!available.length) {
+                comboBag.push(...pool);
+                available=pool;
             }
+            const freeChoice = available.filter(isFreeChoiceCall);
+            const prescribed = available.filter(text => !isFreeChoiceCall(text));
+            const candidates = slot === 'short' && untilFreeChoice <= 0 && freeChoice.length ? freeChoice : prescribed;
+            combo=chooseCoachCombo(candidates.length ? candidates : available,recentCombos,random);
+            comboBag.splice(comboBag.indexOf(combo),1);
+            if (isFreeChoiceCall(combo)) untilFreeChoice = 2 + Math.floor(random() * 3);
+            else untilFreeChoice--;
         }else{
             combo=draw(latest.combos,comboBag,lastCombo,fits);
         }
         if(!combo){busy=false;due=Infinity;return;}
         if(rhythmPools && ++rhythmIndex === rhythm.length)selectRhythm(false);
         lastCombo=combo;
-        output.remember?.(latest,{remaining:comboBag,last:lastCombo});
+        recentCombos.push(combo);
+        if (recentCombos.length > coachRecentComboLimit) recentCombos.shift();
+        output.remember?.(latest,{remaining:comboBag,last:lastCombo,recent:recentCombos});
         sinceTip++;speak(lastCombo);
     }
     return {
@@ -501,14 +627,16 @@ function createCoachRoundsController(output) {
             const signature=JSON.stringify(state.combos);
             if(signature!==poolSignature){
                 poolSignature=signature;
-                const short=state.combos.filter(text=>comboSize(text)===2);
-                const medium=state.combos.filter(text=>comboSize(text)===3);
-                const long=state.combos.filter(text=>comboSize(text)>=4);
+                const short=state.combos.filter(text=>coachComboSize(text)<=2);
+                const medium=state.combos.filter(text=>coachComboSize(text)===3);
+                const long=state.combos.filter(text=>coachComboSize(text)>=4);
                 rhythmPools=state.level&&short.length&&medium.length&&long.length?{short,medium,long}:null;
                 const saved=output.restore?.(state);
                 comboBag=saved?.remaining?[...saved.remaining]:rhythmPools?[...state.combos]:[];
                 lastCombo=saved?.last||'';
+                recentCombos=saved?.recent?.length ? [...saved.recent] : lastCombo ? [lastCombo] : [];
                 clinchBag=[];lastClinchCombo='';
+                untilFreeChoice=2;
                 tipBag=[];movementBag=[];lastTip='';lastMovement='';sinceTip=0;nextTip=state.level?guidanceThreshold():4;burstLeft=0;
             }
             if(!state.running){if(running)invalidate();running=false;return;}
@@ -516,8 +644,12 @@ function createCoachRoundsController(output) {
             if(key!==state.key){
                 invalidate();key=state.key;current='';currentMovement='';due=0;burstLeft=0;
                 if(rhythmPools && !state.rest)selectRhythm(true);
-                clinchQueue=[];clinchUsed=false;
-                if(state.clinch && !state.rest)clinchStart=25+random()*15;
+                clinchQueue=[];clinchStarts=[];
+                if(state.clinch && !state.rest){
+                    const roll = random();
+                    if (roll >= .65) clinchStarts = [13 + random() * 9, 64 + random() * 12];
+                    else if (roll >= .2) clinchStarts = [27 + random() * 39];
+                }
                 output.onStep?.();
                 const ticket=generation;busy=true;
                 const bell=state.bellEnabled?output.bell(state.rest):Promise.resolve();
@@ -530,7 +662,7 @@ function createCoachRoundsController(output) {
             if(resumed){if(currentMovement)speak(currentMovement,'movement');else if(current)speak(current,currentKind);else if(state.rest)speak(COACH_ROUNDS.restText);else next(true);return;}
             if(!state.rest&&!busy&&state.elapsed>=due)next();
         },
-        reset(){invalidate();key=null;running=false;current='';currentMovement='';latest=null;due=0;comboBag=[];tipBag=[];movementBag=[];poolSignature='';sinceTip=0;burstLeft=0;rhythmIndex=0;clinchQueue=[];clinchUsed=false;},
+        reset(){invalidate();key=null;running=false;current='';currentMovement='';latest=null;due=0;comboBag=[];tipBag=[];movementBag=[];poolSignature='';sinceTip=0;burstLeft=0;rhythm=[];rhythmIndex=0;clinchQueue=[];clinchStarts=[];},
         current(){return current;}
     };
 }
@@ -615,6 +747,18 @@ function renderCoachRoundsGuide(step){
     const parts=cue?cue.split('.').map(x=>x.trim()).filter(Boolean):[];
     const terms={fi:{'Jab':'Etusuora','Cross':'Takasuora','Double jab':'Tuplaetusuora','Lead hook':'Etukoukku','Lead uppercut':'Etukäden alakoukku','Rear low kick':'Takajalan alapotku','Rear body kick':'Takajalan vartalopotku','Rear teep':'Takajalan työntöpotku','Lead elbow':'Etukäden kyynärpää','One rear knee':'Yksi takajalan polvi','Two knees':'Kaksi polvea','Step out':'Poistu','Slip':'Väistö','Check':'Potkublokki','Jab to the body':'Etusuora vartaloon','Cross to the head':'Takasuora päähän'},de:{'Jab':'Jab','Cross':'Cross','Double jab':'Doppelter Jab','Lead hook':'Führungshaken','Lead uppercut':'Führhand-Aufwärtshaken','Rear low kick':'Lowkick hinten','Rear body kick':'Körpertritt hinten','Rear teep':'Teep hinten','Lead elbow':'Ellbogen vorne','One rear knee':'Ein hinteres Knie','Two knees':'Zwei Knie','Step out':'Rausgehen','Slip':'Ausweichen','Check':'Kick blocken','Jab to the body':'Jab zum Körper','Cross to the head':'Cross zum Kopf'}};
     const extraTerms={
+        'Feint':['Harhauta','Täusche an'],
+        'Two hooks':['Kaksi koukkua','Zwei Haken'],
+        'Three hooks':['Kolme koukkua','Drei Haken'],
+        'Four hooks':['Neljä koukkua','Vier Haken'],
+        'Two uppercuts':['Kaksi alakoukkua','Zwei Aufwärtshaken'],
+        'Four straight punches':['Neljä suoraa lyöntiä','Vier gerade Schläge'],
+        'Rear hook to the body':['Takakoukku vartaloon','Schlaghandhaken zum Körper'],
+        'Two kicks':['Kaksi potkua','Zwei Kicks'],
+        'Three kicks':['Kolme potkua','Drei Kicks'],
+        'Two low kicks':['Kaksi alapotkua','Zwei Lowkicks'],
+        'Three knees':['Kolme polvi-iskua','Drei Kniestöße'],
+        'Two elbows':['Kaksi kyynärpääiskua','Zwei Ellbogenstöße'],
         'Get close':['Mene lähelle','Geh nah ran'],
         'Work inside':['Työskentele lähietäisyydeltä','Arbeite in der Nahdistanz'],
         'Reset your distance':['Palaa otteluetäisyydelle','Geh zurück auf Distanz'],

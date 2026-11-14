@@ -29,7 +29,7 @@ function createFightWiseSetup(host) {
         if(step===3) body='<p>'+local('The sound of a real round. Bell to start, gong to finish.','Oikean erän äänet. Kello aloittaa, gong päättää.','Wie im Ring: Glocke zum Start, Gong zum Ende.')+'</p>'+toggle('roundSoundsEnabled',t[16])+'<div class="setup-field"><span>'+t[17]+'</span><div class="settings-choice" role="group" aria-label="'+t[17]+'">'+[1,2,3].map(n=>'<button type="button" data-bell-repeat="'+n+'" aria-pressed="'+(draft.roundBellRepeats===n)+'">'+n+'</button>').join('')+'</div></div>'+toggle('uiClickSoundsEnabled',local('Button clicks','Painikeäänet','Tastentöne'))+toggle('vibrationEnabled',t[18]);
         el('setupBody').innerHTML=`<h1 id="setupHeading" tabindex="-1">${step===2?local('Your coach','Oma coach','Dein Coach'):step===3?local('Round bell','Eräkello','Rundenglocke'):t[step+1]}</h1>${body}<p class="setup-hint">${t[9]}</p>`;
         root.querySelectorAll('[data-bell-repeat]').forEach(button=>button.onclick=()=>{draft.roundBellRepeats=Number(button.dataset.bellRepeat);render();host.previewBell(draft.roundBellRepeats);});
-        root.querySelectorAll('[data-pref]').forEach(input=>input.onchange=()=>{const name=input.dataset.pref;draft[name]=input.type==='checkbox'?input.checked: name==='language'?input.value:Number(input.value);if(name==='language')render();});
+        root.querySelectorAll('[data-pref]').forEach(input=>input.onchange=()=>{const name=input.dataset.pref;draft[name]=input.type==='checkbox'?input.checked: name==='language'?input.value:Number(input.value);if(name==='language'){host.saveLanguage(draft.language);render();}});
         root.querySelectorAll('[data-coach]').forEach(button=>button.onclick=async()=>{host.stopAudio();draft.coachVoice=button.dataset.coach;render();try{await host.preview(draft.coachVoice);}catch{const status=el('setupAudioStatus');if(status)status.textContent='Preview unavailable.';}});
         root.querySelectorAll('[data-sport]').forEach(button=>button.onclick=()=>{draft.sport=button.dataset.sport;render();});
         if(el('setupPreview')) el('setupPreview').onclick=async()=>{host.stopAudio();try{await host.preview();}catch{el('setupAudioStatus').textContent=draft.language==='fi'?'Äänen toisto ei onnistunut.':'Audio could not be played.';}};
@@ -37,9 +37,15 @@ function createFightWiseSetup(host) {
         if(step===2 && !coachIntroPlayed){coachIntroPlayed=true;host.preview(draft.coachVoice).catch(()=>{});}
     }
     function close() { host.stopAudio(); root.hidden=true; document.body.classList.remove('setup-open'); host.showHome(); previousFocus?.focus(); }
-    el('setupBack').onclick=()=>{host.stopAudio();step--;render();};
+    function back() {
+        if (root.hidden) return false;
+        if (step === 0) close();
+        else { host.stopAudio(); step--; render(); }
+        return true;
+    }
+    el('setupBack').onclick=back;
     el('setupNext').onclick=()=>{host.stopAudio();if(step<3){step++;render();return;}host.apply(draft);try{localStorage.setItem(key,'true');}catch{}close();host.tutorial();};
     el('setupSkip').onclick=()=>{try{localStorage.setItem(key,'true');}catch{}close();};
     root.addEventListener('keydown',event=>{if(event.key!=='Tab')return;const nodes=[...root.querySelectorAll('button,select,input')].filter(n=>!n.hidden&&n.getClientRects().length);const first=nodes[0],last=nodes.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}});
-    return { open(){previousFocus=document.activeElement;coachIntroPlayed=false;draft={...host.read(), voiceCoachEnabled:true};draft.coachVoice=draft.coachVoice||'max';step=0;root.hidden=false;document.body.classList.add('setup-open');render();}, completed(){try{return localStorage.getItem(key)==='true';}catch{return false;}} };
+    return { open(){previousFocus=document.activeElement;coachIntroPlayed=false;draft={...host.read(), voiceCoachEnabled:true};draft.coachVoice=draft.coachVoice||'max';step=0;root.hidden=false;document.body.classList.add('setup-open');render();}, back, completed(){try{return localStorage.getItem(key)==='true';}catch{return false;}} };
 }
