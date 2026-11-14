@@ -388,24 +388,109 @@ const COACH_ROUNDS = (() => {
     "Keep that energy. You're doing great."
 ];
     const previewText = "Ready? Listen for the combination. Let's work.";
-    const sportCounts={boxing:boxing.length,k1:boxing.length+kickAdditions.length,muaythai:lines.length};
-    const pools=Object.fromEntries(Object.entries(sportCounts).map(([sport,count])=>[sport,
+    const baseCounts={boxing:boxing.length,k1:boxing.length+kickAdditions.length,muaythai:lines.length};
+    const pools=Object.fromEntries(Object.entries(baseCounts).map(([sport,count])=>[sport,
         Object.fromEntries(['light','steady','hard'].map(level=>[level,Array.from({length:count},(_,i)=>i)]))
     ]));
     const intensity = {
         light: {rounds:3, seconds:120, rest:30},
-        steady: {rounds:4, seconds:120, rest:30},
-        hard: {rounds:5, seconds:120, rest:30}
+        steady: {rounds:5, seconds:180, rest:45},
+        hard: {rounds:5, seconds:300, rest:45}
     };
-    function plan(sport, level, stance = 'orthodox') {
+    const roundThemes = {
+        light: ['range','targets','defence'],
+        steady: ['range','targets','defence','angles','finish'],
+        hard: ['range','defence','pressure','angles','finish']
+    };
+    const themeLabels = {
+        range: ['Find your range','Hae etäisyys','Distanz finden'],
+        targets: ['Change levels','Vaihda tasoa','Ebenen wechseln'],
+        defence: ['Defend and counter','Väistä ja vastaa','Verteidigen und kontern'],
+        angles: ['Attack and angle out','Hyökkää ja poistu kulmaan','Angreifen und Winkel wechseln'],
+        pressure: ['Pressure at close range','Paine lähietäisyydeltä','Druck in der Nahdistanz'],
+        finish: ['Strong finish','Vahva loppu','Starker Abschluss']
+    };
+    const themeFocus = {
+        range: /^(?:Jab|Double jab|(?:Lead|Rear) (?:teep|front kick))\b/i,
+        targets: /\b(?:body|low kick)\b/i,
+        defence: /\b(?:slip|roll|check|step back)\b/i,
+        angles: /\b(?:pivot out|step out)\b/i,
+        pressure: /\b(?:hook|uppercut|knee|elbow)\b/i,
+        finish: /\b(?:hooks|kicks|knees|elbows|straight punches)\b/i
+    };
+    // Each pair is two existing recordings, kept as one physical combination.
+    const layered = {
+        boxing: [
+            ['Double jab.', 'Rear uppercut. Lead hook.'],
+            ['Feint. Jab.', 'Lead hook to the body. Rear hook.'],
+            ['Lead uppercut. Rear hook.', 'Lead hook.', 'Cross.'],
+            ['Rear hook.', 'Lead hook to the body. Cross.'],
+            ['Feint. Cross.', 'Jab. Lead hook. Pivot out.'],
+            ['Jab to the body. Cross to the head.', 'Lead hook.', 'Rear hook.'],
+            ['Lead hook. Rear uppercut.', 'Lead hook to the body. Cross.'],
+            ['Jab. Rear hook.', 'Jab. Cross. Pivot out.'],
+            ['Lead hook to the body. Rear hook.', 'Lead hook to the body. Cross.'],
+            ['Double jab.', 'Cross. Lead hook. Step out.'],
+            ['Feint. Lead hook.', 'Rear uppercut. Lead hook.'],
+            ['Cross to the body.', 'Lead uppercut. Rear hook.']
+        ],
+        k1: [
+            ['Double jab.', 'Cross. Rear low kick.'],
+            ['Lead front kick.', 'Jab. Cross.'],
+            ['Jab. Rear hook.', 'Lead body kick.'],
+            ['Rear low kick.', 'Jab. Cross.'],
+            ['Feint. Lead hook.', 'Rear body kick.'],
+            ['Lead hook. Rear uppercut.', 'Lead low kick.'],
+            ['Feint. Cross.', 'Lead body kick.'],
+            ['Jab to the body. Cross to the head.', 'Lead low kick.'],
+            ['Lead front kick.', 'Jab. Rear hook.'],
+            ['Cross to the body.', 'Lead uppercut. Cross. Rear low kick.'],
+            ['Jab. Cross.', 'Lead front kick.'],
+            ['Feint. Jab.', 'Cross.', 'Rear body kick.']
+        ],
+        muaythai: [
+            ['Lead teep.', 'Jab. Cross.'],
+            ['Rear teep.', 'Jab. Rear hook.'],
+            ['Feint. Jab.', 'Lead elbow.'],
+            ['Lead hook. Rear uppercut.', 'Lead knee.'],
+            ['Lead knee.', 'Rear elbow.'],
+            ['Jab. Cross.', 'Lead knee.'],
+            ['Lead hook to the body. Rear hook.', 'Lead knee.'],
+            ['Rear elbow.', 'Lead hook to the body. Rear knee.'],
+            ['Lead teep.', 'Cross. Lead hook. Step out.'],
+            ['Rear knee.', 'Lead hook. Rear uppercut.'],
+            ['Jab. Rear hook.', 'Lead knee.'],
+            ['Lead elbow.', 'Rear hook. Lead knee.']
+        ]
+    };
+    const finishers = {
+        boxing: ['Four hooks.', 'Four straight punches.', 'Two uppercuts.', 'Three hooks. Two uppercuts.', 'Two uppercuts. Four straight punches.'],
+        k1: ['Two kicks.', 'Three kicks.', 'Two low kicks.', 'Three kicks. Two kicks.', 'Four straight punches. Two low kicks.'],
+        muaythai: ['Three knees.', 'Two elbows.', 'Two kicks.', 'Two knees. Two elbows.', 'Three kicks. Two kicks.']
+    };
+    const audioParts = Object.fromEntries([...Object.values(layered).flat(), ...Object.values(finishers).flat()
+        .map(text => text.match(/[^.]+\./g).map(part => part.trim()))].filter(parts => parts.length > 1 && !lines.includes(parts.join(' ')))
+        .map(parts => [parts.join(' '), parts]));
+    const validRest = value => Number.isInteger(value) && value >= 15 && value <= 120 && value % 5 === 0;
+    const sportKeys = Object.keys(baseCounts);
+    const layerCalls = Object.fromEntries(sportKeys.map((sport, index) => [sport,
+        sportKeys.slice(0,index+1).flatMap(key => layered[key].map(parts => parts.join(' ')))]));
+    const sportCounts = Object.fromEntries(sportKeys.map(sport => [sport,
+        new Set([...lines.slice(0,baseCounts[sport]),...layerCalls[sport]]).size]));
+    function plan(sport, level, stance = 'orthodox', rest) {
         if (!pools[sport] || !intensity[level]) throw new Error('Unknown coach session');
-        const recipe=intensity[level];
+        const recipe={...intensity[level]};
+        if (validRest(rest)) recipe.rest=rest;
         const catalogue = stance === 'southpaw' ? [...boxingStrikes, ...southpawSlips, ...kickAdditions, ...thaiAdditions] : lines;
+        const combos = [...new Set([...pools[sport][level].map(i=>catalogue[i]), ...layerCalls[sport]])];
         return {id:`coach-${sport}-${level}`, title:'Coach Rounds', voicePilot:true,
-            coachRounds:{sport,level,stance,...recipe,combos:pools[sport][level].map(i=>catalogue[i]),comments,movements:movements.map(m=>m[0]),clinch:sport==='boxing'?clinch:sport==='muaythai'?thaiClinch:null},
-            sections:[{title:`Rounds - ${recipe.rounds} x 2 min, 30 s rest`,rounds:Array.from({length:recipe.rounds},(_,i)=>[`Round ${i+1} - Coach Rounds`,'Listen for the next combination.'])}]};
+            coachRounds:{sport,level,stance,...recipe,combos,roundThemes:roundThemes[level],
+                finishers:level==='light'?finishers[sport].slice(0,3):finishers[sport],
+                comments,movements:movements.map(m=>m[0]),clinch:sport==='boxing'?clinch:sport==='muaythai'?thaiClinch:null},
+            sections:[{title:`Rounds - ${recipe.rounds} x ${recipe.seconds} s, ${recipe.rest} s rest`,
+                rounds:roundThemes[level].map((theme,i)=>[`Round ${i+1} - ${themeLabels[theme][0]}`,'Listen for the next combination.'])}]};
     }
-    return {lines,recordedCombos:[...new Set([...lines, ...southpawSlips, ...thaiClinch.combos])],clinch,comments,movements,sportCounts,previewText,pools,intensity,plan,restText:'Rest. Breathe, reset your stance and get ready for the next round.'};
+    return {lines,recordedCombos:[...new Set([...lines, ...southpawSlips, ...thaiClinch.combos])],clinch,comments,movements,sportCounts,previewText,pools,intensity,plan,themeLabels,themeFocus,audioParts,validRest,restText:'Rest. Breathe, reset your stance and get ready for the next round.'};
 })();
 
 const coachRecentComboLimit = 8;
@@ -499,6 +584,7 @@ function createCoachRoundsController(output) {
     let recentCombos = [];
     let clinchStarts = [], clinchQueue = [], clinchBag = [], lastClinchCombo = '', currentKind = 'combo';
     let untilFreeChoice = 0;
+    let roundTheme, finisherBag = [], lastFinisher = '', finisherCalled = false;
     const random=output.random||Math.random;
     function selectRhythm(opening) {
         const choices = (opening ? rhythms.slice(0, 3) : rhythms).filter(pattern => pattern !== rhythm);
@@ -528,11 +614,13 @@ function createCoachRoundsController(output) {
         if(kind==='movement')return latest.level==='light'?range(3,5):range(1.5,2.5);
         if(kind==='tip')return range(.5,1.3);
         if(kind==='distance')return 2;
+        if(kind==='finisher')return Infinity;
         const techniques=text.split('.').filter(t=>t.trim()).length;
         // This starts AFTER speech ends: tightening the recording must not remove execution time.
         const execution=coachComboExecutionTime(text);
         if(latest.level==='light')return Math.max(range(1.8,3.8)+techniques*.12,execution+.8);
         if(latest.level==='steady')return Math.max(range(1,2.7)+techniques*.1,execution+.4);
+        if(roundTheme==='range'||roundTheme==='defence')return execution+range(.5,1.35);
         if(burstLeft>0){burstLeft--;return execution+range(0,.45);}
         burstLeft=1+Math.floor(random()*2);
         return execution+range(.25,.65);
@@ -542,15 +630,19 @@ function createCoachRoundsController(output) {
         if(kind!=='tip')currentKind=kind;
         if(kind==='tip')output.onTip?.(text);
         else if(kind==='movement'){currentMovement=text;output.onMovement?.(text);output.onTip?.('');}
-        else {current=text;currentMovement='';output.onMovement?.('');output.onCombo(text);output.onTip?.('');}
+        else {current=text;currentMovement='';output.onMovement?.('');output.onCombo(text,kind);output.onTip?.('');}
         const started=latest.elapsed;
-        Promise.resolve().then(()=>{
-            if(ticket!==generation||!running)return;
-            return output.speak(text);
-        }).catch(error=>{
-            // A stalled clip has already been stopped by the player. Keep coaching
-            // after the athlete has had time to perform the displayed instructions.
-            if(error?.name!=='TimeoutError')throw error;
+        Promise.resolve().then(async()=>{
+            for(const part of COACH_ROUNDS.audioParts[text] || [text]){
+                if(ticket!==generation||!running)return;
+                try {
+                    await output.speak(part);
+                } catch (error) {
+                    // The player has stopped the stalled clip. Continue with the
+                    // remaining instructions while the full combo stays visible.
+                    if(error?.name!=='TimeoutError')throw error;
+                }
+            }
         }).then(()=>{
             if(ticket!==generation||!running)return;
             const delay=delayAfter(text,kind);
@@ -560,17 +652,37 @@ function createCoachRoundsController(output) {
     }
     function next(forceCombo=false){
         const remaining=latest.duration===undefined?Infinity:latest.duration-latest.elapsed;
+        const hasFinisher = latest.finishers?.length > 0;
+        const workingTime = remaining - (hasFinisher ? 10 : 0);
         if(clinchQueue.length){
-            if(remaining < 14 && clinchQueue.length > 1)clinchQueue = [latest.clinch.exit];
+            if(workingTime < 14 && clinchQueue.length > 1)clinchQueue = [latest.clinch.exit];
             const cue = clinchQueue.shift();
             speak(cue,cue===latest.clinch.exit?'distance':'combo');
             return;
         }
+        if (hasFinisher && remaining <= 10) {
+            if (finisherCalled || remaining < 5) return;
+            if (!finisherBag.length) finisherBag = [...latest.finishers];
+            const fits = text => {
+                const clips = COACH_ROUNDS.audioParts[text]?.length || 1;
+                return remaining >= coachComboExecutionTime(text) + 1.25*clips + .75;
+            };
+            const unused = finisherBag.filter(fits);
+            const fitting = unused.length ? unused : latest.finishers.filter(fits);
+            if (!fitting.length) return;
+            lastFinisher = chooseCoachCombo(fitting, [...recentCombos, lastFinisher].filter(Boolean), random);
+            const used = finisherBag.indexOf(lastFinisher);
+            if (used !== -1) finisherBag.splice(used,1);
+            finisherCalled = true;
+            speak(lastFinisher,'finisher');
+            return;
+        }
+        if(hasFinisher && workingTime < 5)return;
         if(remaining<6){busy=false;due=Infinity;return;}
-        if(!forceCombo && latest.elapsed >= clinchStarts[0] && remaining >= 30){
+        if(!forceCombo && latest.elapsed >= clinchStarts[0] && workingTime >= 30){
             clinchStarts.shift();
             const {enter,exit,combos}=latest.clinch;
-            const maxCalls = Math.min(6, Math.floor((remaining - 8) / 7));
+            const maxCalls = Math.min(6, Math.floor((workingTime - 8) / 7));
             const count = 3 + Math.floor(random() * (maxCalls - 2));
             const block = new Set();
             for(let i=0;i<count;i++){
@@ -584,7 +696,7 @@ function createCoachRoundsController(output) {
             speak(enter,'distance');
             return;
         }
-        if(!forceCombo&&(!rhythmPools||rhythmIndex===0||rhythm[rhythmIndex-1]==='long')&&remaining>12&&sinceTip>=nextTip&&(latest.comments?.length||latest.movements?.length)){
+        if(!forceCombo&&(!rhythmPools||rhythmIndex===0||rhythm[rhythmIndex-1]==='long')&&workingTime>12&&sinceTip>=nextTip&&(latest.comments?.length||latest.movements?.length)){
             sinceTip=0;nextTip=guidanceThreshold();burstLeft=0;
             const movementChance=latest.level==='light' ? .8 : latest.level==='steady' ? .3 : .1;
             if(latest.movements?.length&&(!latest.comments?.length||random()<movementChance)){
@@ -603,10 +715,21 @@ function createCoachRoundsController(output) {
                 comboBag.push(...pool);
                 available=pool;
             }
+            if (hasFinisher && workingTime < 12) {
+                // Budget the spoken call, execution and the next timer tick before the finisher.
+                available = available.filter(text => workingTime >= coachComboExecutionTime(text)
+                    + coachComboSize(text)*.65 + (COACH_ROUNDS.audioParts[text] ? 1.5 : .75) + 1);
+                if (!available.length) return;
+            }
             const freeChoice = available.filter(isFreeChoiceCall);
             const prescribed = available.filter(text => !isFreeChoiceCall(text));
             const candidates = slot === 'short' && untilFreeChoice <= 0 && freeChoice.length ? freeChoice : prescribed;
-            combo=chooseCoachCombo(candidates.length ? candidates : available,recentCombos,random);
+            const choices = candidates.length ? candidates : available;
+            const manageable = latest.level==='light' && choices.filter(text=>coachComboSize(text)<=4);
+            const poolChoices = manageable?.length ? manageable : choices;
+            const emphasis = COACH_ROUNDS.themeFocus[roundTheme];
+            const focused = emphasis && poolChoices.filter(text => emphasis.test(text) && !recentCombos.includes(text));
+            combo=chooseCoachCombo(focused?.length && random()<.7 ? focused : poolChoices,recentCombos,random);
             comboBag.splice(comboBag.indexOf(combo),1);
             if (isFreeChoiceCall(combo)) untilFreeChoice = 2 + Math.floor(random() * 3);
             else untilFreeChoice--;
@@ -636,6 +759,7 @@ function createCoachRoundsController(output) {
                 lastCombo=saved?.last||'';
                 recentCombos=saved?.recent?.length ? [...saved.recent] : lastCombo ? [lastCombo] : [];
                 clinchBag=[];lastClinchCombo='';
+                finisherBag=[];lastFinisher='';
                 untilFreeChoice=2;
                 tipBag=[];movementBag=[];lastTip='';lastMovement='';sinceTip=0;nextTip=state.level?guidanceThreshold():4;burstLeft=0;
             }
@@ -643,12 +767,15 @@ function createCoachRoundsController(output) {
             const resumed=!running;running=true;
             if(key!==state.key){
                 invalidate();key=state.key;current='';currentMovement='';due=0;burstLeft=0;
+                roundTheme=state.roundThemes?.[state.roundIndex];
+                finisherCalled=false;
                 if(rhythmPools && !state.rest)selectRhythm(true);
                 clinchQueue=[];clinchStarts=[];
                 if(state.clinch && !state.rest){
                     const roll = random();
-                    if (roll >= .65) clinchStarts = [13 + random() * 9, 64 + random() * 12];
-                    else if (roll >= .2) clinchStarts = [27 + random() * 39];
+                    const duration = state.duration;
+                    if (roll >= (roundTheme==='pressure' ? .35 : .65)) clinchStarts = [duration*(.11+random()*.07), duration*(.45+random()*.10)];
+                    else if (roll >= .2) clinchStarts = [duration*(.22+random()*.24)];
                 }
                 output.onStep?.();
                 const ticket=generation;busy=true;
@@ -659,7 +786,14 @@ function createCoachRoundsController(output) {
                 });
                 return;
             }
-            if(resumed){if(currentMovement)speak(currentMovement,'movement');else if(current)speak(current,currentKind);else if(state.rest)speak(COACH_ROUNDS.restText);else next(true);return;}
+            if(resumed){
+                if(state.rest)speak(COACH_ROUNDS.restText);
+                else if(!finisherCalled&&state.finishers?.length&&state.duration-state.elapsed<=10)next();
+                else if(currentMovement)speak(currentMovement,'movement');
+                else if(current)speak(current,currentKind);
+                else next(true);
+                return;
+            }
             if(!state.rest&&!busy&&state.elapsed>=due)next();
         },
         reset(){invalidate();key=null;running=false;current='';currentMovement='';latest=null;due=0;comboBag=[];tipBag=[];movementBag=[];poolSignature='';sinceTip=0;burstLeft=0;rhythm=[];rhythmIndex=0;clinchQueue=[];clinchStarts=[];},
@@ -667,9 +801,16 @@ function createCoachRoundsController(output) {
     };
 }
 
-let coachRoundSport='boxing',coachRoundLevel='steady',coachRoundCue='',coachRoundError=false,coachRoundTip='',coachRoundMovement='',coachSetupStep=0;
+let coachRoundSport='boxing',coachRoundLevel='steady',coachRoundCue='',coachRoundError=false,coachRoundTip='',coachRoundMovement='',coachRoundFinishing=false,coachSetupStep=0;
 let coachRoundStance = 'orthodox';
+const coachRestOverrides = {};
 try { if (localStorage.getItem('fightwise_coach_stance') === 'southpaw') coachRoundStance = 'southpaw'; } catch {}
+try {
+    const saved = JSON.parse(localStorage.getItem('fightwise_coach_rests') || '{}');
+    for (const level of Object.keys(COACH_ROUNDS.intensity)) {
+        if (COACH_ROUNDS.validRest(saved?.[level])) coachRestOverrides[level] = saved[level];
+    }
+} catch {}
 function coachText(en,fi,de){return settings.language==='fi'?fi:settings.language==='de'?de:en;}
 function coachSportName(sport){return sport==='boxing'?coachText('Boxing','Nyrkkeily','Boxen'):sport==='k1'?coachText('Kickboxing','Potkunyrkkeily','Kickboxen'):'Muay Thai';}
 function coachLevelName(level){return ({light:coachText('Light','Kevyt','Leicht'),steady:coachText('Steady','Reipas','Mittel'),hard:coachText('Hard','Kova','Hart')})[level];}
@@ -692,6 +833,13 @@ function selectCoachStance(stance) {
     try { localStorage.setItem('fightwise_coach_stance', stance); } catch {}
 }
 function selectCoachIntensity(level){if(!COACH_ROUNDS.intensity[level])return;coachRoundLevel=level;renderCoachRoundsPicker('coach-level-'+level);}
+function selectCoachRest(value){
+    const rest = Number(value);
+    if (!COACH_ROUNDS.validRest(rest)) return;
+    coachRestOverrides[coachRoundLevel] = rest;
+    try { localStorage.setItem('fightwise_coach_rests',JSON.stringify(coachRestOverrides)); } catch {}
+    renderCoachRoundsPicker('coach-rest-duration');
+}
 function playCoachRoundsPreview(coach){unlockAppAudio();speakCoachText(COACH_ROUNDS.previewText,coach).catch(()=>{});}
 function selectRoundCoach(coach){if(!['max','maya'].includes(coach))return;setCoachVoice(coach);renderCoachRoundsPicker('coach-voice-'+coach);playCoachRoundsPreview(coach);}
 function moveCoachSetup(direction){
@@ -705,7 +853,8 @@ function moveCoachSetup(direction){
 function coachSportDescription(sport){return sport==='boxing'?coachText('Hands only.','Vain käsitekniikoita.','Nur Fausttechniken.'):sport==='k1'?coachText('Punches and kicks.','Lyöntejä ja potkuja.','Schläge und Tritte.'):coachText('Punches, kicks, knees and elbows.','Lyönnit, potkut, polvet ja kyynärpäät.','Schläge, Tritte, Knie und Ellbogen.');}
 function renderCoachRoundsPicker(focusId){
     const root=document.getElementById('coachRoundsSection');if(!root||root.hidden)return;
-    const r=COACH_ROUNDS.intensity[coachRoundLevel],total=r.rounds*r.seconds+(r.rounds-1)*r.rest;
+    const r=COACH_ROUNDS.intensity[coachRoundLevel],rest=coachRestOverrides[coachRoundLevel]??r.rest;
+    const total=r.rounds*r.seconds+(r.rounds-1)*rest;
     const labels=[coachText('Sport','Laji','Sportart'),coachText('Coach','Coach','Coach'),coachText('Intensity','Intensiteetti','Intensität')];
     const titles=[coachText('Choose your sport','Valitse laji','Wähle deine Sportart'),coachText('Choose your coach','Valitse coach','Wähle deinen Coach'),coachText('Set the intensity','Valitse intensiteetti','Wähle die Intensität')];
     const hints=[coachText('Your combinations match your sport.','Yhdistelmät valitsemasi lajin mukaan.','Kombinationen passend zu deiner Sportart.'),coachText('Tap a coach to hear the voice.','Kuuntele ääni painamalla coachia.','Tippe auf einen Coach, um die Stimme zu hören.'),coachText('Choose the pace for today.','Valitse tähän päivään sopiva tahti.','Wähle das Tempo für heute.')];
@@ -713,19 +862,26 @@ function renderCoachRoundsPicker(focusId){
     let choices;
     if(coachSetupStep===0)choices=['boxing','k1','muaythai'].map(s=>`<button id="coach-sport-${s}" class="coach-choice-card coach-sport-choice" aria-pressed="${s===coachRoundSport}" onclick="selectCoachSport('${s}')"><span class="coach-choice-main"><strong>${coachSportName(s)}</strong><span>${coachSportDescription(s)}</span><small>${COACH_ROUNDS.sportCounts[s]} ${coachText('combinations','yhdistelmää','Kombinationen')}</small></span>${s===coachRoundSport?marker:''}</button>`).join('');
     else if(coachSetupStep===1)choices=['max','maya'].map(c=>`<button id="coach-voice-${c}" class="coach-choice-card" aria-pressed="${settings.coachVoice===c}" onclick="selectRoundCoach('${c}')"><img class="coach-choice-art" src="Coach ${c==='max'?'Max':'Maya'}.png" alt=""><span class="coach-choice-main"><strong>${c==='max'?'Max':'Maya'}</strong><span>${c==='max'?coachText('Energetic · Clear','Energinen · Selkeä','Energisch · Klar'):coachText('Encouraging · Punchy','Kannustava · Napakka','Ermutigend · Kraftvoll')}</span><small>▷ ${coachText('Hear voice','Kuuntele ääni','Stimme hören')}</small></span>${settings.coachVoice===c?marker:''}</button>`).join('');
-    else choices=Object.entries(COACH_ROUNDS.intensity).map(([level,v])=>`<button id="coach-level-${level}" class="coach-choice-card" aria-pressed="${level===coachRoundLevel}" onclick="selectCoachIntensity('${level}')"><img class="coach-choice-art" src="Intensity ${level[0].toUpperCase()+level.slice(1)}.svg" alt=""><span class="coach-choice-main"><strong>${coachLevelName(level)}</strong><span>${v.rounds} × 2 min · 30 s ${coachText('rest','tauko','Pause')}</span><small>${coachPaceDescription(level)}</small></span>${level===coachRoundLevel?marker:''}</button>`).join('');
+    else choices=Object.entries(COACH_ROUNDS.intensity).map(([level,v])=>`<button id="coach-level-${level}" class="coach-choice-card" aria-pressed="${level===coachRoundLevel}" onclick="selectCoachIntensity('${level}')"><img class="coach-choice-art" src="Intensity ${level[0].toUpperCase()+level.slice(1)}.svg" alt=""><span class="coach-choice-main"><strong>${coachLevelName(level)}</strong><span>${v.rounds} × ${v.seconds/60} min · ${coachRestOverrides[level]??v.rest} s ${coachText('rest','tauko','Pause')}</span><small>${coachPaceDescription(level)}</small></span>${level===coachRoundLevel?marker:''}</button>`).join('');
     root.innerHTML=`<div class="coach-rounds-panel coach-setup-panel" data-coach-i18n>
         <div class="coach-setup-top"><button class="coach-home" onclick="closeCoachRoundsSetup()">← ${coachText('Home','Etusivu','Startseite')}</button><span>Coach Rounds</span></div>
         <ol class="coach-setup-progress" aria-label="${coachText('Setup progress','Valintojen vaiheet','Einrichtungsschritte')}">${labels.map((label,i)=>`<li class="${i<=coachSetupStep?'reached':''}"${i===coachSetupStep?' aria-current="step"':''}>${i+1}. ${label}</li>`).join('')}</ol>
         <h1 id="coachSetupHeading" tabindex="-1">${titles[coachSetupStep]}</h1><p class="coach-intro">${hints[coachSetupStep]}</p>
         <div class="coach-setup-choices" role="group" aria-label="${titles[coachSetupStep]}">${choices}</div>
         ${coachSetupStep===1?`<p class="coach-detail">${coachText('Prerecorded English AI coach voices.','Valmiiksi tallennetut englanninkieliset tekoälyäänet.','Aufgezeichnete englische KI-Coach-Stimmen.')}</p>`:coachSetupStep===2?`<p class="coach-session-info">${coachSportName(coachRoundSport)} · ${settings.coachVoice==='maya'?'Maya':'Max'} · ${formatTime(total)}</p>
+        <div class="coach-session-options">
+        <label class="coach-stance">${coachText('Rest between rounds','Tauko erien välissä','Pause zwischen Runden')}
+            <select id="coach-rest-duration" onchange="selectCoachRest(this.value)">
+                ${Array.from({length:22},(_,i)=>15+i*5).map(seconds=>`<option value="${seconds}"${seconds===rest?' selected':''}>${seconds} s</option>`).join('')}
+            </select>
+        </label>
         <label class="coach-stance">${coachText('Stance for slip calls','Otteluasento väistöohjeisiin','Kampfstellung für Ausweichansagen')}
             <select onchange="selectCoachStance(this.value)">
                 <option value="orthodox" ${coachRoundStance==='orthodox'?'selected':''}>${coachText('Left foot forward','Vasen jalka edessä','Linker Fuß vorn')}</option>
                 <option value="southpaw" ${coachRoundStance==='southpaw'?'selected':''}>${coachText('Right foot forward','Oikea jalka edessä','Rechter Fuß vorn')}</option>
             </select>
         </label>
+        </div>
         <p class="coach-detail">${coachText('Warm up before starting.','Lämmittele ennen aloitusta.','Vor dem Start aufwärmen.')}</p>`:''}
         <div class="coach-setup-footer"><button onclick="moveCoachSetup(-1)">${coachText('Back','Takaisin','Zurück')}</button><button class="coach-setup-next" onclick="moveCoachSetup(1)">${coachSetupStep===2?coachText('Start session','Aloita harjoitus','Einheit starten'):coachText('Continue','Jatka','Weiter')}</button></div>
     </div>`;
@@ -733,14 +889,16 @@ function renderCoachRoundsPicker(focusId){
 }
 function startCoachRounds(){
     cancelCoachSpeech();
-    const plan=COACH_ROUNDS.plan(coachRoundSport,coachRoundLevel,coachRoundStance);
-    coachRoundError=false;coachRoundCue='';coachRoundTip='';coachRoundMovement='';
+    const plan=COACH_ROUNDS.plan(coachRoundSport,coachRoundLevel,coachRoundStance,coachRestOverrides[coachRoundLevel]);
+    coachRoundError=false;coachRoundCue='';coachRoundTip='';coachRoundMovement='';coachRoundFinishing=false;
     startTrainingPlan(getTrainingDuration(plan),'COACH ROUNDS',null,null,plan);
 }
 function renderCoachRoundsGuide(step){
     const plan=activeTrainingWorkout.coachRounds;
     const paused=!!sessionStats.startedAt&&!timerState.isRunning;
     const round=trainingTimeline.filter(s=>s.kind==='round').indexOf(step)+1;
+    const theme=COACH_ROUNDS.themeLabels[plan.roundThemes?.[round-1]];
+    const finishing=step.kind==='round' && coachRoundFinishing;
     const movement=COACH_ROUNDS.movements.find(m=>m[0]===coachRoundMovement);
     const movementText=movement?.[settings.language==='fi'?1:settings.language==='de'?2:0]||coachRoundMovement;
     const cue=step.kind==='rest'?coachText('Breathe. Reset.','Hengitä. Palaudu.','Atmen. Erholen.'):movementText||coachRoundCue;
@@ -814,6 +972,7 @@ function renderCoachRoundsGuide(step){
     const tip=reminderTranslations[coachRoundTip]?.[settings.language==='fi'?0:settings.language==='de'?1:2]||coachRoundTip;
     const error=coachRoundError?coachText('Coach audio could not play. Tap Continue to try again.','Coach-ääni ei käynnistynyt. Yritä uudelleen painamalla Jatka.','Coach-Audio konnte nicht starten. Mit Weiter erneut versuchen.'):'';
     return `<div class="guide-card" data-coach-i18n><div class="guide-round-label">${step.kind==='rest'?coachText('Rest','Tauko','Pause'):`${coachText('Round','Erä','Runde')} ${round}/${plan.rounds}`}</div>
+      ${finishing?`<p class="coach-round-focus">${coachText('Last 10 seconds','Viimeiset 10 sekuntia','Letzte 10 Sekunden')}</p>`:theme?`<p class="coach-round-focus">${coachText(...theme)}</p>`:''}
       ${error?`<p role="alert" class="coach-error">${escapeHtml(error)}</p>`:''}
       ${paused?`<h2 class="guide-title">${coachText('Paused','Tauotettu','Pausiert')}</h2>`:parts.length?`<ol class="coach-combo">${parts.map(p=>`<li>${escapeHtml(terms[settings.language]?.[p]||p)}</li>`).join('')}</ol>`:`<h2 class="guide-title">${coachText('Listen and react','Kuuntele ja reagoi','Hören und reagieren')}</h2>`}
       <p class="coach-tip">${!paused&&step.kind!=='rest'?escapeHtml(tip):''}</p>

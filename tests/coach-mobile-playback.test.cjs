@@ -1,6 +1,29 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8');
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
+test('a stalled training bell uses a single fallback and releases coaching', async () => {
+ const timers=new Map();let nextId=0,fallbacks=0,audio;
+ const context=vm.createContext({
+  ROUND_START_SOUND_SRC:'bell.mp3',pendingTrainingBell:null,stopTrainingSounds(){},
+  Audio:class {constructor(){audio=this;this.paused=false;}play(){return new Promise(()=>{});}pause(){this.paused=true;}},
+  setTimeout(callback,delay){timers.set(++nextId,{callback,delay});return nextId;},
+  clearTimeout(id){timers.delete(id);},playFallbackBell(){fallbacks++;}
+ });
+ vm.runInContext(html.slice(html.indexOf('function playTrainingStartBell('),html.indexOf('const trainingCueController =')),context);
+ const playing=context.playTrainingStartBell();
+ const staleError=audio.onerror;
+ const deadline=[...timers.values()][0];
+ assert.equal(deadline.delay,2000);
+ deadline.callback();
+ staleError();
+ assert.equal(fallbacks,1);
+ assert.equal(audio.paused,true);
+ const tail=[...timers.values()][0];
+ assert.equal(tail.delay,750);
+ tail.callback();
+ await playing;
+ assert.equal(timers.size,0);
+});
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return{promise,resolve,reject};}
 function setup(){
  let gesture=false;const players=[],calls=[];

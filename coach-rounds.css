@@ -6,6 +6,8 @@
 .coach-rounds-panel h1{font-size:clamp(30px,6vw,46px);line-height:1.1;margin:22px 0 12px;text-transform:none;letter-spacing:-1px}
 .coach-intro{color:#bbb;line-height:1.6;margin:0 0 25px;max-width:48ch}
 .coach-stance{display:grid;gap:6px;color:#ddd;font-size:14px}
+.coach-session-options{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,185px),1fr))}
+.coach-round-focus{margin:4px 0;color:#ddd;font-weight:700}
 .coach-stance select{min-height:44px;width:100%;padding:0 10px;color:#fff;background:#151515;border:1px solid #555;border-radius:4px;font:inherit;color-scheme:dark}
 .coach-rounds-panel fieldset{border:0;margin:22px 0;padding:0;min-width:0}
 .coach-rounds-panel legend{font-size:14px;color:#aaa;margin-bottom:10px}

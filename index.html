@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="coach-rounds.css?v=107">
+    <link rel="stylesheet" href="coach-rounds.css?v=117">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>FightWise - Fight Timer</title>
@@ -5279,7 +5279,7 @@
     <script src="training-sports.js?v=84"></script>
     <script src="onboarding.js?v=113"></script>
     <script src="training-audio.js?v=84"></script>
-    <script src="coach-rounds.js?v=115"></script>
+    <script src="coach-rounds.js?v=118"></script>
     <script src="coach-audio-manifest.js?v=84"></script>
     <script src="coach-maya-manifest.js?v=84"></script>
     <script src="coach-rounds-audio-manifest.js?v=112"></script>
@@ -6536,11 +6536,12 @@
         }
 
         function updateRingWarning() {
-            if (!timerState.isRunning || timerState.isFinished || !timerState.isRound) {
+            const step = appMode === 'training' ? getCurrentGuideStep() : null;
+            if (!timerState.isRunning || timerState.isFinished || !timerState.isRound || step?.kind === 'rest') {
                 progressCircle.classList.remove('warning', 'danger');
                 return;
             }
-            const t = timerState.timeLeft;
+            const t = step ? step.end - (settings.roundTime - timerState.timeLeft) : timerState.timeLeft;
             progressCircle.classList.toggle('danger',  t <= 5 && t > 0);
             progressCircle.classList.toggle('warning', t <= 10 && t > 5);
         }
@@ -6811,6 +6812,7 @@
             return new Promise(resolve => {
                 const audio = new Audio(ROUND_START_SOUND_SRC);
                 let finished = false;
+                let usingFallback = false;
                 let timer;
                 const finish = () => {
                     if (finished) return;
@@ -6822,8 +6824,11 @@
                     resolve();
                 };
                 const fallback = () => {
-                    if (finished) return;
+                    if (finished || usingFallback) return;
+                    usingFallback = true;
                     clearTimeout(timer);
+                    audio.pause();
+                    audio.onended = audio.onerror = null;
                     playFallbackBell();
                     timer = setTimeout(finish, 750);
                 };
@@ -6831,7 +6836,7 @@
                 audio.volume = 1;
                 audio.onended = finish;
                 audio.onerror = fallback;
-                timer = setTimeout(finish, 15000);
+                timer = setTimeout(fallback, 2000);
                 try { audio.play().catch(fallback); } catch(e) { fallback(); }
             });
         }
@@ -6866,8 +6871,8 @@
             cancelSpeech: cancelCoachSpeech, stopSounds: stopTrainingSounds,
             bell: rest => rest ? new Promise(resolve => { playTrainingGong(1); window.setTimeout(resolve,700); }) : playTrainingStartBell(),
             speak: text => speakCoachText(text),
-            onStep: () => { coachRoundCue=''; coachRoundTip=''; coachRoundMovement=''; updateUI(); },
-            onCombo: text => { coachRoundCue=text; coachRoundMovement=''; coachRoundError=false; updateUI(); },
+            onStep: () => { coachRoundCue=''; coachRoundTip=''; coachRoundMovement=''; coachRoundFinishing=false; coachRoundError=false; updateUI(); },
+            onCombo: (text, kind) => { coachRoundCue=text; coachRoundMovement=''; coachRoundFinishing=kind==='finisher'; coachRoundError=false; updateUI(); },
             onMovement: text => { coachRoundMovement=text; updateUI(); },
             onTip: text => { coachRoundTip=text; updateUI(); },
             onError: () => { coachRoundError=true; if(timerState.isRunning) toggleTimer(); updateUI(); }
@@ -6880,7 +6885,8 @@
                 elapsed:Math.max(0,settings.roundTime-timerState.timeLeft-step.start),duration:step.end-step.start,
                 running:timerState.isRunning&&!timerState.isFinished,rest:step.kind==='rest',
                 roundIndex:trainingTimeline.slice(0,index).filter(s=>s.kind==='round').length,
-                sport:plan.sport,stance:plan.stance,level:plan.level,combos:plan.combos,comments:plan.comments,movements:plan.movements,clinch:plan.clinch,bellEnabled:settings.roundSoundsEnabled});
+                sport:plan.sport,stance:plan.stance,level:plan.level,combos:plan.combos,roundThemes:plan.roundThemes,finishers:plan.finishers,
+                comments:plan.comments,movements:plan.movements,clinch:plan.clinch,bellEnabled:settings.roundSoundsEnabled});
         }
 
         function syncTrainingAudio() {
@@ -6986,7 +6992,7 @@
         function renderSessionSummary() {
             const coachPlan = activeTrainingWorkout?.coachRounds;
             const targetRounds = coachPlan?.rounds || settings.numberOfRounds;
-            const rounds = coachPlan ? trainingTimeline.filter(step => step.kind === 'round' && step.end <= settings.roundTime-timerState.timeLeft).length : Math.min(sessionStats.completedRounds, settings.numberOfRounds);
+            const rounds = Math.min(sessionStats.completedRounds, targetRounds);
             const completion = targetRounds > 0
                 ? Math.round((rounds / targetRounds) * 100)
                 : 0;
@@ -7086,7 +7092,7 @@
                 startBtn.classList.remove('hidden');
                 resetBtn.classList.add('hidden');
                 continueBtn.classList.add('hidden');
-            } else if (timerState.timeLeft < settings.roundTime || timerState.currentRound > 1) {
+            } else if (hasSessionStarted) {
                 startBtn.classList.add('hidden');
                 resetBtn.classList.remove('hidden');
                 continueBtn.classList.remove('hidden');
@@ -7102,9 +7108,14 @@
             const showTrainingGuide = appMode === 'training' && activeTrainingWorkout && !timerState.isFinished;
             if (showTrainingGuide) {
                 taskDisplay.classList.add('training-guide');
-                taskDisplay.innerHTML = renderTrainingGuide();
+                const markup = renderTrainingGuide();
+                if (taskDisplay.dataset.guideMarkup !== markup) {
+                    taskDisplay.dataset.guideMarkup = markup;
+                    taskDisplay.innerHTML = markup;
+                }
                 taskDisplay.classList.add('visible');
             } else {
+                delete taskDisplay.dataset.guideMarkup;
                 taskDisplay.classList.remove('training-guide');
                 const showTask = settings.taskSparEnabled && timerState.isRound && taskState.currentTask && !taskState.showingPreRound;
                 taskDisplay.classList.toggle('visible', showTask);
@@ -7171,6 +7182,11 @@
                     if (step.kind === 'rest') {
                         rest += Math.max(0, Math.min(to, step.end) - Math.max(from, step.start));
                     }
+                    if (activeTrainingWorkout.coachRounds && step.kind === 'round' && from < step.end && to >= step.end) {
+                        sessionStats.completedRounds++;
+                    }
+                    if (activeTrainingWorkout.coachRounds && step.kind === 'round' && to < step.end &&
+                        from <= step.end - 10 && to > step.end - 10) playWarningVibration();
                 }
             }
             sessionStats.activeSeconds += seconds - rest;
@@ -7200,7 +7216,7 @@
                 if (timerState.timeLeft === 0) {
                     // Catch up after throttling without replaying old round signals.
                     handleTransition({playCues: elapsed < 1});
-                } else if (previousTime >= 10 && timerState.timeLeft < 10 && timerState.isRound) {
+                } else if (!activeTrainingWorkout?.coachRounds && previousTime >= 10 && timerState.timeLeft < 10 && timerState.isRound) {
                     playWarningVibration();
                 }
             }
@@ -7236,6 +7252,7 @@
             if (!step) return;
             const currentIndex = trainingTimeline.indexOf(step);
             const nextStep = trainingTimeline[currentIndex + 1];
+            if (step.kind === 'rest') sessionStats.skippedBreaks++;
 
             if (!nextStep) {
                 timerState.timeLeft = 0;
@@ -7255,7 +7272,7 @@
         function handleTransition({playCues = true, finishEndBells = false} = {}) {
             if (timerState.isRound) {
                 // Round ending
-                sessionStats.completedRounds++;
+                if (!activeTrainingWorkout?.coachRounds) sessionStats.completedRounds++;
                 if (activeTrainingWorkout?.coachRounds) { coachRoundsController.reset(); if(playCues && settings.roundSoundsEnabled) playTrainingGong(1); }
                 else if (appMode === 'training') trainingCueController.finish(playCues && settings.trainingCuesEnabled);
                 else if (playCues) playRoundEnd();
@@ -7383,7 +7400,7 @@
         function resetTimer() {
             clearInterval(intervalId);
             if(typeof coachRoundsController!=='undefined')coachRoundsController.reset();
-            coachRoundCue='';coachRoundTip='';coachRoundMovement='';coachRoundError=false;
+            coachRoundCue='';coachRoundTip='';coachRoundMovement='';coachRoundFinishing=false;coachRoundError=false;
             trainingCueController.reset();
             resetManagedAudioPlayback();
             stopPreRoundDisplay();

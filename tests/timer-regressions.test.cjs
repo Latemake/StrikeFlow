@@ -66,6 +66,29 @@ test('guided training accounts for rest even when a single tick spans both rest 
     assert.equal(context.sessionStats.breakSeconds, 10);
 });
 
+test('Coach Rounds count finished work and skipped rests independently of the playhead', () => {
+    const {context, signals, advance} = timer();
+    context.appMode = 'training';
+    context.activeTrainingWorkout = {coachRounds: {}};
+    context.sessionStats.skippedBreaks = 0;
+    context.trainingTimeline = [
+        {kind:'round', start:0, end:20}, {kind:'rest', start:20, end:30},
+        {kind:'round', start:30, end:55}, {kind:'rest', start:55, end:70},
+        {kind:'round', start:70, end:120}
+    ];
+    context.getCurrentGuideStep = () => context.trainingTimeline.find(step => 120 - context.timerState.timeLeft < step.end);
+    advance(10000);
+    advance(1000);
+    advance(9000);
+    context.skipTrainingStep();
+    advance(5000);
+    context.skipTrainingStep();
+    context.skipTrainingStep();
+    assert.equal(context.sessionStats.completedRounds, 1);
+    assert.equal(context.sessionStats.skippedBreaks, 2);
+    assert.deepEqual(signals, ['warning']);
+});
+
 test('custom round count rejects non-integer input formats', () => {
     const context = vm.createContext({});
     vm.runInContext(html.slice(html.indexOf('function parseSetupSecondsInput('), html.indexOf('function applySetupCustom(')), context);
