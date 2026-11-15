@@ -3818,6 +3818,35 @@
             100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(1) rotate(var(--r)); }
         }
 
+
+        /* The original celebration also opens as an accessible modal. */
+        .finished-overlay {
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            max-height: none;
+            margin: 0;
+            border: 0;
+            overflow: hidden auto;
+            overscroll-behavior: contain;
+            justify-content: flex-start;
+        }
+        .finished-overlay:not([open]) { display: none; }
+        .finished-overlay [hidden] { display: none; }
+        .finished-overlay::backdrop { background: transparent; }
+        .finished-box { flex-shrink: 0; margin-block: auto; max-width: 100%; }
+        .finished-title { margin-top: 0; overflow-wrap: anywhere; }
+        .finished-title:focus { outline: none; }
+        .finished-row strong { text-align: right; }
+        .finished-overlay button:focus-visible { outline: 2px solid #8effa0; outline-offset: 3px; }
+        @media (prefers-reduced-motion: reduce) {
+            .finished-overlay, .finished-overlay.show::before, .finished-overlay.show .finished-box * {
+                animation: none;
+                transition: none;
+            }
+            .finished-overlay.show :is(.finished-big-trophy,.finished-content) { opacity: 1; transform: none; }
+        }
+
         @media (min-width: 760px) {
             .mode-choice,
             .training-section,
@@ -4692,6 +4721,141 @@
 #modeChoice .mode-card-marker{top:22px;left:28px}#modeChoice .mode-card-title{font-size:36px}}
 </style>
 <style>
+#modeChoice .history-link{display:flex;align-items:center;gap:12px;width:100%;margin-top:16px;padding:12px;min-height:56px;background:#111611;border:1px solid #314532;border-radius:8px;color:#f1f1f1;text-align:left;font:inherit;cursor:pointer}
+#modeChoice .history-link:hover{border-color:#58bf61}
+.history-link .history-arrow{margin-left:auto;color:#2bff4a}
+.history-mark{display:flex;align-items:flex-end;justify-content:center;gap:3px;width:32px;height:32px;padding:7px;background:#1d2b1e;border-radius:5px;flex:none}
+.history-mark i{width:4px;background:#2bff4a;height:40%;border-radius:1px}
+.history-mark i:nth-child(2){height:67%;opacity:.72}
+.history-mark i:nth-child(3){height:100%}
+.history-link small,.history-muted{color:#b7b7b7}
+.history-dialog{--history-padding:clamp(15px,4vw,24px);width:min(490px,calc(100% - 24px));max-height:calc(100% - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto;scroll-padding-top:70px;margin:auto;padding:0 var(--history-padding) var(--history-padding);border:1px solid #343c34;border-radius:14px;background:#101210;color:#f1f1f1;color-scheme:dark}
+.history-dialog::backdrop{background:#000b}
+.history-dialog{scrollbar-width:thin;scrollbar-color:#4c554d #101210}
+.history-dialog::-webkit-scrollbar{width:6px}
+.history-dialog::-webkit-scrollbar-thumb{background:#4c554d;border-radius:6px}
+.history-dialog::-webkit-scrollbar-track{background:#101210}
+.history-head,.history-row,.history-actions{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.history-head{position:sticky;top:0;z-index:2;margin:0 calc(-1 * var(--history-padding));padding:10px var(--history-padding);background:#101210}
+.history-dialog h2,.history-dialog h3,.history-dialog p{margin:0}
+.history-head h2{font-size:clamp(1.15rem,4.8vw,1.48rem);line-height:1.15}
+.history-label{display:inline-flex;align-items:center;gap:7px}
+.history-icon{width:16px;height:16px;flex:none;color:#8effa0}
+.history-head .history-icon{width:20px;height:20px}
+.history-head-actions{display:flex;align-items:center;gap:6px}
+.history-menu{position:relative}
+.history-menu summary,.history-head #workoutHistoryClose{display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:6px;cursor:pointer}
+.history-menu summary{list-style:none;color:#c3c9c3}
+.history-menu-dots{font-size:1.3rem;letter-spacing:.08em;line-height:1}
+.history-menu summary::-webkit-details-marker{display:none}
+.history-menu[open] summary,.history-menu summary:hover{background:#202820}
+.history-menu-panel{position:absolute;z-index:1;top:calc(100% + 6px);right:0;display:grid;gap:4px;width:max-content;max-width:67vw;padding:6px;border:1px solid #3f4b40;border-radius:8px;background:#181e18;box-shadow:0 7px 20px #0008}
+.history-dialog .history-menu-panel button{background:transparent;border-color:transparent;text-align:left}
+.history-dialog .history-menu-panel button:hover{background:#283329}
+.history-dialog #workoutHistoryStatus:empty{display:none}
+.history-dialog section,.history-dialog>p,.history-dialog .history-actions{margin-top:18px}
+.history-dialog button{min-height:44px;padding:8px 12px;border:1px solid #555;border-radius:5px;background:#202020;color:inherit;font:inherit;cursor:pointer}
+.history-dialog .history-primary{border-color:#2bff4a;background:#2bff4a;color:#080808;font-weight:800}
+.history-dialog :is(button,summary):focus-visible{outline:2px solid #8effa0;outline-offset:2px}
+.history-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.history-metrics div{padding:8px 0;border-top:1px solid #3c3c3c;overflow-wrap:anywhere}
+.history-metrics dt{display:flex;align-items:center;gap:5px;color:#b7b7b7;font-size:.8rem;margin-top:4px}
+.history-metrics dt .history-icon{width:13px;height:13px}
+.history-metrics dd{margin:0;font-size:1.4rem;font-weight:800}
+.history-progress{display:flex;gap:6px;margin:10px 0}
+.history-progress span{height:4px;flex:1;background:#444;border-radius:4px}
+.history-progress span.filled{background:#2bff4a}
+.history-dialog ol{list-style:none;padding:0;margin:8px 0}
+.history-dialog li{border-top:1px solid #333;padding:8px 0}
+.history-dialog .history-actions{flex-wrap:wrap}
+.history-dialog [hidden]{display:none}
+.history-dialog .history-week{margin-top:8px;padding-bottom:6px}
+.history-week-overview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,4vw,22px)}
+.history-week h3{color:#c4c8c4;font-size:.86rem;font-weight:650}
+.history-score{display:flex;align-items:baseline;flex-wrap:wrap;column-gap:7px;row-gap:2px;margin:6px 0;font-variant-numeric:tabular-nums}
+.history-score strong{font-size:clamp(1.75rem,8vw,2.65rem);letter-spacing:-.045em;line-height:1}
+.history-goal .history-score strong{color:#65ff76}
+.history-goal .history-label .history-icon{width:13px;height:13px}
+.history-score span{font-size:.85rem;color:#c6c8c6}
+.history-streak-panel{padding-left:clamp(9px,3vw,16px);border-left:1px solid #363836}
+.history-streak-panel .history-score .history-icon{align-self:center}
+.history-dialog .history-week-note{color:#b9bfb9;font-size:.79rem;line-height:1.36;overflow-wrap:anywhere}
+.history-week-bottom{margin-top:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 10px}
+.history-week-meta{display:flex;flex-wrap:wrap;gap:5px 12px;color:#c6c8c6;font-size:.86rem}
+.history-week-meta .history-icon{width:14px;height:14px}
+.history-week .history-progress{margin:9px 0 7px;max-width:160px}
+.history-dialog .history-next{padding-inline:6px;border-color:transparent;background:transparent;color:#8effa0;font-weight:700;font-size:.86rem}
+.history-dialog .history-next:hover{background:#1b271c}
+.history-chart{margin:0;padding:0}
+.history-chart figcaption{font-size:1rem;font-weight:750}
+.history-chart figcaption small{margin-left:3px;color:#b9bfb9;font-size:.78rem;font-weight:500}
+.history-chart ol{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:10px 0 0}
+.history-chart li{border:0;padding:0;text-align:center;min-width:0}
+.history-chart-slot{height:104px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;border-bottom:1px solid #414841}
+.history-chart-bar{width:68%;max-width:32px;flex:0 0 auto;height:var(--bar-height);min-height:2px;background:#749578;border-radius:3px 3px 0 0}
+.history-chart li:last-child .history-chart-bar{background:#2bff4a}
+.history-chart .history-chart-zero{height:2px;border-radius:1px;background:#626962}
+.history-chart li:last-child .history-chart-zero{background:#8effa0}
+.history-chart li:last-child .history-chart-date{color:#8effa0}
+.history-chart-value,.history-chart-date{display:block;font-variant-numeric:tabular-nums;font-size:clamp(.73rem,2.8vw,.82rem);line-height:1.2}
+.history-chart-value{font-weight:650;margin:0 0 4px}
+.history-chart-date{color:#b7b7b7;margin-top:7px;line-height:1.15;white-space:normal}
+.history-chart-current{display:block;margin-top:3px;color:#8effa0;font-weight:650;white-space:nowrap}
+@media(max-width:380px){
+    .history-chart ol{gap:3px}
+    .history-chart li:last-child .history-chart-date{display:grid;grid-template-columns:minmax(0,1fr)}
+    .history-chart-current{width:max-content;justify-self:end}
+}
+.history-chart-value{white-space:normal;overflow-wrap:anywhere}
+.history-workout-name{font-weight:650;min-width:0;overflow-wrap:anywhere}
+.history-workout-name small{display:block;margin-top:3px;color:#b9bfb9;font-size:.79rem;font-weight:400}
+.history-workout-meta{flex:none;text-align:right;font-weight:650;font-variant-numeric:tabular-nums}
+.history-dialog .history-log ol{margin-bottom:0}
+.history-dialog .history-log li{border-color:#303430;padding:10px 0}
+.history-dialog .history-log li:first-child{border-top:0}
+.history-empty-state{padding:20px 0 10px}
+.history-empty-state h3{font-size:1.12rem}
+.history-dialog .history-empty-state p{max-width:32ch;margin-top:7px;color:#c4c8c4;line-height:1.45}
+.history-dialog .history-empty-state button{margin-top:14px}
+.history-disclosure{margin-top:14px;border-top:1px solid #343c34}
+.history-disclosure summary{width:fit-content;min-height:44px;padding-block:12px;cursor:pointer;color:#b7b7b7;font-size:.9rem}
+.history-disclosure.history-older{margin-top:0;border:0}
+.history-disclosure.history-older summary{color:#adcea9;padding-bottom:6px}
+.history-streak .history-icon{flex:none;width:21px;height:21px;color:#ffac48}
+.history-streak .history-flame-core{fill:#ffe18a;stroke:none}
+@media(prefers-reduced-motion:no-preference){
+    .history-dialog[open]{animation:history-open 240ms cubic-bezier(.2,.7,.3,1) both}
+    .history-dialog[open]::backdrop{animation:history-backdrop 200ms ease-out both}
+    .history-dialog[open] .history-week,.history-dialog[open] .history-chart{
+        animation:history-enter 260ms ease-out both
+    }
+    .history-dialog[open] .history-chart{animation-delay:60ms}
+    .history-dialog[open] .history-chart-bar{
+        transform-origin:bottom;
+        animation:history-grow 380ms cubic-bezier(.2,.75,.3,1) var(--bar-delay) both
+    }
+    .history-dialog[open] .history-streak .history-icon{
+        transform-origin:50% 84%;
+        animation:history-flame 2s ease-in-out infinite
+    }
+    .history-dialog[open] .history-flame-core{
+        transform-origin:50% 80%;transform-box:view-box;
+        animation:history-ember .95s ease-in-out infinite alternate
+    }
+}
+@keyframes history-open{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes history-backdrop{from{opacity:0}to{opacity:1}}
+@keyframes history-enter{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes history-grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes history-flame{
+    0%,100%{transform:rotate(-2deg) scale(.98,1.01)}
+    28%{transform:rotate(2deg) scale(1.02,.97)}
+    57%{transform:rotate(-1deg) scale(.97,1.06)}
+    78%{transform:rotate(1deg) scale(1.02,.99)}
+}
+@keyframes history-ember{from{opacity:.66;transform:scale(.9,.8)}to{opacity:1;transform:scale(1.1,1.14)}}
+</style>
+<style>
 /* The portrait is decorative; the whole coach card remains the preview button. */
 .setup-coaches button{position:relative;isolation:isolate;overflow:hidden;min-height:150px;padding:22px 14px;gap:14px;background:#080808}
 .setup-coaches button::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#080808 0%,#080808e8 38%,#08080818 100%);pointer-events:none}
@@ -4736,6 +4900,18 @@
         </symbol>
         <symbol id="icon-flame" viewBox="0 0 24 24">
             <path d="M8.5 14.5A4.5 4.5 0 0 0 12 22a7 7 0 0 0 7-7c0-4-2.5-6.5-5-9-.8 2.8-2.2 4.2-4 5.5.2-2.1-.5-4.3-2-6.5C5.5 7.6 4 10.4 4 13a8 8 0 0 0 8 9"></path>
+        </symbol>
+        <symbol id="icon-history-calendar" viewBox="0 0 24 24">
+            <rect x="4" y="6" width="16" height="15" rx="2"/><path d="M8 3v6m8-6v6M4 11h16"/>
+        </symbol>
+        <symbol id="icon-history-clock" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+        </symbol>
+        <symbol id="icon-history-rounds" viewBox="0 0 24 24">
+            <rect x="4" y="5" width="16" height="14" rx="2"/><path d="M9 9v6m6-6v6"/>
+        </symbol>
+        <symbol id="icon-history-chart" viewBox="0 0 24 24">
+            <path d="M4 4v16h16M8 16v-4m5 4V8m5 8V5"/>
         </symbol>
         <symbol id="icon-trophy" viewBox="0 0 24 24">
             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M6 2h12v7a6 6 0 0 1-12 0V2Z"></path><path d="M12 15v4"></path><path d="M8 22h8"></path><path d="M9 19h6"></path>
@@ -4813,6 +4989,7 @@
                 </div>
                 </div>
                 <h1 class="mode-title">Choose your session</h1>
+                <button type="button" id="workoutHistoryButton" class="history-link" onclick="openWorkoutHistory()" data-coach-i18n></button>
             </header>
             <div class="mode-actions" aria-label="Training modes">
                 <button class="mode-card spar-card" onclick="chooseSparMode()">
@@ -4848,6 +5025,8 @@
             </div>
         </div>
     </div>
+
+    <dialog id="workoutHistoryDialog" class="history-dialog" aria-labelledby="workoutHistoryTitle" data-coach-i18n></dialog>
 
     <!-- Sparring Setup -->
     <div class="sparring-setup hidden" id="sparringSetup">
@@ -5117,7 +5296,7 @@
     </div>
 
     <!-- Finished Overlay -->
-    <div class="finished-overlay" id="finishedOverlay">
+    <dialog class="finished-overlay" id="finishedOverlay" aria-labelledby="finishedTitle" data-coach-i18n>
         <div class="finished-box">
             <div class="finished-confetti" aria-hidden="true">
                 <span></span><span></span><span></span><span></span><span></span><span></span>
@@ -5128,19 +5307,19 @@
                 <svg class="icon finished-big-trophy"><use href="#icon-trophy"></use></svg>
             </div>
             <div class="finished-content">
-                <div class="finished-title">SESSION COMPLETE!</div>
-                <div class="finished-subtitle">Great workout!</div>
+                <h1 class="finished-title" id="finishedTitle" tabindex="-1"></h1>
+                <div class="finished-subtitle" id="finishedWorkoutName"></div>
                 <div class="finished-summary">
-                    <div class="finished-row"><span>Rounds completed</span><strong id="summaryRounds">0/0</strong></div>
-                    <div class="finished-row"><span>Active time</span><strong id="summaryActive">00:00</strong></div>
-                    <div class="finished-row"><span>Break time</span><strong id="summaryBreak">00:00</strong></div>
-                    <div class="finished-row"><span>Skipped breaks</span><strong id="summarySkips">0</strong></div>
-                    <div class="finished-row"><span>Completion</span><strong id="summaryCompletion">0%</strong></div>
+                    <div class="finished-row" id="summaryWork"><span id="summaryWorkLabel"></span><strong id="summaryRounds"></strong></div>
+                    <div class="finished-row"><span id="summaryActiveLabel"></span><strong id="summaryActive"></strong></div>
+                    <div class="finished-row"><span id="summaryBreakLabel"></span><strong id="summaryBreak"></strong></div>
+                    <div class="finished-row"><span id="summarySkipsLabel"></span><strong id="summarySkips"></strong></div>
+                    <div class="finished-row" id="finishedWeek"><span id="finishedWeekTitle"></span><strong id="finishedWeekCount"></strong></div>
                 </div>
-                <button class="save-btn finished-action" onclick="resetTimer()">START NEW SESSION</button>
+                <button class="save-btn finished-action" id="finishedRepeat" type="button" onclick="resetTimer(); document.getElementById('startBtn').focus()"></button>
             </div>
         </div>
-    </div>
+    </dialog>
 
     <!-- Settings Modal -->
     <div class="modal" id="settingsModal">
@@ -5258,7 +5437,7 @@
                     <p id="voiceCoachStatus" role="status" aria-live="polite"></p>
                 </section>
                 <section class="sound-group"><h2>WORKOUT CUES</h2>
-                    <label class="sound-option"><span>Workout section signals<small>One gong with 15 seconds left. Two gongs when a section ends.</small></span><input type="checkbox" id="trainingCuesToggle" onchange="setTrainingAudioPreference('trainingCuesEnabled',this.checked)"></label>
+                    <label class="sound-option"><span>Workout section signals<small>One warning with 15 seconds left.</small></span><input type="checkbox" id="trainingCuesToggle" onchange="setTrainingAudioPreference('trainingCuesEnabled',this.checked)"></label>
                     <label class="sound-option"><span>Beep every 30 seconds</span><input type="checkbox" id="periodicCuesToggle" onchange="setTrainingAudioPreference('periodicCuesEnabled',this.checked)"></label>
                 </section>
                 <section class="sound-group"><h2>ROUND BELL</h2><p>Bell to start. Gong to finish.</p>
@@ -5278,8 +5457,9 @@
     </script>
     <script src="training-sports.js?v=84"></script>
     <script src="onboarding.js?v=113"></script>
-    <script src="training-audio.js?v=84"></script>
+    <script src="training-audio.js?v=135"></script>
     <script src="coach-rounds.js?v=118"></script>
+    <script src="workout-history.js?v=132"></script>
     <script src="coach-audio-manifest.js?v=84"></script>
     <script src="coach-maya-manifest.js?v=84"></script>
     <script src="coach-rounds-audio-manifest.js?v=112"></script>
@@ -5439,6 +5619,11 @@
         let roundStartAudioIndex = 0;
         let roundEndAudioIndex = 0;
         let wakeLock = null;
+        const workoutHistory = createWorkoutHistory({
+            getItem: key => localStorage.getItem(key),
+            setItem: (key, value) => localStorage.setItem(key, value),
+            removeItem: key => localStorage.removeItem(key)
+        });
         let sessionStats = {
             activeSeconds: 0,
             breakSeconds: 0,
@@ -6194,7 +6379,7 @@
             ['Sharp basics', 'Terävät perusteet', 'Saubere Grundlagen'],
             ['SOUNDS & VOICE', 'ÄÄNET JA PUHEOPASTUS', 'TÖNE UND SPRACHANLEITUNG'],
             ['Workout section signals', 'Harjoitusosioiden äänimerkit', 'Signale für Trainingsabschnitte'],
-            ['One gong with 15 seconds left. Two gongs when a section ends.', 'Yksi gongi, kun aikaa on 15 sekuntia. Kaksi gongia osion päättyessä.', 'Ein Gong bei 15 verbleibenden Sekunden. Zwei Gongs am Abschnittsende.'],
+            ['One warning with 15 seconds left.', 'Yksi varoitusääni, kun aikaa on 15 sekuntia.', 'Ein Warnsignal bei 15 verbleibenden Sekunden.'],
             ['Beep every 30 seconds', 'Piippaus 30 sekunnin välein', 'Signalton alle 30 Sekunden'],
             ['Voice coach (trial)', 'Puheopastus (kokeilu)', 'Sprachanleitung (Testversion)'],
             ['Available in 30-minute Boxing and K1 plans and Sharp basics. Uses an installed offline voice in your selected language.', 'Saatavilla 30 minuutin nyrkkeily- ja K1-ohjelmissa sekä Terävät perusteet -treenissä. Käyttää laitteelle asennettua puheääntä valitsemallasi kielellä ilman verkkoyhteyttä.', 'Verfügbar in 30-minütigen Box- und K1-Plänen sowie Saubere Grundlagen. Verwendet eine installierte Offline-Stimme in deiner gewählten Sprache.'],
@@ -6494,11 +6679,6 @@
         const preRoundTask = document.getElementById('preRoundTask');
         const preRoundCountdown = document.getElementById('preRoundCountdown');
         const finishedOverlay = document.getElementById('finishedOverlay');
-        const summaryRounds = document.getElementById('summaryRounds');
-        const summaryActive = document.getElementById('summaryActive');
-        const summaryBreak = document.getElementById('summaryBreak');
-        const summarySkips = document.getElementById('summarySkips');
-        const summaryCompletion = document.getElementById('summaryCompletion');
         const settingsModal = document.getElementById('settingsModal');
         const modeChoice = document.getElementById('modeChoice');
         const trainingSection = document.getElementById('trainingSection');
@@ -6808,9 +6988,22 @@
         }
 
         function playTrainingStartBell() {
+            return playTrainingBell(new Audio(ROUND_START_SOUND_SRC), playFallbackBell);
+        }
+
+        function playTrainingEndBell() {
+            const audio = roundEndAudioPool[0];
+            const state = getAudioPlaybackState(audio);
+            // Stop a late silent unlock from interrupting the recorded gong.
+            state.generation++;
+            state.priming = false;
+            audio.muted = false;
+            return playTrainingBell(audio);
+        }
+
+        function playTrainingBell(audio, fallbackSound) {
             stopTrainingSounds();
             return new Promise(resolve => {
-                const audio = new Audio(ROUND_START_SOUND_SRC);
                 let finished = false;
                 let usingFallback = false;
                 let timer;
@@ -6825,18 +7018,24 @@
                 };
                 const fallback = () => {
                     if (finished || usingFallback) return;
+                    if (!fallbackSound) {
+                        finish();
+                        return;
+                    }
                     usingFallback = true;
                     clearTimeout(timer);
                     audio.pause();
                     audio.onended = audio.onerror = null;
-                    playFallbackBell();
+                    fallbackSound();
                     timer = setTimeout(finish, 750);
                 };
                 pendingTrainingBell = finish;
                 audio.volume = 1;
+                audio.currentTime = 0;
                 audio.onended = finish;
                 audio.onerror = fallback;
-                timer = setTimeout(fallback, 2000);
+                // The bundled bell lasts about 2.4 seconds. Give it time to end.
+                timer = setTimeout(fallback, 4000);
                 try { audio.play().catch(fallback); } catch(e) { fallback(); }
             });
         }
@@ -6846,6 +7045,7 @@
             setTimeout: (callback, delay) => window.setTimeout(callback, delay),
             clearTimeout: id => window.clearTimeout(id),
             bell: playTrainingStartBell,
+            endBell: playTrainingEndBell,
             gong: playTrainingGong,
             beep: () => playTrainingTone(880, 0.12, 0, 0.3),
             stopSounds: stopTrainingSounds,
@@ -6869,7 +7069,7 @@
             restore: state => coachRoundsMemory.read(`${state.sport}:${state.stance}`,state.combos),
             remember: (state,progress) => coachRoundsMemory.write(`${state.sport}:${state.stance}`,state.combos,progress),
             cancelSpeech: cancelCoachSpeech, stopSounds: stopTrainingSounds,
-            bell: rest => rest ? new Promise(resolve => { playTrainingGong(1); window.setTimeout(resolve,700); }) : playTrainingStartBell(),
+            bell: rest => rest ? playTrainingEndBell() : playTrainingStartBell(),
             speak: text => speakCoachText(text),
             onStep: () => { coachRoundCue=''; coachRoundTip=''; coachRoundMovement=''; coachRoundFinishing=false; coachRoundError=false; updateUI(); },
             onCombo: (text, kind) => { coachRoundCue=text; coachRoundMovement=''; coachRoundFinishing=kind==='finisher'; coachRoundError=false; updateUI(); },
@@ -6904,6 +7104,7 @@
                 elapsed, duration: step.end - step.start,
                 running: timerState.isRunning && !timerState.isFinished,
                 bellEnabled: settings.roundSoundsEnabled,
+                endBoundary: index > 0 && trainingTimeline[index - 1].kind !== 'rest',
                 cuesEnabled: settings.trainingCuesEnabled,
                 periodicEnabled: settings.periodicCuesEnabled,
                 voiceText
@@ -6990,31 +7191,46 @@
         }
 
         function renderSessionSummary() {
+            const text = coachText;
+            const set = (id, value) => { document.getElementById(id).textContent = value; };
             const coachPlan = activeTrainingWorkout?.coachRounds;
-            const targetRounds = coachPlan?.rounds || settings.numberOfRounds;
-            const rounds = Math.min(sessionStats.completedRounds, targetRounds);
-            const completion = targetRounds > 0
-                ? Math.round((rounds / targetRounds) * 100)
-                : 0;
-
-            const finishedTitle = document.querySelector('.finished-title');
-            const finishedSubtitle = document.querySelector('.finished-subtitle');
-            if (finishedTitle) {
-                finishedTitle.textContent = appMode === 'training'
-                    ? 'WORKOUT COMPLETE!'
-                    : 'SESSION COMPLETE!';
+            const sparring = appMode === 'spar';
+            const planned = trainingTimeline.filter(step => step.kind !== 'rest');
+            const usesRounds = sparring || planned.every(step => step.kind === 'round');
+            const target = sparring ? settings.numberOfRounds : planned.length;
+            const completed = sparring ? sessionStats.completedRounds : sessionStats.completedWorkSteps || 0;
+            const partial = !!sessionStats.skippedWork;
+            set('finishedTitle', partial
+                ? text('Session ended', 'Treeni päättyi', 'Training beendet')
+                : text('Session complete', 'Treeni tehty', 'Training geschafft'));
+            set('finishedWorkoutName', coachPlan
+                ? `Coach Rounds · ${coachSportName(coachPlan.sport)} · ${coachLevelName(coachPlan.level)}`
+                : activeTrainingWorkout?.title || (sparring ? 'Sparring' : text('Training', 'Treeni', 'Training')));
+            set('summaryActive', formatTime(Math.round(sessionStats.activeSeconds)));
+            set('summaryActiveLabel', text('Active time', 'Aktiivinen aika', 'Aktive Zeit'));
+            document.getElementById('summaryWork').hidden = !target;
+            set('summaryRounds', `${Math.min(completed, target)}/${target}`);
+            set('summaryWorkLabel', usesRounds
+                ? text('Rounds completed', 'Erää tehty', 'Runden geschafft')
+                : text('Steps completed', 'Vaihetta tehty', 'Abschnitte geschafft'));
+            set('summaryBreakLabel', text('Rest time', 'Taukoaika', 'Pausenzeit'));
+            set('summaryBreak', formatTime(Math.round(sessionStats.breakSeconds)));
+            set('summarySkipsLabel', text('Skipped rests', 'Ohitetut tauot', 'Übersprungene Pausen'));
+            set('summarySkips', sessionStats.skippedBreaks);
+            set('finishedRepeat', text('Start new session', 'Aloita uusi treeni', 'Neue Einheit starten'));
+            const state = workoutHistory.read();
+            const entry = sessionStats.history?.recordedEntry(state);
+            const lastRow = document.getElementById('finishedWeek');
+            lastRow.hidden = !entry && !target;
+            if (entry) {
+                const {weekly} = summarizeWorkoutHistory(state.entries);
+                const goal = WORKOUT_HISTORY_GOAL;
+                set('finishedWeekTitle', text('Weekly goal', 'Viikkotavoite', 'Wochenziel'));
+                set('finishedWeekCount', weekly.count >= goal ? text('Reached ✓', 'Saavutettu ✓', 'Erreicht ✓') : `${weekly.count}/${goal}`);
+            } else {
+                set('finishedWeekTitle', text('Completion', 'Suoritusaste', 'Abschluss'));
+                set('finishedWeekCount', target ? `${Math.round(Math.min(completed, target) / target * 100)}%` : '');
             }
-            if (finishedSubtitle) {
-                finishedSubtitle.textContent = appMode === 'training'
-                    ? 'Strong work. You finished the plan.'
-                    : 'Great work!';
-            }
-
-            summaryRounds.textContent = `${rounds}/${targetRounds}`;
-            summaryActive.textContent = formatTime(sessionStats.activeSeconds);
-            summaryBreak.textContent = formatTime(sessionStats.breakSeconds);
-            summarySkips.textContent = `${sessionStats.skippedBreaks}`;
-            summaryCompletion.textContent = `${completion}%`;
         }
 
         // Update UI
@@ -7182,8 +7398,12 @@
                     if (step.kind === 'rest') {
                         rest += Math.max(0, Math.min(to, step.end) - Math.max(from, step.start));
                     }
-                    if (activeTrainingWorkout.coachRounds && step.kind === 'round' && from < step.end && to >= step.end) {
-                        sessionStats.completedRounds++;
+                    if (step.kind !== 'rest' && from < step.end && to >= step.end) {
+                        sessionStats.completedWorkSteps = (sessionStats.completedWorkSteps || 0) + 1;
+                        if (step.kind === 'round') {
+                            if (activeTrainingWorkout.coachRounds) sessionStats.completedRounds++;
+                            sessionStats.historyRounds = (sessionStats.historyRounds || 0) + 1;
+                        }
                     }
                     if (activeTrainingWorkout.coachRounds && step.kind === 'round' && to < step.end &&
                         from <= step.end - 10 && to > step.end - 10) playWarningVibration();
@@ -7191,6 +7411,7 @@
             }
             sessionStats.activeSeconds += seconds - rest;
             sessionStats.breakSeconds += rest;
+            sessionStats.history?.save(sessionStats);
         }
 
         // Timer tick
@@ -7253,6 +7474,7 @@
             const currentIndex = trainingTimeline.indexOf(step);
             const nextStep = trainingTimeline[currentIndex + 1];
             if (step.kind === 'rest') sessionStats.skippedBreaks++;
+            else sessionStats.skippedWork = true;
 
             if (!nextStep) {
                 timerState.timeLeft = 0;
@@ -7260,8 +7482,7 @@
                 return;
             }
 
-            const nextElapsed = Math.min(settings.roundTime, nextStep.start + 0.01);
-            timerState.timeLeft = Math.max(0, settings.roundTime - nextElapsed);
+            timerState.timeLeft = Math.max(0, settings.roundTime - nextStep.start);
             currentGuideIndex = -1;
             lastTickMs = performance.now();
             lastWholeSecond = Math.ceil(timerState.timeLeft);
@@ -7273,16 +7494,21 @@
             if (timerState.isRound) {
                 // Round ending
                 if (!activeTrainingWorkout?.coachRounds) sessionStats.completedRounds++;
-                if (activeTrainingWorkout?.coachRounds) { coachRoundsController.reset(); if(playCues && settings.roundSoundsEnabled) playTrainingGong(1); }
-                else if (appMode === 'training') trainingCueController.finish(playCues && settings.trainingCuesEnabled);
+                if (appMode === 'spar') sessionStats.historyRounds = sessionStats.completedRounds;
+                if (activeTrainingWorkout?.coachRounds) { coachRoundsController.reset(); if(playCues && settings.roundSoundsEnabled) playTrainingEndBell(); }
+                else if (appMode === 'training') trainingCueController.finish(playCues && settings.roundSoundsEnabled);
                 else if (playCues) playRoundEnd();
                 if (timerState.currentRound >= settings.numberOfRounds) {
                     timerState.isFinished = true;
                     timerState.isRunning = false;
+                    sessionStats.historyComplete = !sessionStats.skippedWork;
+                    sessionStats.history?.save(sessionStats, true);
                     clearInterval(intervalId);
                     releaseWakeLock();
                     renderSessionSummary();
                     finishedOverlay.classList.add('show');
+                    finishedOverlay.showModal();
+                    document.getElementById('finishedTitle').focus({preventScroll: true});
                     if (playCues && appMode !== 'training') playWorkoutCompleteFanfare();
                     updateUI();
                     return;
@@ -7357,7 +7583,7 @@
             updateUI();
 
             if (timerState.isRunning) {
-                if (!sessionStats.startedAt) sessionStats.startedAt = Date.now();
+                beginWorkoutSession();
                 unlockAppAudio();
                 requestWakeLock();
                 const isInitialRoundStart = timerState.isRound && timerState.currentRound === 1 && timerState.timeLeft === settings.roundTime;
@@ -7379,6 +7605,7 @@
                 lastTickMs = null;
                 releaseWakeLock();
                 syncTrainingAudio();
+                sessionStats.history?.save(sessionStats, true);
             }
         }
 
@@ -7386,7 +7613,7 @@
         function continueTimer() {
             if (timerState.isFinished || timerState.isRunning) return;
             timerState.isRunning = true;
-            if (!sessionStats.startedAt) sessionStats.startedAt = Date.now();
+            beginWorkoutSession();
             unlockAppAudio();
             requestWakeLock();
             lastTickMs = performance.now();
@@ -7398,6 +7625,7 @@
 
         // Reset timer
         function resetTimer() {
+            sessionStats.history?.save(sessionStats, true);
             clearInterval(intervalId);
             if(typeof coachRoundsController!=='undefined')coachRoundsController.reset();
             coachRoundCue='';coachRoundTip='';coachRoundMovement='';coachRoundFinishing=false;coachRoundError=false;
@@ -7431,6 +7659,7 @@
                 skippedBreaks: 0,
                 startedAt: null
             };
+            if (finishedOverlay.open) finishedOverlay.close();
             finishedOverlay.classList.remove('show');
 
             updateUI();
@@ -8800,9 +9029,157 @@
             modeChoice.classList.remove('hidden');
             trainingSection.classList.add('hidden');
             sparringSetup.classList.add('hidden');
+            renderWorkoutHistory();
+        }
+
+        function beginWorkoutSession() {
+            if (sessionStats.startedAt) return;
+            sessionStats.startedAt = Date.now();
+            const mode = activeTrainingWorkout?.coachRounds ? 'coach' : appMode;
+            const rounds = activeTrainingWorkout?.coachRounds;
+            const title = rounds ? `${coachSportName(rounds.sport)} · ${coachLevelName(rounds.level)}` : activeTrainingWorkout?.title;
+            sessionStats.history = workoutHistory.start(mode, new Date(), title);
+        }
+
+        function openWorkoutHistory() {
+            renderWorkoutHistory();
+            const dialog = document.getElementById('workoutHistoryDialog');
+            dialog.showModal();
+            dialog.scrollTop = 0;
+        }
+
+        function closeWorkoutHistory() {
+            document.getElementById('workoutHistoryDialog').close();
+        }
+
+        function updateWorkoutHistory(action) {
+            if (action !== 'enable') {
+                const message = action === 'disable'
+                    ? coachText('Turn off history and delete all saved workouts?', 'Poistetaanko historia käytöstä ja kaikki tallennetut treenit?', 'Verlauf deaktivieren und alle gespeicherten Einheiten löschen?')
+                    : coachText('Delete all saved workouts? History will stay enabled.', 'Poistetaanko kaikki tallennetut treenit? Historia pysyy käytössä.', 'Alle gespeicherten Einheiten löschen? Der Verlauf bleibt aktiviert.');
+                if (!window.confirm(message)) return;
+            }
+            const saved = workoutHistory[action]();
+            renderWorkoutHistory();
+            if (!saved) document.getElementById('workoutHistoryStatus').textContent =
+                coachText('Storage unavailable. Try again.', 'Tallennus ei onnistu. Yritä uudelleen.', 'Speicher nicht verfügbar. Versuche es erneut.');
+            document.getElementById('workoutHistoryClose').focus();
+        }
+
+        function renderWorkoutHistory() {
+            const state = workoutHistory.read();
+            const text = coachText;
+            const title = text('Workout history','Treenihistoria','Trainingsverlauf');
+            const button = document.getElementById('workoutHistoryButton');
+            const dialog = document.getElementById('workoutHistoryDialog');
+            const icon = name => `<svg class="history-icon icon" aria-hidden="true" focusable="false"><use href="#icon-${name}"></use></svg>`;
+            const status = '<p id="workoutHistoryStatus" role="status"></p>';
+            const head = `<header class="history-head"><h2 id="workoutHistoryTitle" class="history-label">${icon('history-chart')}${title}</h2>
+                <div class="history-head-actions">
+                    ${state ? `<details class="history-menu"><summary aria-label="${text('Manage history','Hallitse historiaa','Verlauf verwalten')}"><span class="history-menu-dots" aria-hidden="true">···</span></summary>
+                        <div class="history-menu-panel">
+                            <button type="button" onclick="updateWorkoutHistory('clear')">${text('Clear history','Tyhjennä historia','Verlauf löschen')}</button>
+                            <button type="button" onclick="updateWorkoutHistory('disable')">${text('Turn off and delete history','Poista käytöstä ja tyhjennä','Verlauf deaktivieren und löschen')}</button>
+                        </div></details>` : ''}
+                    <button type="button" id="workoutHistoryClose" onclick="closeWorkoutHistory()" aria-label="${text('Close','Sulje','Schließen')}" autofocus>✕</button>
+                </div></header>` + status;
+            const mark = '<span class="history-mark" aria-hidden="true"><i></i><i></i><i></i></span>';
+            const arrow = '<span class="history-arrow" aria-hidden="true">↗</span>';
+            const disclosures = new Set(Array.from(dialog.querySelectorAll('details[open]'), item => item.id));
+            if (!state) {
+                button.innerHTML = `${mark}<strong>${title}</strong>${arrow}`;
+                dialog.innerHTML = head + `<p>${text('Save your workouts and build a weekly streak. History stays on this device.',
+                    'Tallenna treenisi ja seuraa viikkoputkea. Historia säilyy tällä laitteella.',
+                    'Speichere deine Einheiten und baue eine Wochenserie auf. Der Verlauf bleibt auf diesem Gerät.')}</p>
+                    <div class="history-actions"><button class="history-primary" type="button" onclick="updateWorkoutHistory('enable')">${text('Enable history','Ota historia käyttöön','Verlauf aktivieren')}</button></div>`;
+                return;
+            }
+            const {weekly, total, streak, modes, activity} = summarizeWorkoutHistory(state.entries);
+            const chooseLabel = text('Choose a workout','Valitse treeni','Training wählen');
+            if (!total.count) {
+                button.innerHTML = `${mark}<strong>${title}</strong>${arrow}`;
+                dialog.innerHTML = head + `<section class="history-empty-state">
+                    <h3>${text('Your first workout starts the log','Ensimmäinen treeni aloittaa historian','Dein erstes Training startet den Verlauf')}</h3>
+                    <p>${text('Your training time and rounds will appear here after a workout.',
+                        'Treeniminuutit ja erät näkyvät täällä treenin jälkeen.',
+                        'Deine Trainingsminuten und Runden erscheinen nach dem Training hier.')}</p>
+                    <button class="history-primary" type="button" onclick="closeWorkoutHistory()">${chooseLabel}</button>
+                </section>`;
+                return;
+            }
+            const number = new Intl.NumberFormat(settings.language, {maximumFractionDigits:1});
+            const minutes = seconds => number.format(Math.floor(seconds / 6) / 10);
+            const goal = WORKOUT_HISTORY_GOAL;
+            const remaining = Math.max(0, goal - weekly.count);
+            const metrics = stats => `<dl class="history-metrics">${[
+                [number.format(stats.count),text('Sessions','Treeniä','Einheiten'),'history-calendar'],
+                [minutes(stats.seconds),text('Minutes','Minuuttia','Minuten'),'history-clock'],
+                [number.format(stats.rounds),text('Rounds','Erää','Runden'),'history-rounds']
+            ].map(([value,label,symbol]) => `<div><dd>${value}</dd><dt>${icon(symbol)}${label}</dt></div>`).join('')}</dl>`;
+            button.innerHTML = `${mark}<span><strong>${title}</strong><br><small>${text('This week','Tällä viikolla','Diese Woche')} · ${remaining ? `${weekly.count}/${goal}` : `${number.format(weekly.count)} ${text('sessions','treeniä','Einheiten')}`} · ${minutes(weekly.seconds)} min</small></span>${arrow}`;
+            const modeNames = {spar:'Sparring', training:text('Training','Treeni','Training'), coach:'Coach Rounds'};
+            const date = new Intl.DateTimeFormat(settings.language, {day:'numeric',month:'short',timeZone:'UTC'});
+            const peak = Math.max(60, ...activity.map(week => week.seconds));
+            const recent = state.entries.slice().reverse().sort((a,b) => b.day.localeCompare(a.day));
+            const workoutRows = entries => `<ol>${entries.map(entry => {
+                const mode = modeNames[entry.mode];
+                const name = typeof entry.title === 'string' && entry.title.trim() ? entry.title : mode;
+                const summary = [date.format(new Date(entry.day+'T00:00:00Z')), name !== mode ? mode : '',
+                    entry.complete ? '' : text('Partial','Kesken','Teilweise')].filter(Boolean).join(' · ');
+                return `<li class="history-row"><span class="history-workout-name">${escapeHtml(name)}<small>${escapeHtml(summary)}</small></span>
+                    <span class="history-workout-meta">${minutes(entry.seconds)} min</span></li>`;
+            }).join('')}</ol>`;
+            dialog.innerHTML = head + `
+                <section class="history-week">
+                  <div class="history-week-overview">
+                    <div class="history-goal">
+                      <h3 class="history-label">${remaining ? text('Weekly goal','Viikkotavoite','Wochenziel') : `${icon('check')}${text('Goal reached','Tavoite saavutettu','Ziel erreicht')}`}</h3>
+                      <div class="history-score"><strong>${number.format(weekly.count)}${remaining ? `/${number.format(goal)}` : ''}</strong><span>${text('sessions','treeniä','Einheiten')}</span></div>
+                      <div class="history-progress" aria-hidden="true">${Array.from({length:goal}, (_,i) => `<span class="${i<weekly.count?'filled':''}"></span>`).join('')}</div>
+                      ${remaining ? `<p class="history-week-note">${remaining===1
+                        ? text('One workout to go','Yksi treeni jäljellä','Noch eine Einheit')
+                        : text(`${remaining} workouts to go`,`${remaining} treeniä jäljellä`,`Noch ${remaining} Einheiten`)}</p>` : ''}
+                    </div>
+                    <div class="history-streak-panel${streak?' history-streak':''}">
+                      <h3>${text('Weekly streak','Viikkoputki','Wochenserie')}</h3>
+                      <div class="history-score">${streak
+                        ? '<svg class="history-icon icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-flame"></use><path class="history-flame-core" d="M12 20c-3 0-4-3-2-5 .7 1.1 1.5 1.1 1.5 1.1-.2-1.6.4-2.5 1.3-3.3.1 1.8 2.3 2.4 2.3 4.3 0 1.7-1.2 2.9-3.1 2.9Z"/></svg>'
+                        : icon('flame')}<strong>${number.format(streak)}</strong><span>${streak===1?text('week','viikko','Woche'):text('weeks','viikkoa','Wochen')}</span></div>
+                      <p class="history-week-note">${text('1 workout per week','1 treeni viikossa','1 Einheit pro Woche')}</p>
+                    </div>
+                  </div>
+                  <div class="history-week-bottom">
+                    <div class="history-week-meta">
+                      <span class="history-label">${icon('history-clock')}${minutes(weekly.seconds)} min</span>
+                      <span class="history-label">${icon('history-rounds')}${number.format(weekly.rounds)} ${weekly.rounds===1 ? text('round','erä','Runde') : text('rounds','erää','Runden')}</span>
+                    </div>
+                    <button class="history-next" type="button" onclick="closeWorkoutHistory()">${chooseLabel} <span aria-hidden="true">→</span></button>
+                  </div>
+                </section>
+                <section><figure class="history-chart"><figcaption>${text('Training time by week','Treeniaika viikoittain','Trainingszeit pro Woche')} <small>(min)</small></figcaption>
+                    <ol>${activity.map((week,index) => {
+                        const label = `${text('Week','Viikko','Woche')} ${number.format(week.weekNumber)}`;
+                        const current = index===activity.length-1 ? text('This week','Tämä viikko','Diese Woche') : '';
+                        return `<li aria-label="${label}${current ? ` · ${current}` : ''} · ${minutes(week.seconds)} min">
+                            <span class="history-chart-slot" aria-hidden="true">
+                                <span class="history-chart-value">${minutes(week.seconds)}</span>
+                                <span class="history-chart-bar${week.seconds ? '' : ' history-chart-zero'}" style="--bar-height:${week.seconds/peak*80}px;--bar-delay:${90+index*35}ms"></span>
+                            </span>
+                            <span class="history-chart-date" aria-hidden="true">${label}${current ? `<span class="history-chart-current">${current}</span>` : ''}</span></li>`;
+                    }).join('')}</ol>
+                </figure></section>
+                ${recent.length ? `<section class="history-log"><h3>${text('Recent workouts','Viimeisimmät treenit','Letzte Einheiten')}</h3>${workoutRows(recent.slice(0,3))}
+                    ${recent.length>3 ? `<details id="historyOlder" class="history-disclosure history-older"${disclosures.has('historyOlder')?' open':''}>
+                        <summary>${text('Older workouts','Vanhemmat treenit','Ältere Einheiten')} (${number.format(recent.length-3)})</summary>${workoutRows(recent.slice(3))}
+                    </details>`:''}</section>`:''}
+                <details id="historyTotals" class="history-disclosure"${disclosures.has('historyTotals')?' open':''}>
+                    <summary>${text('All-time stats','Kaikkien aikojen tilastot','Gesamtstatistik')}</summary>${metrics(total)}
+                    <p class="history-muted">${WORKOUT_HISTORY_MODES.map(mode => `${modeNames[mode]} ${modes[mode]}`).join(' · ')}</p></details>`;
         }
 
         function openModeChoice() {
+            const fromSummary = finishedOverlay.open;
+            sessionStats.history?.save(sessionStats, true);
             clearInterval(intervalId);
             coachRoundsController.reset();
             trainingCueController.reset();
@@ -8810,9 +9187,11 @@
             stopPreRoundDisplay();
             releaseWakeLock();
             timerState.isRunning = false;
+            if (finishedOverlay.open) finishedOverlay.close();
             finishedOverlay.classList.remove('show');
             showModeChoice();
             updateUI();
+            if (fromSummary) modeChoice.querySelector('.spar-card')?.focus({preventScroll: true});
         }
 
         function chooseSparMode() {
@@ -9888,6 +10267,7 @@
             settings.language = language;
             document.documentElement.lang = language;
             renderCoachRoundsPicker();
+            renderWorkoutHistory();
             try { localStorage.setItem(LANGUAGE_KEY, language); } catch (e) {}
             updateSettingsUI();
             updateUI();
@@ -10026,7 +10406,7 @@ function previewRoundBell(count) {
 
         document.addEventListener('touchmove', e => {
             // Allow native scrolling inside overlay panels.
-            const scrollableArea = e.target.closest('.app-content, .timer-section, .mode-choice, .training-section, .sparring-setup, .modal-content, .workout-preview-body, .premium-panel');
+            const scrollableArea = e.target.closest('.app-content, .timer-section, .mode-choice, .training-section, .sparring-setup, .modal-content, .workout-preview-body, .premium-panel, .history-dialog');
             if (
                 (scrollableArea && !swipeActive) ||
                 settingsModal.classList.contains('show') ||
@@ -10147,6 +10527,25 @@ function previewRoundBell(count) {
         // Initialize
         updateUI();
         updateSettingsUI();
+        renderWorkoutHistory();
+        finishedOverlay.addEventListener('cancel', event => {
+            event.preventDefault();
+            openModeChoice();
+        });
+        document.getElementById('workoutHistoryDialog').addEventListener('cancel', event => {
+            const menu = event.currentTarget.querySelector('.history-menu[open]');
+            if (!menu) return;
+            event.preventDefault();
+            menu.open = false;
+            menu.querySelector('summary').focus();
+        });
+        window.addEventListener('pagehide', () => sessionStats.history?.save(sessionStats, true));
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') sessionStats.history?.save(sessionStats, true);
+        });
+        window.addEventListener('storage', event => {
+            if (event.key === WORKOUT_HISTORY_KEY || event.key === null) renderWorkoutHistory();
+        });
 
         // ===== TUTORIAL =====
         const TUT_KEY = 'fightwise_main_tutorial_done';
@@ -10456,6 +10855,14 @@ function previewRoundBell(count) {
 
         window.fightWiseBack = function () {
             if (setupFlow.back()) return true;
+            if (finishedOverlay.open) {
+                openModeChoice();
+                return true;
+            }
+            if (document.getElementById('workoutHistoryDialog').open) {
+                closeWorkoutHistory();
+                return true;
+            }
             if (tutActive || document.getElementById('tutWelcome').style.display === 'flex') skipTutorial();
             else if (premiumModal.classList.contains('show')) closePremiumModal();
             else if (settingsModal.classList.contains('show')) {
@@ -10480,6 +10887,6 @@ function previewRoundBell(count) {
         };
 
     </script>
-    <script src="tv-display.js?v=105"></script>
+    <script src="tv-display.js?v=120"></script>
 </body>
 </html>

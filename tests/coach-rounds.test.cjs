@@ -269,7 +269,7 @@ test('full workouts finish every round cleanly across sports, intensities, stanc
 test('versioned code and styles match the offline cache and worker registration survives app errors',()=>{
  const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
  const urls=[...html.matchAll(/(?:src|href)="([^"\s]+\.(?:js|css)\?v=\d+)"/g)].map(m=>m[1]);
- assert.equal(urls.length,10);
+ assert.equal(urls.length,11);
  for(const url of urls){assert.ok(sw.includes("'./"+url+"'"),url);assert.ok(fs.existsSync(url.split('?')[0]));}
  const register=html.indexOf("navigator.serviceWorker.register('./sw.js')");
  assert.ok(register>0&&register<html.indexOf('const coachRoundsMemory ='));
@@ -290,7 +290,7 @@ test('timer reset clears all displayed coach instructions while retaining catalo
  const html=fs.readFileSync('index.html','utf8'),start=html.indexOf('function resetTimer()'),end=html.indexOf('let selectedTrainingDuration',start),c=context();let cancelled=0;
  const workout=vm.runInContext('COACH_ROUNDS.plan("boxing","light")',c);
  Object.assign(c,{settings:{roundTime:420,taskSparEnabled:false},intervalId:1,clearInterval(){},coachRoundsController:{reset(){cancelled++;}},trainingCueController:{reset(){}},resetManagedAudioPlayback(){},stopPreRoundDisplay(){},updateUI(){},PRE_ROUND_READ_SECONDS:5,appMode:'training',activeTrainingWorkout:workout,finishedOverlay:{classList:{remove(){}}}});
- vm.runInContext('coachRoundCue="Jab. Cross.";coachRoundTip="Guard up";coachRoundMovement="Move left";coachRoundError=true;'+html.slice(start,end),c);
+ vm.runInContext('let sessionStats={};coachRoundCue="Jab. Cross.";coachRoundTip="Guard up";coachRoundMovement="Move left";coachRoundError=true;'+html.slice(start,end),c);
  c.resetTimer();
  assert.deepEqual(Array.from(vm.runInContext('[coachRoundCue,coachRoundTip,coachRoundMovement,coachRoundError]',c)),['','','',false]);
  assert.equal(cancelled,1);assert.equal(c.activeTrainingWorkout,workout);assert.equal(c.timerState.isRunning,false);assert.equal(c.timerState.timeLeft,420);

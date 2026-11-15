@@ -3,7 +3,7 @@
     const fullscreenButtons = document.querySelectorAll('[data-tv-fullscreen]');
     const fullscreenAvailable = typeof document.documentElement.requestFullscreen === 'function' && document.fullscreenEnabled !== false;
     const surfaceSelectors = [
-        '#firstRunSetup:not([hidden])', '#tutTooltip', '#tutWelcome', '#premiumModal.show',
+        '#workoutHistoryDialog[open]', '#firstRunSetup:not([hidden])', '#tutTooltip', '#tutWelcome', '#premiumModal.show',
         '#workoutPreview.show', '#settingsModal.show', '#setupCustomModal.show', '#finishedOverlay.show',
         '#modeChoice:not(.hidden)', '#coachRoundsSection:not([hidden])', '#trainingSection:not(.hidden)',
         '#sparringSetup:not(.hidden)', '.app'

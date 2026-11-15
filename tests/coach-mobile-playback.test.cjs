@@ -13,7 +13,7 @@ test('a stalled training bell uses a single fallback and releases coaching', asy
  const playing=context.playTrainingStartBell();
  const staleError=audio.onerror;
  const deadline=[...timers.values()][0];
- assert.equal(deadline.delay,2000);
+ assert.equal(deadline.delay,4000);
  deadline.callback();
  staleError();
  assert.equal(fallbacks,1);

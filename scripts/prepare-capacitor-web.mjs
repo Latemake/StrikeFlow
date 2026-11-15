@@ -10,6 +10,7 @@ const files = [
   'onboarding.css',
   'training-sports.js',
   'training-audio.js',
+  'workout-history.js',
   'coach-rounds.js',
   'coach-rounds.css',
   'coach-audio-manifest.js',

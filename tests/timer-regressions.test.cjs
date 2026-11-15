@@ -64,6 +64,21 @@ test('guided training accounts for rest even when a single tick spans both rest 
     advance(40000);
     assert.equal(context.sessionStats.activeSeconds, 30);
     assert.equal(context.sessionStats.breakSeconds, 10);
+    assert.equal(context.sessionStats.completedWorkSteps, 1);
+});
+
+test('guided workout completion counts full sections as well as rounds', () => {
+    const {context, advance} = timer();
+    context.appMode = 'training';
+    context.activeTrainingWorkout = {};
+    context.trainingTimeline = [
+        {kind:'section', start:0, end:30},
+        {kind:'round', start:30, end:60},
+        {kind:'section', start:60, end:120}
+    ];
+    advance(75000);
+    assert.equal(context.sessionStats.completedWorkSteps, 2);
+    assert.equal(context.sessionStats.historyRounds, 1);
 });
 
 test('Coach Rounds count finished work and skipped rests independently of the playhead', () => {

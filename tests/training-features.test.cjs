@@ -201,3 +201,28 @@ test('one recorded bell finishes before the coach speaks, independently of secti
  assert.equal(bells,2);controller.update(state(0,{running:false}));finishBell();await advance(0);await advance(0);
  assert.equal(events.filter(e=>e[0]==='speak').length,1);
 });
+
+test('guided work boundaries and workout completion use the end recording', async () => {
+    let endRecording;
+    const bells = [];
+    const {controller, events, advance} = audio({
+        bell() { bells.push('start'); return Promise.resolve(); },
+        endBell() { bells.push('end'); return new Promise(resolve => { endRecording = resolve; }); }
+    });
+    controller.update(state(0, {bellEnabled:true}));
+    await advance(0);
+    await advance(0);
+    controller.update(state(0, {key:'rest', endBoundary:true, bellEnabled:true, voiceText:'Rest', duration:16}));
+    controller.update(state(1, {key:'rest', endBoundary:true, bellEnabled:true, voiceText:'Rest', duration:16}));
+    await advance(1000);
+    assert.deepEqual(bells, ['start','end']);
+    assert.deepEqual(events.filter(event => event[0] === 'speak'), [['speak','Jab']]);
+    assert.equal(events.some(event => event[0] === 'gong'), false);
+    endRecording();
+    await advance(0);
+    await advance(0);
+    assert.deepEqual(events.filter(event => event[0] === 'speak').at(-1), ['speak','Rest']);
+    controller.finish(true);
+    controller.finish(false);
+    assert.deepEqual(bells, ['start','end','end']);
+});

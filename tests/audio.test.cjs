@@ -210,7 +210,8 @@ test('disabled sounds trigger neither media playback nor fallback', async () => 
 function addSessionFlow(c) {
     Object.assign(c, {
         timerState: { timeLeft: 180, currentRound: 1, isRound: true, isRunning: false, isFinished: false },
-        sessionStats: { completedRounds: 0 }, taskState: {}, appMode: 'spar',
+        sessionStats: { completedRounds: 0 }, taskState: {}, appMode: 'spar', activeTrainingWorkout: null,
+        workoutHistory: {start: () => null},
         intervalId: null, lastTickMs: null, lastWholeSecond: null,
         performance: { now: () => 1000 }, setInterval: () => 1, clearInterval() {},
         trainingCueController: { reset() {} }, coachRoundsController: { reset() {} }, coachRoundCue:'', coachRoundError:false, stopPreRoundDisplay() {}, releaseWakeLock() {},
@@ -218,7 +219,7 @@ function addSessionFlow(c) {
         PRE_ROUND_READ_SECONDS: 5, finishedOverlay: { classList: { remove() {} } }
     });
     Object.assign(c.settings, { roundTime: 180, breakTime: 60, numberOfRounds: 3, taskSparEnabled: false });
-    vm.runInContext(section('function openModeChoice(', 'function chooseSparMode('), c);
+    vm.runInContext(section('function beginWorkoutSession(', 'function chooseSparMode('), c);
     vm.runInContext(section('function toggleTimer(', '// Continue timer'), c);
     vm.runInContext(section('function resetTimer(', 'let selectedTrainingDuration'), c);
 }

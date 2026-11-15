@@ -66,7 +66,8 @@ function createTrainingCueController(output) {
                     const ticket = generation;
                     const bellEnabled = state.bellEnabled !== false;
                     soundsUntil = bellEnabled ? Infinity : 0;
-                    const completion = bellEnabled ? output.bell() : Promise.resolve();
+                    const bell = state.endBoundary && output.endBell ? output.endBell : output.bell;
+                    const completion = bellEnabled ? bell() : Promise.resolve();
                     Promise.resolve(completion).catch(() => {}).then(() => {
                         if (ticket !== generation || !running) return;
                         soundsUntil = 0;
@@ -82,7 +83,7 @@ function createTrainingCueController(output) {
             if (state.cuesEnabled && remaining > 0) {
                 const warning = state.duration > 15 && previousElapsed < state.duration - 15 && elapsed >= state.duration - 15;
                 const periodic = state.periodicEnabled && Math.floor(elapsed / 30) > Math.floor(previousElapsed / 30);
-                if (warning) {
+                if (warning && output.now() >= soundsUntil) {
                     cancelAnnouncement();
                     gong(1);
                 } else if (periodic && remaining > 15 && elapsed % 30 < 1 && !speaking && pending === null && output.now() >= soundsUntil) {
@@ -99,9 +100,12 @@ function createTrainingCueController(output) {
             running = false;
             soundsUntil = 0;
         },
-        finish(cuesEnabled) {
+        finish(bellEnabled) {
             this.reset();
-            if (cuesEnabled) gong(2);
+            if (bellEnabled) {
+                if (output.endBell) output.endBell();
+                else gong(2);
+            }
         },
         cancelVoice: cancelAnnouncement
     };
